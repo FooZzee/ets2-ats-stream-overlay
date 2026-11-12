@@ -1,0 +1,1426 @@
+/* ==========================================================================
+   ETS2 / ATS Truck Cabin Digital Dashboard — Общие стили и токены
+   Оптимизировано для OBS Browser Source (60 FPS, GPU transform/opacity)
+   ========================================================================== */
+
+:root {
+  /* --- Основная тема по умолчанию: Amber (янтарно-оранжевая приборка) --- */
+  --cockpit-accent: #ff9e1b;
+  --cockpit-accent-rgb: 255, 158, 27;
+  --cockpit-secondary: #38bdf8;
+  --cockpit-secondary-rgb: 56, 189, 248;
+
+  /* Поверхности: глубокий матовый графит / карбон */
+  --cockpit-bg: rgba(11, 14, 19, 0.80);
+  --cockpit-bg-deep: rgba(7, 10, 14, 0.90);
+  --cockpit-surface: rgba(255, 255, 255, 0.035);
+  --cockpit-border: rgba(255, 255, 255, 0.11);
+  --cockpit-border-strong: rgba(255, 255, 255, 0.18);
+  --cockpit-border-accent: rgba(var(--cockpit-accent-rgb), 0.36);
+
+  /* Текст */
+  --cockpit-text: #f3f6fb;
+  --cockpit-text-muted: #9aa7b8;
+  --cockpit-text-dim: #66758a;
+
+  /* Семантические индикаторы бортового компьютера */
+  --status-online: #22c55e;
+  --status-donate: #ff9e1b;
+  --status-sub: #38bdf8;
+  --status-follow: #22c55e;
+  --status-raid: #f97316;
+  --status-danger: #ef4444;
+
+  /* Геометрия приборных модулей */
+  --panel-radius: 8px;
+  --panel-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+  --panel-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.09);
+
+  /* Мобильные Safe Zones (переопределяются из window.OVERLAY_CONFIG) */
+  --safe-top: 140px;
+  --safe-bottom: 370px;
+  --safe-right: 110px;
+  --safe-left: 28px;
+}
+
+/* Пресет холодной ледяной приборной подсветки (Ice Cockpit) */
+:root[data-cockpit-theme="ice"],
+body[data-cockpit-theme="ice"] {
+  --cockpit-accent: #38bdf8;
+  --cockpit-accent-rgb: 56, 189, 248;
+  --cockpit-secondary: #5eead4;
+  --cockpit-secondary-rgb: 94, 234, 212;
+  --cockpit-bg: rgba(10, 15, 23, 0.82);
+  --cockpit-border-accent: rgba(56, 189, 248, 0.38);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: transparent !important;
+  overflow: hidden;
+  color: var(--cockpit-text);
+  font-family: var(--font-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-variant-numeric: tabular-nums;
+}
+
+.is-hidden {
+  display: none !important;
+}
+
+/* ==========================================================================
+   БАЗОВЫЙ ПРИБОРНЫЙ БЛОК (БОРТОВОЙ КОМПЬЮТЕР)
+   ========================================================================== */
+.obc-panel {
+  position: relative;
+  border-radius: var(--panel-radius);
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.014) 0px,
+      rgba(255, 255, 255, 0.014) 1px,
+      transparent 1px,
+      transparent 6px
+    ),
+    var(--cockpit-bg);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--cockpit-border);
+  box-shadow: var(--panel-shadow), var(--panel-highlight);
+  overflow: hidden;
+}
+
+.obc-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 14px;
+  right: 14px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(var(--cockpit-accent-rgb), 0.55),
+    transparent
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+.obc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgba(5, 8, 12, 0.55);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  user-select: none;
+}
+
+.obc-micro-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--cockpit-text-muted);
+  white-space: nowrap;
+}
+
+.obc-micro-tag--accent {
+  color: var(--cockpit-accent);
+}
+
+.obc-driver-pill {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cockpit-text);
+  background: rgba(var(--cockpit-accent-rgb), 0.12);
+  border: 1px solid rgba(var(--cockpit-accent-rgb), 0.30);
+  border-radius: 4px;
+  padding: 2px 7px;
+  white-space: nowrap;
+}
+
+/* Живой светодиод статуса (анимация только через opacity) */
+.status-led {
+  position: relative;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--status-online);
+  flex-shrink: 0;
+}
+
+.status-led::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: rgba(34, 197, 94, 0.45);
+  animation: led-pulse 2.2s ease-in-out infinite;
+  will-change: opacity;
+}
+
+@keyframes led-pulse {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 0.9; }
+}
+
+/* ==========================================================================
+   РЕАЛЬНОЕ ВРЕМЯ В ПУТИ (ОТДЕЛЬНАЯ КОМПАКТНАЯ СТЕКЛЯННАЯ ПЛАШКА)
+   ========================================================================== */
+.real-eta-panel {
+  border-color: var(--cockpit-border-accent);
+  border-left: 2.5px solid var(--cockpit-accent);
+}
+
+.real-eta-panel.is-offline {
+  border-color: var(--cockpit-border);
+  border-left-color: rgba(255, 255, 255, 0.16);
+}
+
+.real-eta-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 7px 12px 8px;
+  min-width: 0;
+}
+
+.real-eta-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cockpit-text-muted);
+  white-space: nowrap;
+}
+
+.real-eta-panel.is-offline .status-led {
+  background: var(--cockpit-text-dim);
+}
+
+.real-eta-panel.is-offline .status-led::after {
+  animation: none;
+  opacity: 0;
+}
+
+.real-eta-value {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  line-height: 1.05;
+  color: var(--cockpit-accent);
+  text-shadow: 0 0 12px rgba(var(--cockpit-accent-rgb), 0.28);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.real-eta-panel.is-offline .real-eta-value {
+  color: var(--cockpit-text-muted);
+  text-shadow: none;
+}
+
+/* ==========================================================================
+   РАМКА ВЕБ-КАМЕРЫ (DASHCAM / CABIN MONITOR 16:9)
+   ========================================================================== */
+.cam-box {
+  --cam-hud-height: 28px;
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--panel-radius);
+  background: transparent;
+  border: 1px solid var(--cockpit-border-strong);
+  box-shadow: var(--panel-shadow);
+  overflow: hidden;
+}
+
+/* Внутренний тактический контур угла по периметру области 16:9 */
+.cam-box::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(var(--cockpit-accent-rgb), 0.24);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.cam-hud-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--cam-hud-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 10px;
+  background: linear-gradient(180deg, rgba(6, 9, 13, 0.88) 0%, rgba(6, 9, 13, 0.56) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+  z-index: 2;
+  user-select: none;
+}
+
+.cam-corner {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: var(--cockpit-accent);
+  border-style: solid;
+  pointer-events: none;
+  z-index: 4;
+  opacity: 0.85;
+}
+
+.cam-corner--tl {
+  top: calc(var(--cam-hud-height) + 6px);
+  left: 6px;
+  border-width: 2px 0 0 2px;
+  border-radius: 2px 0 0 0;
+}
+
+.cam-corner--tr {
+  top: calc(var(--cam-hud-height) + 6px);
+  right: 6px;
+  border-width: 2px 2px 0 0;
+  border-radius: 0 2px 0 0;
+}
+
+.cam-corner--bl {
+  bottom: 6px;
+  left: 6px;
+  border-width: 0 0 2px 2px;
+  border-radius: 0 0 0 2px;
+}
+
+.cam-corner--br {
+  bottom: 6px;
+  right: 6px;
+  border-width: 0 2px 2px 0;
+  border-radius: 0 0 2px 0;
+}
+
+.cam-hud-left,
+.cam-hud-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.cam-cb-badge {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--cockpit-secondary);
+  background: rgba(var(--cockpit-secondary-rgb), 0.14);
+  border: 1px solid rgba(var(--cockpit-secondary-rgb), 0.30);
+  border-radius: 3px;
+  padding: 1px 5px;
+  white-space: nowrap;
+}
+
+.cam-clock {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cockpit-accent);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   ВИДЖЕТ СТАТУСА РЕЙСА И ТЕКУЩЕГО ТРЕКА (TELEMETRY DECK)
+   ========================================================================== */
+.telemetry-body {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 10px 14px 12px;
+}
+
+.telemetry-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  min-width: 0;
+}
+
+.route-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.route-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--cockpit-accent);
+  background: rgba(var(--cockpit-accent-rgb), 0.14);
+  border: 1px solid rgba(var(--cockpit-accent-rgb), 0.34);
+  border-radius: 4px;
+  padding: 2px 7px;
+  flex-shrink: 0;
+}
+
+.route-value {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--cockpit-text);
+  letter-spacing: 0.02em;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.route-meta {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--cockpit-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.telemetry-divider {
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.02));
+}
+
+/* Встроенный блок бортового компьютера тягача внутри LIVE // ROUTE */
+.truck-board {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.truck-board.is-offline .truck-model,
+.truck-board.is-offline .truck-health,
+.truck-board.is-offline .truck-odometer,
+.truck-board.is-offline .truck-sensor-value {
+  color: var(--cockpit-text-muted);
+}
+
+.truck-board-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  min-width: 0;
+}
+
+.truck-identity {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.truck-model {
+  font-family: var(--font-display);
+  font-size: 14.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  color: var(--cockpit-accent);
+  text-transform: uppercase;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.truck-plate {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--cockpit-text);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 3px;
+  padding: 1px 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.truck-plate.is-empty {
+  display: none;
+}
+
+.truck-head-stats {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.truck-health {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--cockpit-text-muted);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  padding: 2px 7px;
+  line-height: 1.25;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.truck-health.is-ok {
+  color: var(--status-online);
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.34);
+}
+
+.truck-health.is-warn {
+  color: var(--status-warn, #f59e0b);
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.36);
+}
+
+.truck-health.is-danger {
+  color: var(--status-danger);
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(239, 68, 68, 0.42);
+}
+
+.truck-health.is-detached,
+.truck-board.is-offline .truck-health {
+  color: var(--cockpit-text-muted);
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.truck-odometer {
+  font-family: var(--font-mono);
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--cockpit-text);
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.truck-sensor-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.truck-sensor-cell {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 5px;
+  padding: 6px 8px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.truck-sensor-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #9fb0c4;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.truck-sensor-value {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--cockpit-text);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.track-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.eq-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 13px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  background: rgba(var(--cockpit-secondary-rgb), 0.12);
+  border: 1px solid rgba(var(--cockpit-secondary-rgb), 0.25);
+  flex-shrink: 0;
+}
+
+.eq-bar {
+  width: 2px;
+  height: 9px;
+  background: var(--cockpit-secondary);
+  border-radius: 1px;
+  transform-origin: bottom center;
+  animation: eq-bounce 1.05s ease-in-out infinite;
+  will-change: transform;
+}
+
+.eq-bar:nth-child(2) { animation-delay: 0.22s; }
+.eq-bar:nth-child(3) { animation-delay: 0.44s; }
+
+.eq-bars.is-paused .eq-bar {
+  animation: none;
+  transform: scaleY(0.35);
+  opacity: 0.55;
+}
+
+@keyframes eq-bounce {
+  0%, 100% { transform: scaleY(0.3); }
+  50% { transform: scaleY(1); }
+}
+
+.track-info {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+.track-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--cockpit-text-dim);
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.track-text {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--cockpit-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.track-artist {
+  color: var(--cockpit-text-muted);
+  font-weight: 400;
+}
+
+/* Мини-ротатор соцсетей внутри нижней полосы приборной панели */
+.socials-strip {
+  position: relative;
+  height: 22px;
+  margin-top: 1px;
+  padding-top: 5px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.social-slide {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  opacity: 0;
+  transform: translate3d(0, 8px, 0);
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.social-slide.is-active {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.social-slide.is-leaving {
+  opacity: 0;
+  transform: translate3d(0, -8px, 0);
+}
+
+.social-badge {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--cockpit-accent);
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.social-handle {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--cockpit-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ==========================================================================
+   ПАНЕЛЬ ЧАТА (Плавное верхнее затухание через mask-image)
+   ========================================================================== */
+.chat-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-channels {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--cockpit-text-dim);
+  text-transform: uppercase;
+}
+
+.chat-viewport {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  padding: 10px 12px 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 8px;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.55) 14%,
+    #000000 32%,
+    #000000 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.55) 14%,
+    #000000 32%,
+    #000000 100%
+  );
+}
+
+.chat-msg {
+  position: relative;
+  padding: 7px 10px 7px 11px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-left: 2px solid var(--msg-accent, rgba(var(--cockpit-accent-rgb), 0.65));
+  opacity: 0;
+  transform: translate3d(0, 12px, 0);
+  transition:
+    opacity 0.28s ease,
+    transform 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.chat-msg.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.chat-msg.is-removing {
+  opacity: 0;
+  transform: translate3d(0, -8px, 0);
+}
+
+.chat-msg-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-right: 6px;
+  vertical-align: baseline;
+}
+
+.chat-platform-tag {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--cockpit-text-muted);
+}
+
+.chat-platform-tag--twitch {
+  background: rgba(145, 70, 255, 0.22);
+  color: #c4b5fd;
+}
+
+.chat-platform-tag--vk {
+  background: rgba(0, 119, 255, 0.22);
+  color: #93c5fd;
+}
+
+.chat-role-badge {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(var(--cockpit-accent-rgb), 0.18);
+  color: var(--cockpit-accent);
+  border: 1px solid rgba(var(--cockpit-accent-rgb), 0.30);
+}
+
+.chat-author {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--msg-user-color, var(--cockpit-accent));
+  margin-right: 6px;
+}
+
+.chat-text {
+  font-size: 13.5px;
+  font-weight: 450;
+  line-height: 1.38;
+  color: var(--cockpit-text);
+  word-break: break-word;
+}
+
+.chat-emote {
+  height: 1.35em;
+  width: auto;
+  vertical-align: middle;
+  margin: -2px 2px 0;
+  display: inline-block;
+}
+
+/* ==========================================================================
+   СИСТЕМА АЛЕРТОВ БОРТОВОГО КОМПЬЮТЕРА (FIFO QUEUE)
+   ========================================================================== */
+.alert-dock {
+  pointer-events: none;
+  z-index: 40;
+}
+
+.alert-card {
+  position: relative;
+  border-radius: var(--panel-radius);
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.018) 0px,
+      rgba(255, 255, 255, 0.018) 1px,
+      transparent 1px,
+      transparent 6px
+    ),
+    var(--cockpit-bg-deep);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--alert-border, rgba(var(--cockpit-accent-rgb), 0.42));
+  border-left: 4px solid var(--alert-color, var(--cockpit-accent));
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65), var(--panel-highlight);
+  padding: 11px 14px 13px;
+  overflow: hidden;
+  opacity: 0;
+  transform: translate3d(26px, 0, 0) scale(0.98);
+  transition:
+    opacity 0.34s ease,
+    transform 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.alert-card.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+.alert-card.is-leaving {
+  opacity: 0;
+  transform: translate3d(20px, 0, 0) scale(0.98);
+  transition:
+    opacity 0.30s ease,
+    transform 0.30s ease;
+}
+
+.alert-card--donate {
+  --alert-color: var(--status-donate);
+  --alert-border: rgba(255, 158, 27, 0.45);
+}
+
+.alert-card--sub {
+  --alert-color: var(--status-sub);
+  --alert-border: rgba(56, 189, 248, 0.45);
+}
+
+.alert-card--follow {
+  --alert-color: var(--status-follow);
+  --alert-border: rgba(34, 197, 94, 0.45);
+}
+
+.alert-card--raid {
+  --alert-color: var(--status-raid);
+  --alert-border: rgba(249, 115, 22, 0.50);
+}
+
+.alert-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.alert-code {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--alert-color);
+}
+
+.alert-badge {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: #090c11;
+  background: var(--alert-color);
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.alert-main {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.alert-user {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #ffffff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.alert-subtitle {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--cockpit-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+}
+
+.alert-message {
+  margin-top: 6px;
+  font-size: 13.5px;
+  line-height: 1.38;
+  color: var(--cockpit-text);
+  opacity: 0.92;
+  word-break: break-word;
+}
+
+.alert-progress-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.alert-progress-fill {
+  width: 100%;
+  height: 100%;
+  background: var(--alert-color);
+  transform-origin: left center;
+  transform: scaleX(1);
+  will-change: transform;
+}
+
+/* ==========================================================================
+   ЖИВАЯ ТЕЛЕМЕТРИЯ ГРУЗОВИКА (scs_direct_telemetry.dll SCS SDK 1.16 Shared Memory -> HTTP 30002)
+   Блок всегда видим на экране; при отсутствии данных выводятся прочерки
+   ========================================================================== */
+.live-telemetry-panel {
+  display: block;
+  opacity: 1;
+}
+
+.live-telemetry-panel.is-offline .lt-speed-val,
+.live-telemetry-panel.is-offline .lt-chip-value {
+  color: var(--cockpit-text-muted);
+}
+
+.live-telemetry-panel.is-offline .lt-pill--gear {
+  color: var(--cockpit-text-muted);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.lt-body {
+  padding: 10px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.lt-primary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.lt-speed-block {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
+.lt-speed-val {
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--cockpit-text);
+  letter-spacing: -0.02em;
+  transition: color 0.2s ease;
+}
+
+.lt-speed-block.is-overspeed .lt-speed-val {
+  color: var(--status-danger);
+}
+
+.lt-speed-unit {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: #9fb0c4;
+  letter-spacing: 0.06em;
+}
+
+.lt-rpm-meta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: #9fb0c4;
+  margin-left: 6px;
+}
+
+.lt-badges {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+}
+
+.lt-limit-sign {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 5px;
+  border-radius: 50%;
+  border: 2.5px solid var(--status-danger);
+  background: rgba(15, 19, 26, 0.94);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.lt-limit-sign.is-inactive {
+  border-color: rgba(255, 255, 255, 0.34);
+  color: #9fb0c4;
+}
+
+.lt-pill {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 4px 8px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #d5dde7;
+  white-space: nowrap;
+}
+
+.lt-pill--cruise.is-active {
+  color: var(--cockpit-secondary);
+  background: rgba(var(--cockpit-secondary-rgb), 0.16);
+  border-color: rgba(var(--cockpit-secondary-rgb), 0.42);
+}
+
+.lt-pill--gear {
+  color: #090c11;
+  background: var(--cockpit-accent);
+  border-color: var(--cockpit-accent);
+  font-family: var(--font-display);
+  font-size: 14.5px;
+  font-weight: 800;
+  padding: 3px 10px;
+}
+
+.lt-indicators {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: rgba(6, 9, 13, 0.58);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  height: 31px;
+  min-height: 30px;
+  min-width: 0;
+}
+
+.lt-ind-cluster {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-width: 0;
+  flex: 1;
+}
+
+.lt-ind-sep {
+  width: 1px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.16);
+  flex-shrink: 0;
+}
+
+.lt-ind {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  color: #94a3b8;
+  opacity: 0.48;
+  transition: opacity 0.14s ease, color 0.14s ease, filter 0.14s ease, box-shadow 0.14s ease, background-color 0.14s ease, border-color 0.14s ease;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.lt-ind svg {
+  width: 21px;
+  height: 18px;
+  display: block;
+}
+
+@keyframes dashBlink {
+  0%, 49% {
+    opacity: 1;
+  }
+  50%, 100% {
+    opacity: 0.18;
+  }
+}
+
+.lt-ind--blink {
+  font-size: 16px;
+  min-width: 18px;
+  text-align: center;
+}
+
+.lt-ind--blink.is-active,
+.lt-ind--blink.active,
+.lt-ind--blink.is-on {
+  opacity: 1 !important;
+  color: #00ff66;
+  fill: #00ff66;
+  filter: drop-shadow(0 0 8px rgba(0, 255, 102, 0.95));
+  text-shadow: 0 0 10px rgba(0, 255, 102, 0.95);
+}
+
+.lt-ind--blink.is-blinking {
+  color: #00ff66;
+  fill: #00ff66;
+  filter: drop-shadow(0 0 8px rgba(0, 255, 102, 0.95));
+  text-shadow: 0 0 10px rgba(0, 255, 102, 0.95);
+  animation: dashBlink 0.45s step-end infinite;
+  will-change: opacity;
+}
+
+.lt-ind--text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.lt-ind--green.is-active {
+  opacity: 1;
+  color: var(--status-online);
+  filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.86));
+}
+
+.lt-ind--blue.is-active {
+  opacity: 1;
+  color: #38bdf8;
+  filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.9));
+}
+
+.lt-ind--blue.lt-ind--text.is-active,
+.lt-ind--cyan.lt-ind--text.is-active {
+  background: rgba(56, 189, 248, 0.20);
+  border-color: rgba(56, 189, 248, 0.60);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.34);
+  filter: none;
+}
+
+.lt-ind--cyan.is-active {
+  opacity: 1;
+  color: #2dd4bf;
+  filter: drop-shadow(0 0 8px rgba(45, 212, 191, 0.85));
+}
+
+.lt-ind--amber.is-active {
+  opacity: 1;
+  color: var(--status-warn, #f59e0b);
+  filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.85));
+}
+
+.lt-ind--amber.lt-ind--text.is-active {
+  background: rgba(245, 158, 11, 0.22);
+  border-color: rgba(245, 158, 11, 0.65);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.35);
+  filter: none;
+}
+
+.lt-ind--red.is-active {
+  opacity: 1;
+  color: var(--status-danger);
+  filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.88));
+}
+
+.lt-ind--red.lt-ind--text.is-active {
+  background: rgba(239, 68, 68, 0.22);
+  border-color: rgba(239, 68, 68, 0.65);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.38);
+  filter: none;
+}
+
+.live-telemetry-panel.is-offline .lt-ind {
+  opacity: 0.34;
+  color: #7e8da1;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  filter: none;
+  text-shadow: none;
+}
+
+.live-telemetry-panel.is-offline .lt-ind--text {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.lt-rpm-track {
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.lt-rpm-fill {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--cockpit-secondary), var(--cockpit-accent));
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform 0.22s linear;
+  will-change: transform;
+}
+
+.lt-rpm-fill.is-redline {
+  background: var(--status-danger);
+}
+
+.lt-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.lt-chip--cargo {
+  grid-column: 1 / -1;
+}
+
+.lt-chip {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 6px;
+  padding: 6px 10px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.lt-chip-label {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #9fb0c4;
+  text-transform: uppercase;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.lt-chip-value {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--cockpit-text);
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  word-break: break-word;
+}
+
+.lt-chip--cargo.is-ok .lt-chip-value {
+  color: var(--status-online);
+}
+
+.lt-chip--cargo.is-warn .lt-chip-value {
+  color: var(--status-warn, #f59e0b);
+}
+
+.lt-chip--cargo.is-danger .lt-chip-value {
+  color: var(--status-danger);
+}
+
+.lt-chip--cargo.is-detached .lt-chip-value {
+  color: var(--cockpit-text-muted);
+}
+
+/* ==========================================================================
+   ТЕСТОВЫЕ НАПРАВЛЯЮЩИЕ МЁРТВЫХ ЗОН (?guides=1 / toggleGuides())
+   ========================================================================== */
+.hud-guides {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 90;
+  display: none;
+}
+
+body.show-guides .hud-guides {
+  display: block;
+}
+
+.hud-guide-zone {
+  position: absolute;
+  border: 1.5px dashed rgba(255, 158, 27, 0.55);
+  background: rgba(255, 158, 27, 0.06);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 210, 140, 0.85);
+  text-align: center;
+  padding: 8px;
+}
+
+.hud-guide-zone--safe {
+  border-color: rgba(239, 68, 68, 0.65);
+  background: rgba(239, 68, 68, 0.08);
+  color: rgba(252, 165, 165, 0.9);
+  border-radius: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-led::after,
+  .eq-bar {
+    animation: none !important;
+  }
+  .chat-msg,
+  .alert-card,
+  .social-slide {
+    transition-duration: 0.08s !important;
+  }
+}

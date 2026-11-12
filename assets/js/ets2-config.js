@@ -1,0 +1,226 @@
+/**
+ * Инициализация и безопасное слияние конфигурации для ETS2 / ATS оверлеев.
+ * Читает window.OVERLAY_CONFIG из ./config.js без хардкода секретов и каналов.
+ */
+(function initETS2Config(global) {
+  'use strict';
+
+  const DEFAULT_CONFIG = {
+    lang: 'ru',
+    debug: true,
+    channels: {
+      twitch: { enabled: true, channelName: 'your_channel', oauthToken: '', clientId: '' },
+      vk: { enabled: false, channelUrl: '', token: '' },
+      donationAlerts: { enabled: false, socketToken: '' },
+      obsWebSocket: { enabled: false, url: 'ws://127.0.0.1:4455', password: '' }
+    },
+    alerts: {
+      volume: 0.65,
+      displayDurationMs: 5000,
+      pauseBetweenMs: 800,
+      fallbackTimeoutMs: 10000,
+      minDonateAmount: 50,
+      ttsEnabled: false,
+      synthFallback: true,
+      sounds: {
+        follow: './assets/sounds/follow.mp3',
+        sub: './assets/sounds/sub.mp3',
+        donate: './assets/sounds/donate.mp3',
+        raid: './assets/sounds/raid.mp3'
+      }
+    },
+    chat: {
+      maxMessages: 30,
+      messageLifetimeMs: 0,
+      hideCommands: true,
+      ignoredUsers: ['Nightbot', 'StreamElements', 'Moobot']
+    },
+    theme: {
+      cockpitPreset: 'amber', // 'amber' | 'ice'
+      cockpitAccentColor: '', // опциональный override hex-цвета, например '#ff9e1b'
+      fontMain: '',
+      fontAccent: '',
+      safeZoneVertical: {
+        topPx: 140,
+        bottomPx: 370,
+        rightPx: 110
+      }
+    },
+    webcam: {
+      enabled: true,
+      aspect: '16:9',
+      showClock: true,
+      cbChannel: 'CB 19'
+    },
+    ets2: {
+      driverName: 'STREAMER',
+      routeTag: 'ETS2 // ATS',
+      routeText: 'В РЕЙСЕ // ОНЛАЙН',
+      routeMeta: 'CRUISE',
+      telemetryApi: {
+        enabled: true,
+        url: 'http://127.0.0.1:30002/telemetry',
+        pollIntervalMs: 300,
+        staleAfterMs: 9000,
+        offlineBackoffMaxMs: 15000,
+        speedUnit: 'auto',      // 'auto' | 'ms' | 'kmh'
+        navDistUnit: 'auto',    // 'auto' | 'm' | 'km'
+        navTimeUnit: 'auto',    // 'auto' | 's' | 'min'
+        cargoDmgUnit: 'auto',   // 'auto' | 'ratio' | 'percent'
+        maxRpm: 2500
+      }
+    },
+    music: {
+      enabled: true,
+      title: 'TRUCK CABIN FM',
+      artist: 'LIVE STREAM',
+      sourceUrl: '',
+      pollIntervalMs: 3000
+    },
+    socials: {
+      switchIntervalMs: 9000,
+      items: []
+    }
+  };
+
+  function isPlainObject(value) {
+    return value !== null && typeof value === 'object' && !Array.isArray(value);
+  }
+
+  function deepMerge(target, source) {
+    const out = { ...target };
+    if (!isPlainObject(source)) return out;
+    Object.keys(source).forEach((key) => {
+      const srcVal = source[key];
+      const tgtVal = target[key];
+      if (isPlainObject(srcVal) && isPlainObject(tgtVal)) {
+        out[key] = deepMerge(tgtVal, srcVal);
+      } else if (srcVal !== undefined) {
+        out[key] = srcVal;
+      }
+    });
+    return out;
+  }
+
+  function isPlaceholder(value) {
+    if (value === null || value === undefined) return true;
+    const str = String(value).trim();
+    if (!str) return true;
+    return /^(YOUR_|oauth:YOUR_|https:\/\/live\.vkvideo\.ru\/YOUR_)/i.test(str);
+  }
+
+  function hexToRgb(hex) {
+    if (typeof hex !== 'string') return null;
+    const clean = hex.trim().replace('#', '');
+    if (!/^[0-9a-f]{3}([0-9a-f]{3})?$/i.test(clean)) return null;
+    const full = clean.length === 3
+      ? clean.split('').map((c) => c + c).join('')
+      : clean;
+    const num = parseInt(full, 16);
+    return `${(num >> 16) & 255}, ${(num >> 8) & 255}, ${num & 255}`;
+  }
+
+  function escapeHtml(str) {
+    return String(str ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function resolveOverlayLanguage(urlParams, mergedCfg, rawCfg) {
+    const candidates = [
+      urlParams ? urlParams.get('lang') : null,
+      rawCfg ? (rawCfg.lang ?? rawCfg.language ?? rawCfg.locale) : null,
+      rawCfg && rawCfg.ets2 ? rawCfg.ets2.lang : null,
+      mergedCfg ? (mergedCfg.lang ?? mergedCfg.language ?? mergedCfg.locale) : null
+    ];
+    for (let i = 0; i < candidates.length; i += 1) {
+      const val = candidates[i];
+      if (typeof val !== 'string') continue;
+      const clean = val.trim().toLowerCase();
+      if (!clean) continue;
+      if (clean === 'en' || clean.startsWith('en-') || clean.startsWith('en_')) return 'en';
+      if (clean === 'ru' || clean.startsWith('ru-') || clean.startsWith('ru_')) return 'ru';
+    }
+    return 'ru';
+  }
+
+  const params = new URLSearchParams(global.location.search);
+  const rawConfig = isPlainObject(global.OVERLAY_CONFIG) ? global.OVERLAY_CONFIG : {};
+  const config = deepMerge(DEFAULT_CONFIG, rawConfig);
+  const lang = resolveOverlayLanguage(params, config, rawConfig);
+  config.lang = lang;
+  global.document.documentElement.setAttribute('lang', lang);
+
+  const isTestMode = params.get('test') === '1' || params.get('test') === 'true';
+  const isDebug = Boolean(config.debug) || params.get('debug') === '1' || isTestMode;
+  const showGuides = params.get('guides') === '1';
+
+  const themeParam = params.get('theme');
+  if (themeParam === 'amber' || themeParam === 'ice') {
+    config.theme.cockpitPreset = themeParam;
+  }
+
+  const camParam = params.get('cam');
+  if (camParam === '0' || camParam === 'false') {
+    config.webcam.enabled = false;
+  } else if (camParam === '1' || camParam === 'true') {
+    config.webcam.enabled = true;
+  }
+
+  function applyThemeVariables(presetOverride) {
+    const root = global.document.documentElement;
+    const preset = presetOverride || config.theme.cockpitPreset || 'amber';
+    root.setAttribute('data-cockpit-theme', preset === 'ice' ? 'ice' : 'amber');
+
+    if (config.theme.cockpitAccentColor) {
+      const rgb = hexToRgb(config.theme.cockpitAccentColor);
+      if (rgb) {
+        root.style.setProperty('--cockpit-accent', config.theme.cockpitAccentColor);
+        root.style.setProperty('--cockpit-accent-rgb', rgb);
+      }
+    }
+
+    const safe = config.theme.safeZoneVertical;
+    if (safe) {
+      if (Number.isFinite(Number(safe.topPx))) {
+        root.style.setProperty('--safe-top', `${Number(safe.topPx)}px`);
+      }
+      if (Number.isFinite(Number(safe.bottomPx))) {
+        root.style.setProperty('--safe-bottom', `${Number(safe.bottomPx)}px`);
+      }
+      if (Number.isFinite(Number(safe.rightPx))) {
+        root.style.setProperty('--safe-right', `${Number(safe.rightPx)}px`);
+      }
+    }
+  }
+
+  function log(...args) {
+    if (isDebug) {
+      console.log('[ETS2-Overlay]', ...args);
+    }
+  }
+
+  function warn(...args) {
+    if (isDebug) {
+      console.warn('[ETS2-Overlay]', ...args);
+    }
+  }
+
+  applyThemeVariables();
+
+  global.ETS2Overlay = {
+    config,
+    lang,
+    isTestMode,
+    isDebug,
+    showGuides,
+    isPlaceholder,
+    escapeHtml,
+    applyThemeVariables,
+    log,
+    warn
+  };
+})(window);

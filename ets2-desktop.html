@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, initial-scale=1.0">
+  <title>ETS2 / ATS Truck Cabin Overlay — Desktop (1920×1080)</title>
+
+  <link rel="stylesheet" href="./assets/css/fonts.css">
+  <link rel="stylesheet" href="./assets/css/ets2-base.css">
+  <link rel="stylesheet" href="./assets/css/ets2-desktop.css">
+</head>
+<body>
+  <main class="scene-desktop" aria-label="ETS2 Desktop Stream Overlay">
+
+    <!-- 1. ВЕРХНИЙ ЛЕВЫЙ УГОЛ (top: 20px; left: 24px): реальное время в пути -->
+    <aside class="obc-panel real-eta-panel is-offline" id="real-eta-panel" aria-label="Реальное время в пути">
+      <div class="real-eta-body">
+        <span class="real-eta-label">
+          <span class="status-led" aria-hidden="true"></span>
+          <span data-i18n="realEtaLabel">РЕАЛЬНОЕ ВРЕМЯ В ПУТИ:</span>
+        </span>
+        <span class="real-eta-value" id="real-eta-value">--</span>
+      </div>
+    </aside>
+
+    <!-- 2. РАМКА ВЕБ-КАМЕРЫ 16:9 (top: 180px; left: 24px; width: 346px; height: 195px) -->
+    <div class="cam-box" id="cam-box">
+      <div class="cam-hud-bar">
+        <div class="cam-hud-left">
+          <span class="status-led" aria-hidden="true"></span>
+          <span class="obc-micro-tag" id="cam-driver-label">CAM // STREAMER</span>
+        </div>
+        <div class="cam-hud-right">
+          <span class="cam-cb-badge" id="cam-cb-badge">CB 19</span>
+          <span class="cam-clock" id="cam-clock">--:--</span>
+        </div>
+      </div>
+      <span class="cam-corner cam-corner--tl" aria-hidden="true"></span>
+      <span class="cam-corner cam-corner--tr" aria-hidden="true"></span>
+      <span class="cam-corner cam-corner--bl" aria-hidden="true"></span>
+      <span class="cam-corner cam-corner--br" aria-hidden="true"></span>
+    </div>
+
+    <!-- 3. БЛОК ЧАТА ПОД КАМЕРОЙ (top: 392px; left: 24px; width: 346px; bottom: 200px) -->
+    <section class="right-cockpit-dock" aria-label="Чат трансляции">
+      <div class="obc-panel chat-panel">
+        <div class="obc-header">
+          <div class="obc-micro-tag obc-micro-tag--accent">
+            <span class="status-led" aria-hidden="true"></span>
+            <span>COMMS // CHAT</span>
+          </div>
+          <span class="chat-channels" id="chat-channels-label">STANDBY</span>
+        </div>
+        <div class="chat-viewport" id="chat-viewport"></div>
+      </div>
+    </section>
+
+    <!-- 5. НИЖНЯЯ 2-РЯДНАЯ ТОРПЕДА (1872 x 168, left: 24px, right: 24px, bottom: 16px) -->
+    <section class="obc-panel cockpit-dashboard live-telemetry-panel is-offline" id="live-telemetry-panel" aria-label="Приборная панель грузовика">
+
+      <!-- РЯД 1: Движение/педали, пиктограммы приборки, маршрут/груз -->
+      <div class="dash-row dash-row--top">
+
+        <!-- Левый модуль: Скорость, КПП, круиз, RPM и педали/руль -->
+        <div class="dash-mod dash-mod--drive">
+          <div class="dash-drive-main">
+            <div class="dash-speed-row">
+              <div class="lt-speed-block" id="lt-speed-block">
+                <span class="lt-speed-val" id="lt-speed">--</span>
+                <span class="lt-speed-unit" data-i18n="kmh">КМ/Ч</span>
+              </div>
+              <div class="lt-badges">
+                <span class="lt-pill lt-pill--cruise" id="lt-cruise">CC --</span>
+                <span class="lt-pill lt-pill--gear" id="lt-gear">--</span>
+              </div>
+            </div>
+            <div class="dash-rpm-row">
+              <span class="lt-rpm-meta" id="lt-rpm-text">-- RPM</span>
+              <div class="lt-rpm-track" aria-hidden="true">
+                <div class="lt-rpm-fill" id="lt-rpm-fill"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dash-inputs" aria-label="Педали и руль">
+            <span class="dash-input-label" data-i18n="throttle">ГАЗ</span>
+            <div class="dash-input-track">
+              <div class="dash-input-fill dash-input-fill--throttle" id="lt-throttle-fill"></div>
+            </div>
+            <span class="dash-input-label" data-i18n="brake">ТОРМ</span>
+            <div class="dash-input-track">
+              <div class="dash-input-fill dash-input-fill--brake" id="lt-brake-fill"></div>
+            </div>
+            <span class="dash-input-label" data-i18n="steer">РУЛЬ</span>
+            <div class="dash-steer-track">
+              <div class="dash-steer-knob" id="lt-steer-knob"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Центральный модуль: Крупные индикаторы приборной панели в один ряд -->
+        <div class="dash-mod dash-mod--indicators">
+          <div class="lt-indicators" id="lt-indicators" aria-label="Индикаторы приборной панели">
+            <span class="lt-ind lt-ind--blink" id="lt-ind-blink-l" title="Левый поворотник">◀</span>
+            <div class="lt-ind-cluster">
+              <span class="lt-ind lt-ind--green" id="lt-ind-park" title="Габариты">
+                <svg viewBox="0 0 16 12" aria-hidden="true"><path d="M7 2C4.8 2 3.5 3.8 3.5 6S4.8 10 7 10V2Zm2 0C11.2 2 12.5 3.8 12.5 6S11.2 10 9 10V2Z" fill="currentColor"/><path d="M1 4h1.5M1 6h1.5M1 8h1.5M13.5 4H15M13.5 6H15M13.5 8H15" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              </span>
+              <span class="lt-ind lt-ind--green" id="lt-ind-low" title="Ближний свет">
+                <svg viewBox="0 0 16 12" aria-hidden="true"><path d="M8 2.5C11.2 2.5 13 4 13 6s-1.8 3.5-5 3.5H7v-7h1Z" fill="currentColor"/><path d="M1.5 5l3.8 1.2M1.5 7.5l3.8 1.2M1.5 10l3.8 1.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </span>
+              <span class="lt-ind lt-ind--blue" id="lt-ind-high" title="Дальний свет">
+                <svg viewBox="0 0 16 12" aria-hidden="true"><path d="M8 2.5C11.2 2.5 13 4 13 6s-1.8 3.5-5 3.5H7v-7h1Z" fill="currentColor"/><path d="M1.5 3.5h4M1.5 6h4M1.5 8.5h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </span>
+              <span class="lt-ind lt-ind--amber" id="lt-ind-beacon" title="Проблесковый маячок">
+                <svg viewBox="0 0 14 12" aria-hidden="true"><path d="M4.5 9.5V6.2a2.5 2.5 0 0 1 5 0v3.3H4.5Z" fill="currentColor"/><rect x="3" y="9.5" width="8" height="1.8" rx="0.7" fill="currentColor"/><path d="M7 1v1.4M2.8 2.8l1 1M11.2 2.8l-1 1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              </span>
+              <span class="lt-ind lt-ind--green" id="lt-ind-cruise" title="Круиз-контроль">
+                <svg viewBox="0 0 16 12" aria-hidden="true"><path d="M2.8 9.6a5.4 5.4 0 0 1 10.4 0" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M8 9.2L10.8 5.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="9.4" r="1.2" fill="currentColor"/><path d="M12.4 2.7l1.8 1.3-1.8 1.3" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <span class="lt-ind lt-ind--cyan" id="lt-ind-wipers" title="Стеклоочистители">
+                <svg viewBox="0 0 16 12" aria-hidden="true"><path d="M2 9.5C4 3.5 12 3.5 14 9.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M8 9.5L11.5 3.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="9.5" r="1.2" fill="currentColor"/></svg>
+              </span>
+
+              <span class="lt-ind-sep" aria-hidden="true"></span>
+
+              <span class="lt-ind lt-ind--text lt-ind--red" id="lt-ind-park-brake" title="Стояночный тормоз">(P)</span>
+              <span class="lt-ind lt-ind--text lt-ind--amber" id="lt-ind-retarder" title="Ретардер / моторный тормоз">RET</span>
+              <span class="lt-ind lt-ind--text lt-ind--amber" id="lt-ind-difflock" title="Блокировка дифференциала">DIFF</span>
+              <span class="lt-ind lt-ind--text lt-ind--cyan" id="lt-ind-lift-axle" title="Подъёмная ось">AXLE</span>
+
+              <span class="lt-ind-sep" aria-hidden="true"></span>
+
+              <span class="lt-ind lt-ind--amber" id="lt-ind-fuel-warn" title="Мало топлива">
+                <svg viewBox="0 0 14 12" aria-hidden="true"><path d="M3 2.5A1 1 0 0 1 4 1.5h4a1 1 0 0 1 1 1V10H3V2.5Zm1.5 1v2.5h3V3.5h-3Z" fill="currentColor"/><path d="M9 4.5h1.3l.7 1.2V9a.8.8 0 0 1-.8.8h-.4" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <span class="lt-ind lt-ind--text lt-ind--red" id="lt-ind-air-warn" title="Низкое давление воздуха">AIR!</span>
+              <span class="lt-ind lt-ind--red" id="lt-ind-oil-warn" title="Давление / перегрев масла">
+                <svg viewBox="0 0 16 12" aria-hidden="true"><path d="M2 7.5h3l1.5-2h4l2.8-1.3.7.9-2.7 3.9H3.8L2 7.5Z" fill="currentColor"/><path d="M5.5 3.5h3M13.6 7.5c0 .9-.7 1.5-1.1 1.5s-1.1-.6-1.1-1.5c0-.6.5-1.4 1.1-2 .6.6 1.1 1.4 1.1 2Z" stroke="currentColor" stroke-width="1.1" fill="none" stroke-linecap="round"/></svg>
+              </span>
+              <span class="lt-ind lt-ind--red" id="lt-ind-water-warn" title="Перегрев охлаждающей жидкости">
+                <svg viewBox="0 0 14 12" aria-hidden="true"><path d="M7 1.5v5.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="7" cy="8.5" r="2" fill="currentColor"/><path d="M2 9.5c1 .8 2 .8 3 0s2-.8 3 0 2 .8 3 0" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+              </span>
+              <span class="lt-ind lt-ind--red" id="lt-ind-battery-warn" title="Разряд АКБ">
+                <svg viewBox="0 0 16 12" aria-hidden="true"><rect x="2" y="3" width="12" height="7.2" rx="1" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M4.5 1.8v1.2M11.5 1.8v1.2M4.5 6.6h2M9.5 6.6h2M10.5 5.6v2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              </span>
+
+              <span class="lt-ind-sep" aria-hidden="true"></span>
+
+              <span class="lt-limit-sign is-inactive" id="lt-limit" title="Лимит скорости">--</span>
+            </div>
+            <span class="lt-ind lt-ind--blink" id="lt-ind-blink-r" title="Правый поворотник">▶</span>
+          </div>
+        </div>
+
+        <!-- Правый модуль: Маршрут, груз, остаток км и прогресс-бар -->
+        <div class="dash-mod dash-mod--route">
+          <div class="dash-route-top">
+            <span class="route-value" id="route-value">--</span>
+            <span class="dash-route-rem" id="lt-nav">--</span>
+          </div>
+          <div class="dash-cargo-line is-detached" id="lt-cargo-chip">
+            <span class="dash-cargo-value" id="lt-cargo">--</span>
+          </div>
+          <div class="dash-route-progress-track" aria-hidden="true">
+            <div class="dash-route-progress-fill" id="lt-route-progress-fill"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- РЯД 2: Тягач и износ, 7 датчиков, бегущая строка экономики/trip, статус игры и соцсети -->
+      <div class="dash-row dash-row--bottom">
+
+        <!-- Модуль 1: Тягач, одометр и 3 бейджа исправности -->
+        <div class="dash-mod dash-mod--truck is-offline" id="truck-board" aria-label="Тягач и состояние узлов">
+          <div class="truck-board-head">
+            <div class="truck-identity">
+              <span class="truck-model" id="lt-truck-model">TRUCK // STANDBY</span>
+              <span class="truck-plate is-empty" id="lt-truck-plate"></span>
+            </div>
+            <span class="truck-odometer" id="lt-truck-odometer">-- КМ</span>
+          </div>
+          <div class="dash-health-strip">
+            <span class="truck-health is-detached" id="lt-truck-health" title="Исправность тягача">СОСТ: --</span>
+            <span class="truck-health is-detached" id="lt-trailer-health" title="Исправность прицепа">ПРИЦЕП: --</span>
+            <span class="truck-health is-detached" id="lt-cargo-health" title="Сохранность груза">ГРУЗ: --</span>
+          </div>
+        </div>
+
+        <!-- Модуль 2: 7 бортовых датчиков строго в одну линию -->
+        <div class="dash-mod dash-mod--sensors" aria-label="Бортовые датчики">
+          <div class="truck-sensor-grid truck-sensor-grid--7">
+            <div class="truck-sensor-cell">
+              <span class="truck-sensor-label" data-i18n="fuel">ТОПЛИВО</span>
+              <span class="truck-sensor-value" id="lt-sensor-fuel">--</span>
+            </div>
+            <div class="truck-sensor-cell">
+              <span class="truck-sensor-label" data-i18n="range">ЗАПАС ХОДА</span>
+              <span class="truck-sensor-value" id="lt-sensor-range">--</span>
+            </div>
+            <div class="truck-sensor-cell">
+              <span class="truck-sensor-label" data-i18n="fuelAvg">РАСХОД</span>
+              <span class="truck-sensor-value" id="lt-sensor-fuel-avg">--</span>
+            </div>
+            <div class="truck-sensor-cell">
+              <span class="truck-sensor-label" data-i18n="oilWater">МАСЛО/ВОДА</span>
+              <span class="truck-sensor-value" id="lt-sensor-temps">--</span>
+            </div>
+            <div class="truck-sensor-cell">
+              <span class="truck-sensor-label" data-i18n="air">ВОЗДУХ</span>
+              <span class="truck-sensor-value" id="lt-sensor-air">--</span>
+            </div>
+            <div class="truck-sensor-cell">
+              <span class="truck-sensor-label" data-i18n="adblue">ADBLUE</span>
+              <span class="truck-sensor-value" id="lt-sensor-adblue">--</span>
+            </div>
+            <div class="truck-sensor-cell">
+              <span class="truck-sensor-label" data-i18n="battery">АКБ</span>
+              <span class="truck-sensor-value" id="lt-sensor-battery">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Модуль 3: Бегущая строка экономики заказа и статистики поездки (2 копии без сброса DOM) -->
+        <div class="dash-mod dash-mod--ticker" aria-label="Статистика заказа и поездки">
+          <div class="ticker-viewport">
+            <div class="ticker-track" id="dash-ticker-track">
+              <div class="ticker-copy">
+                <span class="ticker-item"><span class="ticker-label" data-i18n="tickerIncome">ОПЛАТА:</span><span class="ticker-val ticker-val--accent" data-ticker-key="income">--</span></span>
+                <span class="ticker-sep" aria-hidden="true">•</span>
+                <span class="ticker-item"><span class="ticker-label" data-i18n="tickerCompanies">КОМПАНИИ:</span><span class="ticker-val" data-ticker-key="companies">--</span></span>
+                <span class="ticker-sep" aria-hidden="true">•</span>
+                <span class="ticker-item"><span class="ticker-label" data-i18n="tickerJobType">ТИП ЗАКАЗА:</span><span class="ticker-val" data-ticker-key="jobType">--</span></span>
+                <span class="ticker-sep" aria-hidden="true">•</span>
+                <span class="ticker-item"><span class="ticker-label" data-i18n="tickerTripDist">ПРОЙДЕНО ЗА РЕЙС:</span><span class="ticker-val" data-ticker-key="driven">--</span></span>
+                <span class="ticker-sep" aria-hidden="true">•</span>
+                <span class="ticker-item"><span class="ticker-label" data-i18n="tickerFuelUsed">СОЖЖЕНО:</span><span class="ticker-val" data-ticker-key="liters">--</span></span>
+                <span class="ticker-sep" aria-hidden="true">•</span>
+                <span class="ticker-item"><span class="ticker-label" data-i18n="tickerTripAvg">СРЕДНИЙ РАСХОД:</span><span class="ticker-val" data-ticker-key="avg">--</span></span>
+                <span class="ticker-sep" aria-hidden="true">•</span>
+                <span class="ticker-item"><span class="ticker-label" data-i18n="tickerMaxSpeed">МАКС. СКОРОСТЬ:</span><span class="ticker-val" data-ticker-key="maxSpeed">--</span></span>
+                <span class="ticker-sep" aria-hidden="true">•</span>
+              </div>
+              <div class="ticker-copy" aria-hidden="true">
+                <span class="ticker-item"><span class="ticker-label" data-i18n="tickerIncome">ОПЛАТА:</span><span class="ticker-val ticker-val--accent" data-ticker-key="income">--</span></span>
+                <span class="ticker-sep" aria-hidden="true">•</span>
+                <span class="ticker-item"><span class="ticker-label" data-i18n="tickerCompanies">КОМПАНИИ:</span><span class="ticker-val" data-ticker-key="companies">--</span></span>
+                <span class="ticker-sep" aria-hidden="true">•</span>
+                <span class="ticker-item"><span class="ticker-label" data-i18n="tickerJobType">ТИП ЗАКАЗА:</span><span class="ticker-val" data-ticker-key="jobType">--</span></span>
+                <span class="ticker-sep" aria-hidden="true">•</span>
+                <span class="ticker-item"><span class="ticker-label" data-i18n="tickerTripDist">ПРОЙДЕНО ЗА РЕЙС:</span><span class="ticker-val" data-ticker-key="driven">--</span></span>
+                <span class="ticker-sep" aria-hidden="true">•</span>
+                <span class="ticker-item"><span class="ticker-label" data-i18n="tickerFuelUsed">СОЖЖЕНО:</span><span class="ticker-val" data-ticker-key="liters">--</span></span>
+                <span class="ticker-sep" aria-hidden="true">•</span>
+                <span class="ticker-item"><span class="ticker-label" data-i18n="tickerTripAvg">СРЕДНИЙ РАСХОД:</span><span class="ticker-val" data-ticker-key="avg">--</span></span>
+                <span class="ticker-sep" aria-hidden="true">•</span>
+                <span class="ticker-item"><span class="ticker-label" data-i18n="tickerMaxSpeed">МАКС. СКОРОСТЬ:</span><span class="ticker-val" data-ticker-key="maxSpeed">--</span></span>
+                <span class="ticker-sep" aria-hidden="true">•</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Модуль 4: Динамический бейдж игры/статуса и ссылки на стримы -->
+        <div class="dash-mod dash-mod--status">
+          <div class="dash-status-row">
+            <span class="dash-game-badge is-standby" id="game-badge">--</span>
+            <span class="dash-status-pill is-standby" id="game-status-pill">
+              <span class="dash-status-dot" aria-hidden="true"></span>
+              <span id="game-status-text">STANDBY // ОЖИДАНИЕ</span>
+            </span>
+          </div>
+          <div class="dash-socials" id="dash-socials">
+            <span class="dash-social-item" id="dash-twitch-item">
+              <span class="dash-social-dot dash-social-dot--twitch" aria-hidden="true"></span>
+              <span id="dash-twitch-text">twitch.tv/your_channel</span>
+            </span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 5. ЗОНА ОПОВЕЩЕНИЙ В ПРАВОЙ НИЖНЕЙ ЗОНЕ НАД ТОРПЕДОЙ (right: 24px; bottom: 200px; width: 380px) -->
+    <aside class="alert-dock" id="alert-dock" aria-live="polite"></aside>
+
+    <!-- ТЕСТОВАЯ КАРТА МЁРТВЫХ ЗОН HUD (?guides=1 или toggleGuides()) -->
+    <div class="hud-guides" aria-hidden="true">
+      <div class="hud-guide-zone guide-route-advisor">TOP ROUTE ADVISOR // FREE ZONE</div>
+      <div class="hud-guide-zone guide-mirror-left">LEFT MIRROR CLEARANCE</div>
+      <div class="hud-guide-zone guide-mirror-right">RIGHT F2 &amp; CABIN MIRROR // EYE-LEVEL CLEAR</div>
+      <div class="hud-guide-zone guide-windshield-dash">WINDSHIELD &amp; CENTER DASH // 100% CLEAR</div>
+    </div>
+
+  </main>
+
+  <script src="./config.js" onerror="window.OVERLAY_CONFIG=window.OVERLAY_CONFIG||{}"></script>
+  <script src="./assets/js/ets2-config.js"></script>
+  <script src="./assets/js/ets2-alerts.js"></script>
+  <script src="./assets/js/ets2-chat.js"></script>
+  <script src="./assets/js/ets2-telemetry.js"></script>
+</body>
+</html>

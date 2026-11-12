@@ -1,0 +1,415 @@
+/* ==========================================================================
+   ETS2 / ATS Vertical Mobile Overlay (1080x1920, 9:16)
+   Safe Zones:
+   - Верх: 0–140px (--safe-top)
+   - Низ: 1550–1920px (--safe-bottom = 370px)
+   - Право: последние 110px (--safe-right)
+   - Крупные читаемые шрифты от 22px–28px для экранов смартфонов
+   ========================================================================== */
+
+.scene-vertical {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.vertical-safe-frame {
+  position: absolute;
+  top: var(--safe-top);
+  bottom: var(--safe-bottom);
+  left: var(--safe-left);
+  right: var(--safe-right);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+/* Верхняя безопасная полоса (ниже 140px): вебкамера + трек + живая телеметрия */
+.vertical-top-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 12px;
+  z-index: 20;
+}
+
+.vertical-top-cluster {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+}
+
+.vertical-left-col {
+  width: 352px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vertical-top-cluster .cam-box {
+  --cam-hud-height: 38px;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+.vertical-left-col .real-eta-panel {
+  width: 100%;
+}
+
+.vertical-left-col .real-eta-body {
+  padding: 7px 14px 8px;
+  gap: 4px;
+}
+
+.vertical-left-col .real-eta-label {
+  font-size: 13px;
+}
+
+.vertical-left-col .real-eta-value {
+  font-size: 27px;
+}
+
+.vertical-top-cluster .telemetry-deck {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.vertical-top-cluster .telemetry-body {
+  flex: 1;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+}
+
+.live-telemetry-panel {
+  width: 100%;
+}
+
+.live-telemetry-panel .lt-body {
+  padding: 12px 16px 14px;
+  gap: 10px;
+}
+
+.live-telemetry-panel .lt-speed-val {
+  font-size: 40px;
+}
+
+.live-telemetry-panel .lt-speed-unit {
+  font-size: 16px;
+}
+
+.live-telemetry-panel .lt-rpm-meta {
+  font-size: 16px;
+  margin-left: 8px;
+}
+
+.live-telemetry-panel .lt-limit-sign {
+  min-width: 48px;
+  height: 48px;
+  border-width: 3px;
+  font-size: 20px;
+}
+
+.live-telemetry-panel .lt-pill {
+  font-size: 18px;
+  padding: 5px 12px;
+}
+
+.live-telemetry-panel .lt-pill--gear {
+  font-size: 21px;
+  padding: 4px 14px;
+}
+
+.live-telemetry-panel .lt-indicators {
+  padding: 6px 16px;
+  min-height: 44px;
+  height: 46px;
+  gap: 16px;
+}
+
+.live-telemetry-panel .lt-ind-cluster {
+  gap: 16px;
+}
+
+.live-telemetry-panel .lt-ind-sep {
+  height: 22px;
+}
+
+.live-telemetry-panel .lt-ind svg {
+  width: 28px;
+  height: 22px;
+}
+
+.live-telemetry-panel .lt-ind--blink {
+  font-size: 22px;
+  min-width: 26px;
+}
+
+.live-telemetry-panel .lt-ind--text {
+  font-size: 16px;
+  padding: 3px 9px;
+}
+
+.live-telemetry-panel .lt-rpm-track {
+  height: 5px;
+}
+
+.live-telemetry-panel .lt-metrics {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.live-telemetry-panel .lt-chip--cargo {
+  grid-column: auto;
+}
+
+.live-telemetry-panel .lt-chip {
+  padding: 8px 12px;
+  gap: 4px;
+}
+
+.live-telemetry-panel .lt-chip-label {
+  font-size: 14.5px;
+}
+
+.live-telemetry-panel .lt-chip-value {
+  font-size: 21px;
+}
+
+/* Нижняя безопасная полоса (выше 1550px и левее правых 110px): алерты + чат */
+.vertical-bottom-cluster {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: 12px;
+  z-index: 20;
+}
+
+.chat-panel {
+  width: 100%;
+  height: 368px;
+}
+
+/* ==========================================================================
+   МОБИЛЬНАЯ ТИПОГРАФИКА (Минимум 22px–28px для основного текста)
+   ========================================================================== */
+.obc-header {
+  padding: 10px 16px;
+}
+
+.obc-micro-tag {
+  font-size: 16px;
+  gap: 9px;
+}
+
+.obc-driver-pill {
+  font-size: 16px;
+  padding: 4px 10px;
+}
+
+.status-led {
+  width: 10px;
+  height: 10px;
+}
+
+.cam-hud-bar {
+  height: 38px;
+  padding: 0 12px;
+}
+
+.cam-cb-badge {
+  font-size: 14px;
+  padding: 2px 7px;
+}
+
+.cam-clock {
+  font-size: 16px;
+}
+
+.route-badge {
+  font-size: 16px;
+  padding: 4px 10px;
+}
+
+.route-value {
+  font-size: 24px;
+}
+
+.route-meta {
+  font-size: 18px;
+}
+
+.truck-board {
+  gap: 7px;
+}
+
+.truck-model {
+  font-size: 19px;
+}
+
+.truck-plate {
+  font-size: 14px;
+  padding: 2px 7px;
+}
+
+.truck-head-stats {
+  gap: 8px;
+}
+
+.truck-health {
+  font-size: 15px;
+  padding: 2px 8px;
+}
+
+.truck-odometer {
+  font-size: 18px;
+}
+
+.truck-sensor-grid {
+  gap: 7px;
+}
+
+.truck-sensor-cell {
+  padding: 6px 9px;
+  gap: 3px;
+}
+
+.truck-sensor-label {
+  font-size: 13px;
+}
+
+.truck-sensor-value {
+  font-size: 18.5px;
+}
+
+.track-label {
+  font-size: 16px;
+}
+
+.track-text {
+  font-size: 22px;
+}
+
+.eq-bars {
+  height: 20px;
+  padding: 3px 6px;
+  gap: 3px;
+}
+
+.eq-bar {
+  width: 3px;
+  height: 13px;
+}
+
+.socials-strip {
+  height: 34px;
+  padding-top: 8px;
+}
+
+.social-badge {
+  font-size: 15px;
+}
+
+.social-handle {
+  font-size: 18px;
+}
+
+/* Чат (24px–26px, высокая читаемость со смартфона) */
+.chat-channels {
+  font-size: 16px;
+}
+
+.chat-viewport {
+  padding: 14px 16px 16px;
+  gap: 12px;
+}
+
+.chat-msg {
+  padding: 11px 14px 11px 16px;
+  border-left-width: 3px;
+  border-radius: 8px;
+}
+
+.chat-platform-tag,
+.chat-role-badge {
+  font-size: 14px;
+  padding: 2px 6px;
+}
+
+.chat-author {
+  font-size: 23px;
+}
+
+.chat-text {
+  font-size: 24px;
+  line-height: 1.36;
+}
+
+/* Алерты бортового компьютера (крупный формат) */
+.alert-card {
+  padding: 16px 20px 18px;
+  border-left-width: 6px;
+}
+
+.alert-code {
+  font-size: 16px;
+}
+
+.alert-badge {
+  font-size: 22px;
+  padding: 4px 12px;
+}
+
+.alert-user {
+  font-size: 30px;
+}
+
+.alert-subtitle {
+  font-size: 17px;
+}
+
+.alert-message {
+  margin-top: 8px;
+  font-size: 23px;
+  line-height: 1.38;
+}
+
+.alert-progress-track {
+  height: 4px;
+}
+
+/* Направляющие Safe Zones (?guides=1) */
+.guide-safe-top {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--safe-top);
+}
+
+.guide-safe-bottom {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--safe-bottom);
+}
+
+.guide-safe-right {
+  top: var(--safe-top);
+  bottom: var(--safe-bottom);
+  right: 0;
+  width: var(--safe-right);
+}
+
+.guide-vertical-road {
+  top: calc(var(--safe-top) + 372px);
+  bottom: calc(var(--safe-bottom) + 410px);
+  left: var(--safe-left);
+  right: calc(var(--safe-right) + 12px);
+}

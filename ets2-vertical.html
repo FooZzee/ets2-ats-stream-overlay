@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080, initial-scale=1.0">
+  <title>ETS2 / ATS Truck Cabin Overlay — Vertical (1080×1920)</title>
+
+  <link rel="stylesheet" href="./assets/css/fonts.css">
+  <link rel="stylesheet" href="./assets/css/ets2-base.css">
+  <link rel="stylesheet" href="./assets/css/ets2-vertical.css">
+</head>
+<body>
+  <main class="scene-vertical" aria-label="ETS2 Vertical Mobile Stream Overlay">
+
+    <div class="vertical-safe-frame">
+
+      <!-- ВЕРХНЯЯ БЕЗОПАСНАЯ ПОЛОСА (ниже 140px): камера + статус/трек + живая телеметрия -->
+      <section class="vertical-top-stack" aria-label="Камера, статус и телеметрия">
+        <div class="vertical-top-cluster">
+          <div class="vertical-left-col">
+            <div class="cam-box" id="cam-box">
+              <div class="cam-hud-bar">
+                <div class="cam-hud-left">
+                  <span class="status-led" aria-hidden="true"></span>
+                  <span class="obc-micro-tag" id="cam-driver-label">CAM // STREAMER</span>
+                </div>
+                <div class="cam-hud-right">
+                  <span class="cam-cb-badge" id="cam-cb-badge">CB 19</span>
+                  <span class="cam-clock" id="cam-clock">--:--</span>
+                </div>
+              </div>
+              <span class="cam-corner cam-corner--tl" aria-hidden="true"></span>
+              <span class="cam-corner cam-corner--tr" aria-hidden="true"></span>
+              <span class="cam-corner cam-corner--bl" aria-hidden="true"></span>
+              <span class="cam-corner cam-corner--br" aria-hidden="true"></span>
+            </div>
+
+            <aside class="obc-panel real-eta-panel is-offline" id="real-eta-panel" aria-label="Реальное время в пути">
+              <div class="real-eta-body">
+                <span class="real-eta-label">
+                  <span class="status-led" aria-hidden="true"></span>
+                  <span data-i18n="realEtaLabel">РЕАЛЬНОЕ ВРЕМЯ В ПУТИ:</span>
+                </span>
+                <span class="real-eta-value" id="real-eta-value">--</span>
+              </div>
+            </aside>
+          </div>
+
+          <div class="obc-panel telemetry-deck">
+            <div class="obc-header">
+              <div class="obc-micro-tag obc-micro-tag--accent">
+                <span class="status-led" aria-hidden="true"></span>
+                <span>LIVE // ROUTE</span>
+              </div>
+              <div class="obc-driver-pill" id="driver-tag">DRIVER: STREAMER</div>
+            </div>
+
+            <div class="telemetry-body">
+              <div class="telemetry-row">
+                <div class="route-main">
+                  <span class="route-badge" id="route-badge">ETS2 // ATS</span>
+                  <span class="route-value" id="route-value">--</span>
+                </div>
+                <span class="route-meta" id="route-meta">--</span>
+              </div>
+
+              <div class="telemetry-divider"></div>
+
+              <div class="truck-board is-offline" id="truck-board" aria-label="Бортовые датчики тягача">
+                <div class="truck-board-head">
+                  <div class="truck-identity">
+                    <span class="truck-model" id="lt-truck-model">TRUCK // STANDBY</span>
+                    <span class="truck-plate is-empty" id="lt-truck-plate"></span>
+                  </div>
+                  <div class="truck-head-stats">
+                    <span class="truck-health is-detached" id="lt-truck-health" title="Техническое состояние тягача">СОСТ: --</span>
+                    <span class="truck-odometer" id="lt-truck-odometer">-- КМ</span>
+                  </div>
+                </div>
+
+                <div class="truck-sensor-grid">
+                  <div class="truck-sensor-cell">
+                    <span class="truck-sensor-label" data-i18n="fuelAvg">РАСХОД</span>
+                    <span class="truck-sensor-value" id="lt-sensor-fuel-avg">--</span>
+                  </div>
+                  <div class="truck-sensor-cell">
+                    <span class="truck-sensor-label" data-i18n="oilWater">МАСЛО / ВОДА</span>
+                    <span class="truck-sensor-value" id="lt-sensor-temps">--</span>
+                  </div>
+                  <div class="truck-sensor-cell">
+                    <span class="truck-sensor-label" data-i18n="air">ВОЗДУХ</span>
+                    <span class="truck-sensor-value" id="lt-sensor-air">--</span>
+                  </div>
+                  <div class="truck-sensor-cell">
+                    <span class="truck-sensor-label" data-i18n="adblue">ADBLUE</span>
+                    <span class="truck-sensor-value" id="lt-sensor-adblue">--</span>
+                  </div>
+                  <div class="truck-sensor-cell">
+                    <span class="truck-sensor-label" data-i18n="battery">АКБ</span>
+                    <span class="truck-sensor-value" id="lt-sensor-battery">--</span>
+                  </div>
+                  <div class="truck-sensor-cell">
+                    <span class="truck-sensor-label" data-i18n="range">ЗАПАС ХОДА</span>
+                    <span class="truck-sensor-value" id="lt-sensor-range">--</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="telemetry-divider"></div>
+
+              <div class="track-row" id="track-row">
+                <div class="eq-bars" id="eq-bars" aria-hidden="true">
+                  <span class="eq-bar"></span>
+                  <span class="eq-bar"></span>
+                  <span class="eq-bar"></span>
+                </div>
+                <div class="track-info">
+                  <span class="track-label">TRACK</span>
+                  <span class="track-text">
+                    <span id="track-title">TRUCK CABIN FM</span><span class="track-artist" id="track-artist"></span>
+                  </span>
+                </div>
+              </div>
+
+              <div class="socials-strip is-hidden" id="socials-strip"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Плашка живой телеметрии (всегда видна на экране; при отсутствии сигнала показывает прочерки) -->
+        <div class="obc-panel live-telemetry-panel is-offline" id="live-telemetry-panel" aria-label="Телеметрия грузовика">
+          <div class="lt-body">
+            <div class="lt-primary">
+              <div class="lt-speed-block" id="lt-speed-block">
+                <span class="lt-speed-val" id="lt-speed">--</span>
+                <span class="lt-speed-unit" data-i18n="kmh">КМ/Ч</span>
+                <span class="lt-rpm-meta" id="lt-rpm-text">-- RPM</span>
+              </div>
+              <div class="lt-badges">
+                <span class="lt-limit-sign is-inactive" id="lt-limit" title="Лимит скорости">--</span>
+                <span class="lt-pill lt-pill--cruise" id="lt-cruise">CC --</span>
+                <span class="lt-pill lt-pill--gear" id="lt-gear">--</span>
+              </div>
+            </div>
+
+            <div class="lt-indicators" id="lt-indicators" aria-label="Индикаторы приборной панели">
+              <span class="lt-ind lt-ind--blink" id="lt-ind-blink-l" title="Левый поворотник">◀</span>
+              <div class="lt-ind-cluster">
+                <span class="lt-ind lt-ind--green" id="lt-ind-park" title="Габариты">
+                  <svg viewBox="0 0 16 12" aria-hidden="true"><path d="M7 2C4.8 2 3.5 3.8 3.5 6S4.8 10 7 10V2Zm2 0C11.2 2 12.5 3.8 12.5 6S11.2 10 9 10V2Z" fill="currentColor"/><path d="M1 4h1.5M1 6h1.5M1 8h1.5M13.5 4H15M13.5 6H15M13.5 8H15" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                </span>
+                <span class="lt-ind lt-ind--green" id="lt-ind-low" title="Ближний свет">
+                  <svg viewBox="0 0 16 12" aria-hidden="true"><path d="M8 2.5C11.2 2.5 13 4 13 6s-1.8 3.5-5 3.5H7v-7h1Z" fill="currentColor"/><path d="M1.5 5l3.8 1.2M1.5 7.5l3.8 1.2M1.5 10l3.8 1.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                </span>
+                <span class="lt-ind lt-ind--blue" id="lt-ind-high" title="Дальний свет">
+                  <svg viewBox="0 0 16 12" aria-hidden="true"><path d="M8 2.5C11.2 2.5 13 4 13 6s-1.8 3.5-5 3.5H7v-7h1Z" fill="currentColor"/><path d="M1.5 3.5h4M1.5 6h4M1.5 8.5h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                </span>
+                <span class="lt-ind lt-ind--amber" id="lt-ind-beacon" title="Проблесковый маячок">
+                  <svg viewBox="0 0 14 12" aria-hidden="true"><path d="M4.5 9.5V6.2a2.5 2.5 0 0 1 5 0v3.3H4.5Z" fill="currentColor"/><rect x="3" y="9.5" width="8" height="1.8" rx="0.7" fill="currentColor"/><path d="M7 1v1.4M2.8 2.8l1 1M11.2 2.8l-1 1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                </span>
+                <span class="lt-ind lt-ind--green" id="lt-ind-cruise" title="Круиз-контроль">
+                  <svg viewBox="0 0 16 12" aria-hidden="true"><path d="M2.8 9.6a5.4 5.4 0 0 1 10.4 0" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M8 9.2L10.8 5.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="9.4" r="1.2" fill="currentColor"/><path d="M12.4 2.7l1.8 1.3-1.8 1.3" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <span class="lt-ind-sep" aria-hidden="true"></span>
+                <span class="lt-ind lt-ind--text lt-ind--red" id="lt-ind-park-brake" title="Стояночный тормоз">(P)</span>
+                <span class="lt-ind lt-ind--text lt-ind--amber" id="lt-ind-retarder" title="Ретардер / моторный тормоз">RET</span>
+                <span class="lt-ind-sep" aria-hidden="true"></span>
+                <span class="lt-ind lt-ind--amber" id="lt-ind-fuel-warn" title="Мало топлива">
+                  <svg viewBox="0 0 14 12" aria-hidden="true"><path d="M3 2.5A1 1 0 0 1 4 1.5h4a1 1 0 0 1 1 1V10H3V2.5Zm1.5 1v2.5h3V3.5h-3Z" fill="currentColor"/><path d="M9 4.5h1.3l.7 1.2V9a.8.8 0 0 1-.8.8h-.4" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <span class="lt-ind lt-ind--text lt-ind--red" id="lt-ind-air-warn" title="Низкое давление воздуха">AIR!</span>
+              </div>
+              <span class="lt-ind lt-ind--blink" id="lt-ind-blink-r" title="Правый поворотник">▶</span>
+            </div>
+
+            <div class="lt-rpm-track" aria-hidden="true">
+              <div class="lt-rpm-fill" id="lt-rpm-fill"></div>
+            </div>
+
+            <div class="lt-metrics">
+              <div class="lt-chip">
+                <span class="lt-chip-label" data-i18n="fuel">ТОПЛИВО</span>
+                <span class="lt-chip-value" id="lt-fuel">--</span>
+              </div>
+              <div class="lt-chip">
+                <span class="lt-chip-label" data-i18n="route">МАРШРУТ</span>
+                <span class="lt-chip-value" id="lt-nav">--</span>
+              </div>
+              <div class="lt-chip lt-chip--cargo" id="lt-cargo-chip">
+                <span class="lt-chip-label" data-i18n="trailer">ПРИЦЕП</span>
+                <span class="lt-chip-value" id="lt-cargo">--</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- НИЖНЯЯ БЕЗОПАСНАЯ ПОЛОСА (выше 1550px, левее правых 110px): FIFO-алерты + чат -->
+      <section class="vertical-bottom-cluster" aria-label="Уведомления и чат">
+        <aside class="alert-dock" id="alert-dock" aria-live="polite"></aside>
+
+        <div class="obc-panel chat-panel">
+          <div class="obc-header">
+            <div class="obc-micro-tag obc-micro-tag--accent">
+              <span class="status-led" aria-hidden="true"></span>
+              <span>COMMS // CHAT</span>
+            </div>
+            <span class="chat-channels" id="chat-channels-label">STANDBY</span>
+          </div>
+          <div class="chat-viewport" id="chat-viewport"></div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ТЕСТОВАЯ КАРТА БЕЗОПАСНЫХ ЗОН (?guides=1 или toggleGuides()) -->
+    <div class="hud-guides" aria-hidden="true">
+      <div class="hud-guide-zone hud-guide-zone--safe guide-safe-top">TOP SYSTEM SAFE ZONE (0–140PX)</div>
+      <div class="hud-guide-zone hud-guide-zone--safe guide-safe-bottom">BOTTOM UI SAFE ZONE (1550–1920PX)</div>
+      <div class="hud-guide-zone hud-guide-zone--safe guide-safe-right">RIGHT ACTION BUTTONS (110PX)</div>
+      <div class="hud-guide-zone guide-vertical-road">CENTER CABIN / ROAD VIEW // CLEAR</div>
+    </div>
+
+  </main>
+
+  <script src="./config.js" onerror="window.OVERLAY_CONFIG=window.OVERLAY_CONFIG||{}"></script>
+  <script src="./assets/js/ets2-config.js"></script>
+  <script src="./assets/js/ets2-alerts.js"></script>
+  <script src="./assets/js/ets2-chat.js"></script>
+  <script src="./assets/js/ets2-telemetry.js"></script>
+</body>
+</html>
