@@ -29,10 +29,10 @@ A bilingual (`EN` / `RU`), native **SCS Telemetry SDK 1.16** cockpit HUD overlay
 2. Toggle **`English (EN)`** / **`Русский (RU)`** in the top header (switches wizard text immediately and writes `lang` to `config.js`).
 3. Confirm the overlay installation directory (default: `C:\ETS2-ATS-Stream-Overlay`).
 4. Keep **Euro Truck Simulator 2** and/or **American Truck Simulator** checked — the wizard auto-detects Steam libraries via Windows Registry (`HKCU:\Software\Valve\Steam`) & `libraryfolders.vdf` (or browse manually to the game root, `bin\win_x64`, or `plugins`) and copies **`scs_direct_telemetry.dll`** into `...\bin\win_x64\plugins\`.
-5. Enter your **Streamer Nickname** and **Twitch Channel**, keep the **`ETS2-ATS Overlay Bridge`** Desktop shortcut checked, and click **`Install`**.
+5. Enter your **Streamer Nickname**, **Twitch Channel**, and optionally your **DonationAlerts Token** (masked by default with a **Show / Hide** toggle; found in DonationAlerts *Account Settings -> Secret Token*), keep the **`ETS2-ATS Overlay Bridge`** Desktop shortcut checked, and click **`Install`**.
 
 ### 4. Manual Setup & Configuration (`config.js`)
-1. Copy `config.example.js` to **`config.js`** and edit `lang`, `ets2.driverName`, `channels.twitch.channelName`, and `theme.cockpitPreset` (`'amber'` or `'ice'`).
+1. Copy `config.example.js` to **`config.js`** and edit `lang`, `ets2.driverName`, `channels.twitch.channelName`, `channels.donationAlerts` (`{ enabled: true, socketToken: 'YOUR_TOKEN' }` for live donation alerts above the dashboard), and `theme.cockpitPreset` (`'amber'` or `'ice'`).
 2. Copy `./redist/scs_direct_telemetry.dll` to `<GameDir>\bin\win_x64\plugins\scs_direct_telemetry.dll`.
 3. URL query overrides: `?lang=en|ru`, `?theme=amber|ice`, `?cam=0`, `?test=1`, `?guides=1`.
 
@@ -72,10 +72,10 @@ A bilingual (`EN` / `RU`), native **SCS Telemetry SDK 1.16** cockpit HUD overlay
 2. В шапке окна выберите **`English (EN)`** или **`Русский (RU)`** (мгновенно переводит установщик и сохраняет `lang` в `config.js`).
 3. Выберите папку установки (по умолчанию `C:\ETS2-ATS-Stream-Overlay`).
 4. Отметьте **Euro Truck Simulator 2** и/или **American Truck Simulator** — установщик автоматически найдёт игры через реестр Steam и `libraryfolders.vdf` (или укажите корень игры / `bin\win_x64` / `plugins` через `Обзор...`) и установит **`scs_direct_telemetry.dll`** в `...\bin\win_x64\plugins\`.
-5. Укажите **Никнейм стримера** и **Канал Twitch**, оставьте ярлык **`ETS2-ATS Overlay Bridge`** на Рабочем столе и нажмите **`Установить`**.
+5. Укажите **Никнейм стримера**, **Канал Twitch** и при желании **Токен DonationAlerts** (по умолчанию скрыт звёздочками, кнопка **Показать / Скрыть**; берётся в DonationAlerts: *Настройки аккаунта -> Секретный токен*), оставьте ярлык **`ETS2-ATS Overlay Bridge`** на Рабочем столе и нажмите **`Установить`**.
 
 ### 4. Ручная установка и настройка (`config.js`)
-1. Скопируйте `config.example.js` в **`config.js`** и настройте `lang`, `ets2.driverName`, `channels.twitch.channelName` и `theme.cockpitPreset` (`'amber'` или `'ice'`).
+1. Скопируйте `config.example.js` в **`config.js`** и настройте `lang`, `ets2.driverName`, `channels.twitch.channelName`, `channels.donationAlerts` (`{ enabled: true, socketToken: 'ВАШ_ТОКЕН' }` для вывода донат-алертов над торпедой) и `theme.cockpitPreset` (`'amber'` или `'ice'`).
 2. Скопируйте `./redist/scs_direct_telemetry.dll` в `<Папка игры>\bin\win_x64\plugins\scs_direct_telemetry.dll`.
 3. URL-параметры в OBS: `?lang=ru|en`, `?theme=amber|ice`, `?cam=0`, `?test=1`, `?guides=1`.
 

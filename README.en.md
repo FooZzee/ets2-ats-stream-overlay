@@ -42,7 +42,7 @@ A sleek, native **SCS Telemetry SDK 1.16** browser overlay for **OBS Studio**, p
 4. Check **Euro Truck Simulator 2** and/or **American Truck Simulator** to install `scs_direct_telemetry.dll`:
    - The wizard automatically scans Windows Registry (`HKCU:\Software\Valve\Steam`) and Steam `libraryfolders.vdf` across all drives.
    - If browsing manually, you can select the game root folder, `bin\win_x64`, or `bin\win_x64\plugins` — the installer resolves `...\bin\win_x64\plugins` automatically and creates the `plugins` folder if missing.
-5. Fill in your **Streamer Profile** (`Streamer Nickname` and `Twitch Channel`).
+5. Fill in your **Streamer Profile** (`Streamer Nickname`, `Twitch Channel`, and optionally `DonationAlerts Token` — masked for stream safety with a `Show` / `Hide` button; copy it from DonationAlerts *Account Settings -> Secret Token* to show live donation alerts above the dashboard).
 6. Keep **`Create Desktop Shortcut ("ETS2-ATS Overlay Bridge")`** checked and click **`Install`**.
 
 ---
@@ -59,6 +59,7 @@ If you prefer manual installation:
    - `lang`: `'en'` or `'ru'`
    - `ets2.driverName`: Your driver callsign shown on `CAM // ...` and `DRIVER: ...`
    - `channels.twitch`: `{ enabled: true, channelName: 'your_channel', oauthToken: '', clientId: '' }`
+   - `channels.donationAlerts`: `{ enabled: true, socketToken: 'YOUR_SECRET_TOKEN' }` (optional, enables live donation alerts above the dashboard)
    - `theme.cockpitPreset`: `'amber'` or `'ice'`
 4. Optional URL query parameters in OBS Browser Source:
    - `?lang=en` or `?lang=ru` — override language

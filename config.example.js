@@ -27,7 +27,7 @@ window.OVERLAY_CONFIG = {
     },
     donationAlerts: {
       enabled: false,
-      socketToken: ''
+      socketToken: '' // Account Settings -> Secret Token / Настройки аккаунта -> Секретный токен
     },
     obsWebSocket: {
       enabled: false,
