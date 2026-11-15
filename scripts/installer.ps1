@@ -47,6 +47,7 @@ $Strings = @{
     FooterHint       = "OBS Desktop: 1920x1080 (ets2-desktop.html)`r`nWebcam: 346x195 px (16:9) • left: 24 • top: 180"
     BtnCancel        = 'Close'
     BtnInstall       = 'Install'
+    BtnSupport       = '💖 SUPPORT PROJECT'
     AuthorPrefix     = 'Created by FooZzee'
     LinkWebsite      = 'Website (foozzee.ru)'
     LinkTwitch       = 'Twitch'
@@ -107,6 +108,7 @@ $Strings = @{
     FooterHint       = "OBS Desktop: 1920x1080 (ets2-desktop.html)`r`nКамера: 346x195 px (16:9) • left: 24 • top: 180"
     BtnCancel        = 'Закрыть'
     BtnInstall       = 'Установить'
+    BtnSupport       = '💖 ПОДДЕРЖАТЬ ПРОЕКТ'
     AuthorPrefix     = 'Автор проекта: FooZzee'
     LinkWebsite      = 'Сайт (foozzee.ru)'
     LinkTwitch       = 'Twitch'
@@ -659,7 +661,7 @@ $fSmall   = [System.Drawing.Font]::new('Segoe UI', 8, [System.Drawing.FontStyle]
 $fBtnBold = [System.Drawing.Font]::new('Segoe UI', 9.5, [System.Drawing.FontStyle]::Bold)
 
 $form = [System.Windows.Forms.Form]::new()
-$form.ClientSize = [System.Drawing.Size]::new(720, 666)
+$form.ClientSize = [System.Drawing.Size]::new(720, 672)
 $form.StartPosition = 'CenterScreen'
 $form.FormBorderStyle = 'FixedDialog'
 $form.MaximizeBox = $false
@@ -903,7 +905,7 @@ $form.Controls.Add($btnInstall)
 
 # Author Footer Strip
 $pnlAuthor = [System.Windows.Forms.Panel]::new()
-$pnlAuthor.SetBounds(0, 598, 720, 68)
+$pnlAuthor.SetBounds(0, 598, 720, 74)
 $pnlAuthor.BackColor = $cHeader
 $form.Controls.Add($pnlAuthor)
 
@@ -913,16 +915,39 @@ $pnlAuthorLine.BackColor = [System.Drawing.Color]::FromArgb(42, 54, 72)
 $pnlAuthor.Controls.Add($pnlAuthorLine)
 
 $lblAuthor = [System.Windows.Forms.Label]::new()
-$lblAuthor.SetBounds(18, 8, 684, 18)
+$lblAuthor.SetBounds(18, 10, 430, 20)
 $lblAuthor.Font = [System.Drawing.Font]::new('Segoe UI', 8.5, [System.Drawing.FontStyle]::Bold)
 $lblAuthor.ForeColor = $cMuted
 $pnlAuthor.Controls.Add($lblAuthor)
 
-$lnkWebsite  = New-LinkButton 18  30 162 28 'https://foozzee.ru/'
-$lnkTwitch   = New-LinkButton 188 30 118 28 'https://www.twitch.tv/foozzee'
-$lnkYouTube  = New-LinkButton 314 30 122 28 'https://www.youtube.com/@foozzee'
-$lnkTelegram = New-LinkButton 444 30 126 28 'https://t.me/foozzeestream'
-$lnkVk       = New-LinkButton 578 30 124 28 'https://vk.ru/gtfun'
+# Support Project Button (DonationAlerts)
+$btnSupport = [System.Windows.Forms.Button]::new()
+$btnSupport.SetBounds(462, 6, 240, 28)
+$btnSupport.FlatStyle = 'Flat'
+$btnSupport.FlatAppearance.BorderColor = [System.Drawing.Color]::FromArgb(234, 88, 12)
+$btnSupport.FlatAppearance.BorderSize = 1
+$btnSupport.BackColor = [System.Drawing.Color]::FromArgb(38, 20, 10)
+$btnSupport.ForeColor = [System.Drawing.Color]::FromArgb(255, 140, 50)
+$btnSupport.Font = [System.Drawing.Font]::new('Segoe UI', 8.5, [System.Drawing.FontStyle]::Bold)
+$btnSupport.Cursor = [System.Windows.Forms.Cursors]::Hand
+$btnSupport.Add_Click({
+  [System.Diagnostics.Process]::Start('https://www.donationalerts.com/r/foozzee')
+})
+$btnSupport.Add_MouseEnter({
+  $btnSupport.BackColor = [System.Drawing.Color]::FromArgb(234, 88, 12)
+  $btnSupport.ForeColor = [System.Drawing.Color]::White
+})
+$btnSupport.Add_MouseLeave({
+  $btnSupport.BackColor = [System.Drawing.Color]::FromArgb(38, 20, 10)
+  $btnSupport.ForeColor = [System.Drawing.Color]::FromArgb(255, 140, 50)
+})
+$pnlAuthor.Controls.Add($btnSupport)
+
+$lnkWebsite  = New-LinkButton 18  38 142 26 'https://foozzee.ru/'
+$lnkTwitch   = New-LinkButton 166 38 110 26 'https://www.twitch.tv/foozzee'
+$lnkYouTube  = New-LinkButton 282 38 114 26 'https://www.youtube.com/@foozzee'
+$lnkTelegram = New-LinkButton 402 38 120 26 'https://t.me/foozzeestream'
+$lnkVk       = New-LinkButton 528 38 108 26 'https://vk.ru/gtfun'
 
 $pnlAuthor.Controls.Add($lnkWebsite)
 $pnlAuthor.Controls.Add($lnkTwitch)
@@ -965,6 +990,7 @@ function Apply-UiLanguage {
   $lblFooterHint.Text    = $L.FooterHint
   $btnCancel.Text        = $L.BtnCancel
   $btnInstall.Text       = $L.BtnInstall
+  $btnSupport.Text       = $L.BtnSupport
   $lblAuthor.Text        = $L.AuthorPrefix
   $lnkWebsite.Text       = $L.LinkWebsite
   $lnkTwitch.Text        = $L.LinkTwitch

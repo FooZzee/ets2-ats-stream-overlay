@@ -51,7 +51,11 @@ flowchart LR
 2. Extract the archive into any folder (e.g. `C:\ETS2-ATS-Stream-Overlay`).
 3. Run **`Install-Overlay.bat`**, enter your Twitch username and DonationAlerts token, and click **Install**.
 4. Double-click the **`ETS2-ATS Overlay Bridge`** Desktop shortcut before streaming.
-5. In OBS Studio, add a **Browser Source** pointing to `ets2-desktop.html` (`1920 × 1080`).
+5. In OBS Studio, add a **Browser Source** (1920×1080).
+   * > [!WARNING]
+     > **CRITICAL OBS SETTING:** **UNCHECK "Local file" (Локальный файл)!** Add the overlay strictly via the **"URL" (Ссылка)** field (`D:\html\Overlay\ets2-desktop.html`). If "Local file" is checked, OBS sandbox restrictions will **break interactive cockpit controls, Pip-Boy update buttons, and external links**.
+   * Use OBS **Interact (Взаимодействовать)** to click buttons on the HUD.
+   * Support the project anytime via the **«💖 SUPPORT PROJECT»** button in the installer.
 
 ### 🎥 OBS Studio Placement
 * **Webcam Dimensions:** Width **`346 px`**, Height **`195 px`** (`16:9`).
@@ -79,7 +83,11 @@ flowchart LR
 2. Распакуйте архив в удобную папку (например, `C:\ETS2-ATS-Stream-Overlay`).
 3. Запустите **`Install-Overlay.bat`**, введите никнейм Twitch и токен DonationAlerts, затем нажмите **Установить**.
 4. Перед началом стрима запустите ярлык на Рабочем столе: **`ETS2-ATS Overlay Bridge`**.
-5. В OBS Studio создайте источник **Браузер (Browser Source)** и выберите `ets2-desktop.html` (`1920 × 1080`).
+5. В OBS Studio создайте источник **Браузер (Browser Source)** (`1920 × 1080`):
+   * > [!WARNING]
+     > **ОБЯЗАТЕЛЬНО СНИМИТЕ ГАЛОЧКУ «Локальный файл»!** Добавляйте оверлей строго через строку **«Ссылка» (URL)** (`D:\html\Overlay\ets2-desktop.html`). Если оставить галочку «Локальный файл», OBS заблокирует песочницу, и **интерактивная приборная панель, окно обновлений Pip-Boy и ссылки работать НЕ БУДУТ**.
+   * Для нажатия на кнопки используйте пункт меню OBS **«Взаимодействовать» (Interact)**.
+   * Поддержать проект можно в любой момент прямо из установщика по кнопке **«💖 ПОДДЕРЖАТЬ ПРОЕКТ»**.
 
 ### 🎥 Размещение веб-камеры в OBS Studio
 * **Размеры камеры:** Ширина **`346 px`**, Высота **`195 px`** (`16:9`).

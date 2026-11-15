@@ -137,6 +137,7 @@ flowchart LR
    * Enter your **Streamer Nickname**, **Twitch Channel**, and optionally your secret **DonationAlerts Token**.
    * Click **`Install`**.
 4. The wizard will automatically copy `scs_direct_telemetry.dll` into each game's `bin\win_x64\plugins` folder, generate your `config.js`, and create the **`ETS2-ATS Overlay Bridge`** Desktop shortcut.
+   * You can also use the **«💖 SUPPORT PROJECT»** button in the installer's footer to support the creator on DonationAlerts.
 
 ---
 
@@ -185,11 +186,17 @@ window.OVERLAY_CONFIG = {
 ## 🎥 OBS Studio Scene Configuration
 
 1. **Start the Telemetry Bridge:** Double-click the Desktop shortcut **`ETS2-ATS Overlay Bridge`** (`start-telemetry.bat`). A terminal window will open hosting `http://127.0.0.1:30002/telemetry`.
-2. **Add Browser Source in OBS:**
-   * Source Type: **Browser Source**.
-   * Local file: Browse and select `ets2-desktop.html` (or `ets2-vertical.html` for mobile).
-   * Resolution: **`1920 × 1080`** (or **`1080 × 1920`** for vertical).
-   * Check: *«Shutdown source when not visible»* & *«Refresh browser when scene becomes active»*.
+2. **Add Browser Source in OBS (MUST USE "URL" — UNCHECK "LOCAL FILE"):**
+   * In OBS Sources, click **`+`** and choose **Browser Source**.
+   * > [!WARNING]
+     > **CRITICAL OBS CONFIGURATION:** **UNCHECK the "Local file" (Локальный файл) checkbox!**  
+     > The overlay must be added strictly via the **"URL" (Ссылка)** field. If loaded with "Local file" checked, OBS isolates the page in a restricted file sandbox: **interactive cockpit controls, Pip-Boy update buttons, and external links will NOT work**.
+   * In the **`URL` (Ссылка)** field, enter the full path to the HTML file:  
+     `D:\html\Overlay\ets2-desktop.html` *(or `C:\ETS2-ATS-Stream-Overlay\ets2-desktop.html`)*  
+     *(for mobile vertical scene: path to `ets2-vertical.html`)*.
+   * **Resolution:** Width **`1920`**, Height **`1080`** *(for vertical: **`1080`** × **`1920`**)*.
+   * Check: **«Refresh browser when scene becomes active»** & **«Shutdown source when not visible»**.
+   * **Interactive Controls:** To click buttons on the HUD (such as Pip-Boy update buttons or social links), right-click the Browser Source in OBS and select **«Interact» (Взаимодействовать)**.
 3. **Webcam Positioning (Desktop Scene):**
    * Dimensions: Width **`346 px`**, Height **`195 px`** (`16:9` ratio).
    * Coordinates: X (Left) = **`24 px`**, Y (Top) = **`180 px`**.
