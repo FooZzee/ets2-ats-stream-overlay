@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Модуль телеметрии кабины ETS2 / ATS (scs_direct_telemetry.dll SCS SDK 1.16 Shared Memory -> HTTP 30002),
  * локализации RU/EN, синхронизации config.js, 2-рядной торпеды и тестового режима (?test=1).
  */
@@ -26,34 +26,56 @@
       h: 'Ч',
       hShort: 'ч',
       mShort: 'м',
+      barUnit: 'бар',
+      voltUnit: 'В',
+      rpm: 'ОБ/МИН',
+      rpmStandby: '-- ОБ/МИН',
+      cruisePill: 'КК',
+      cruiseStandby: 'КК --',
+      cruiseOn: 'КК ВКЛ',
       fuel: 'ТОПЛИВО',
       range: 'ЗАПАС ХОДА',
       fuelAvg: 'РАСХОД',
       oilWater: 'МАСЛО/ВОДА',
       air: 'ВОЗДУХ',
-      adblue: 'ADBLUE',
+      adblue: 'МОЧЕВИНА',
       battery: 'АКБ',
       route: 'МАРШРУТ',
       trailer: 'ПРИЦЕП',
       throttle: 'ГАЗ',
       brake: 'ТОРМ',
       steer: 'РУЛЬ',
+      camTitle: 'КАМЕРА // FOOZZEE',
+      camPrefix: 'КАМЕРА',
+      cbDefault: 'РАЦИЯ 19',
+      chatTitle: 'РАЦИЯ // ЧАТ',
+      chatLive: 'TWITCH // В ЭФИРЕ',
+      chatTest: 'ТЕСТ // В ЭФИРЕ',
+      chatStandby: 'ОЖИДАНИЕ',
+      chatOnline: 'В СЕТИ',
+      chatOffline: 'НЕ В СЕТИ',
+      chatConnecting: 'ПОДКЛЮЧЕНИЕ',
+      driverPrefix: 'ВОДИТЕЛЬ',
+      driverPill: 'ВОДИТЕЛЬ: FOOZZEE',
+      liveRouteTag: 'ЭФИР // МАРШРУТ',
       truckPrefix: 'СОСТ:',
       trailerPrefix: 'ПРИЦЕП:',
       cargoPrefix: 'ГРУЗ:',
+      truckStandby: 'ТЯГАЧ // ОЖИДАНИЕ',
       freeRoam: 'СВОБОДНЫЙ РЕЙС',
       trailerAttachedEmpty: 'С ПРИЦЕПОМ (ПУСТОЙ)',
       noTrailer: 'БЕЗ ПРИЦЕПА',
       coachPassengerRoute: 'ПАССАЖИРСКИЙ РЕЙС',
       coachPassengerTitle: 'Пассажирский рейс DLC Coaches',
+      comfortLabel: 'КОМФОРТ',
       gpsRouteNextStop: 'МАРШРУТ GPS // СЛЕДУЮЩАЯ ОСТАНОВКА',
       gpsRouteTitle: 'Навигация по маршруту GPS',
-      statusInTransit: 'В РЕЙСЕ // ОНЛАЙН',
-      statusFreeRoam: 'СВОБОДНАЯ ЕЗДА // ОНЛАЙН',
+      statusInTransit: 'В РЕЙСЕ // В ЭФИРЕ',
+      statusFreeRoam: 'СВОБОДНАЯ ЕЗДА // В СЕТИ',
       statusPaused: 'ПАУЗА // В МЕНЮ',
-      statusStandby: 'STANDBY // ОЖИДАНИЕ',
+      statusStandby: 'ОЖИДАНИЕ // ОФЛАЙН',
       enRouteMeta: 'В РЕЙСЕ',
-      liveMeta: 'ОНЛАЙН',
+      liveMeta: 'В ЭФИРЕ',
       tickerIncome: 'ОПЛАТА:',
       tickerCompanies: 'КОМПАНИИ:',
       tickerJobType: 'ТИП ЗАКАЗА:',
@@ -95,6 +117,13 @@
       h: 'H',
       hShort: 'h',
       mShort: 'm',
+      barUnit: 'bar',
+      voltUnit: 'V',
+      rpm: 'RPM',
+      rpmStandby: '-- RPM',
+      cruisePill: 'CC',
+      cruiseStandby: 'CC --',
+      cruiseOn: 'CC ON',
       fuel: 'FUEL',
       range: 'RANGE',
       fuelAvg: 'FUEL AVG',
@@ -107,18 +136,33 @@
       throttle: 'THR',
       brake: 'BRK',
       steer: 'STR',
+      camTitle: 'CAM // FOOZZEE',
+      camPrefix: 'CAM',
+      cbDefault: 'CB 19',
+      chatTitle: 'COMMS // CHAT',
+      chatLive: 'TWITCH // LIVE',
+      chatTest: 'TEST // LIVE',
+      chatStandby: 'STANDBY',
+      chatOnline: 'ONLINE',
+      chatOffline: 'OFFLINE',
+      chatConnecting: 'CONNECTING',
+      driverPrefix: 'DRIVER',
+      driverPill: 'DRIVER: FOOZZEE',
+      liveRouteTag: 'LIVE // ROUTE',
       truckPrefix: 'TRUCK:',
       trailerPrefix: 'TRAILER:',
       cargoPrefix: 'CARGO:',
+      truckStandby: 'TRUCK // STANDBY',
       freeRoam: 'FREE ROAM',
       trailerAttachedEmpty: 'TRAILER ATTACHED (EMPTY)',
       noTrailer: 'NO TRAILER',
-      coachPassengerRoute: 'COACH // PASSENGER ROUTE',
+      coachPassengerRoute: 'PASSENGERS',
       coachPassengerTitle: 'DLC Coaches passenger route',
+      comfortLabel: 'SATISFACTION',
       gpsRouteNextStop: 'GPS ROUTE // NEXT STOP',
       gpsRouteTitle: 'Active GPS route navigation',
       statusInTransit: 'IN TRANSIT // LIVE',
-      statusFreeRoam: 'FREE ROAM // LIVE',
+      statusFreeRoam: 'FREE ROAM // ONLINE',
       statusPaused: 'PAUSED // IN MENU',
       statusStandby: 'STANDBY // OFFLINE',
       enRouteMeta: 'EN ROUTE',
@@ -200,7 +244,7 @@
   const tickerNodeCache = new Map();
   const lastTickerValues = Object.create(null);
 
-  const SAMPLE_CHAT_POOL = [
+  const SAMPLE_CHAT_POOL_RU = [
     { platform: 'twitch', role: 'MOD', username: 'Alex_Trucker', color: '#ff9e1b', text: 'Отличный маршрут по автобану! Какой груз везёшь до Праги?' },
     { platform: 'twitch', role: 'VIP', username: 'DimaVolga', color: '#38bdf8', text: 'Картинка супер, панель вообще не перекрывает зеркала F2!' },
     { platform: 'twitch', role: 'SUB', username: 'Ksenia_Road', color: '#22c55e', text: 'Всем хорошего рейса и зелёных светофоров без штрафов' },
@@ -209,13 +253,26 @@
     { platform: 'twitch', role: 'SUB', username: 'NordicHaul', color: '#86efac', text: 'Звук турбины и музыка в кабине прям кайф 🔥' }
   ];
 
+  const SAMPLE_CHAT_POOL_EN = [
+    { platform: 'twitch', role: 'MOD', username: 'Alex_Trucker', color: '#ff9e1b', text: 'Great highway route! What cargo are you hauling to Prague?' },
+    { platform: 'twitch', role: 'VIP', username: 'HighwayKing', color: '#38bdf8', text: 'Layout is awesome, overlay does not block F2 mirrors at all!' },
+    { platform: 'twitch', role: 'SUB', username: 'Sarah_Hauler', color: '#22c55e', text: 'Have a smooth haul everyone and keep the rubber side down!' },
+    { platform: 'twitch', role: '', username: 'PeterbiltFan', color: '#93c5fd', text: 'Scania pulls uphill with ease, how many tons are in the trailer?' },
+    { platform: 'twitch', role: '', username: 'Maverick_ETS', color: '#f59e0b', text: 'Cruise at 85 and let us roll into the sunset!' },
+    { platform: 'twitch', role: 'SUB', username: 'NordicHaul', color: '#86efac', text: 'Turbo spool and cabin sound are so satisfying 🔥' }
+  ];
+
+  const SAMPLE_CHAT_POOL = lang === 'en' ? SAMPLE_CHAT_POOL_EN : SAMPLE_CHAT_POOL_RU;
+
   const SAMPLE_ALERTS = {
     donate: {
       type: 'donate',
-      username: 'Даниил_Дальнобой',
-      amount: 500,
-      currency: '₽',
-      message: 'На полный бак дизеля и безлимитный кофе на ночной трассе!',
+      username: lang === 'en' ? 'Daniel_Trucker' : 'Даниил_Дальнобой',
+      amount: lang === 'en' ? 10 : 500,
+      currency: lang === 'en' ? '$' : '₽',
+      message: lang === 'en'
+        ? 'For a full diesel tank and endless coffee on the night highway!'
+        : 'На полный бак дизеля и безлимитный кофе на ночной трассе!',
       force: true
     },
     sub: {
@@ -223,7 +280,9 @@
       username: 'Ksenia_Road',
       months: 6,
       tier: 'TIER 1',
-      message: 'Продлила лицензию дальнобойщика на 6 месяцев!',
+      message: lang === 'en'
+        ? 'Renewed trucker license for 6 months!'
+        : 'Продлила лицензию дальнобойщика на 6 месяцев!',
       force: true
     },
     follow: {
@@ -277,9 +336,9 @@
     batteryWarn: false,
     trailer: { connected: true },
     trip: {
-      cargo: 'Электроника',
-      source: { city: 'Гамбург', company: 'EuroGoodies' },
-      destination: { city: 'Прага', company: 'Transinet' },
+      cargo: lang === 'en' ? 'Electronics' : 'Электроника',
+      source: { city: lang === 'en' ? 'Hamburg' : 'Гамбург', company: 'EuroGoodies' },
+      destination: { city: lang === 'en' ? 'Prague' : 'Прага', company: 'Transinet' },
       cargoMassKg: 22100,
       plannedDistanceKm: 642,
       income: 24850,
@@ -291,9 +350,9 @@
     },
     cfg: {
       game: 'ets2',
-      source: { city: 'Гамбург', company: 'EuroGoodies' },
-      destination: { city: 'Прага', company: 'Transinet' },
-      cargo: { name: 'Электроника', mass: 22100 },
+      source: { city: lang === 'en' ? 'Hamburg' : 'Гамбург', company: 'EuroGoodies' },
+      destination: { city: lang === 'en' ? 'Prague' : 'Прага', company: 'Transinet' },
+      cargo: { name: lang === 'en' ? 'Electronics' : 'Электроника', mass: 22100 },
       planned_distance: { km: 642 },
       income: 24850,
       job: { market: 'freight_market' }
@@ -368,17 +427,19 @@
 
     const driverPill = global.document.getElementById('driver-tag');
     if (driverPill) {
-      driverPill.textContent = `DRIVER: ${cleanName}`;
+      driverPill.textContent = `${t('driverPrefix')}: ${cleanName}`;
     }
 
     const camDriverEl = global.document.getElementById('cam-driver-label');
     if (camDriverEl) {
-      camDriverEl.textContent = `CAM // ${cleanName}`;
+      camDriverEl.textContent = `${t('camPrefix')} // ${cleanName}`;
     }
 
     const cbEl = global.document.getElementById('cam-cb-badge');
     if (cbEl) {
-      cbEl.textContent = (config.webcam && config.webcam.cbChannel) ? String(config.webcam.cbChannel) : 'CB 19';
+      cbEl.textContent = (config.webcam && config.webcam.cbChannel && !app.isPlaceholder(config.webcam.cbChannel))
+        ? String(config.webcam.cbChannel)
+        : t('cbDefault');
     }
   }
 
@@ -683,7 +744,7 @@
 
     if (speedEl) speedEl.textContent = '--';
     if (speedBlockEl) speedBlockEl.classList.remove('is-overspeed');
-    if (rpmTextEl) rpmTextEl.textContent = '-- RPM';
+    if (rpmTextEl) rpmTextEl.textContent = t('rpmStandby');
     if (rpmFillEl) {
       rpmFillEl.style.transform = 'scaleX(0)';
       rpmFillEl.classList.remove('is-redline');
@@ -693,7 +754,7 @@
       limitEl.classList.add('is-inactive');
     }
     if (cruiseEl) {
-      cruiseEl.textContent = 'CC --';
+      cruiseEl.textContent = t('cruiseStandby');
       cruiseEl.classList.remove('is-active');
     }
     if (gearEl) gearEl.textContent = '--';
@@ -716,7 +777,7 @@
       setRouteDisplay('--', '--', (config.ets2 && config.ets2.routeTag) || 'ETS2 // ATS');
     }
 
-    if (truckModelEl) truckModelEl.textContent = 'TRUCK // STANDBY';
+    if (truckModelEl) truckModelEl.textContent = t('truckStandby');
     if (truckPlateEl) {
       truckPlateEl.textContent = '';
       truckPlateEl.classList.add('is-empty');
@@ -982,6 +1043,726 @@
     return '';
   }
 
+  const INVALID_PLACE_NAMES = new Set([
+    'city', 'viewpoint', 'viewpoints', 'stop', 'stops', 'bus_stop',
+    'station', 'landmark', 'scenic', 'null', 'undefined', 'none', 'n/a', '-', '--'
+  ]);
+
+  function cleanStopOrPlaceIdentifier(raw) {
+    if (!raw || typeof raw !== 'string') return '';
+    let s = raw.trim();
+
+    // 1. Очистка технических префиксов автобусных остановок и станций (DLC Coaches)
+    s = s.replace(/^(?:stop|station|terminal)[._\-\s]+/i, '');
+
+    // 2. Очистка технических суффиксов остановок и терминалов
+    s = s.replace(/[._\-\s]+(?:bus[._\-\s]*(?:station|stop)|terminal|station)$/i, '');
+
+    // 3. Очистка завершающих цифровых индексов вроде .01, _01, .1
+    s = s.replace(/[._\-\s]+\d+$/i, '');
+
+    // 4. Очистка начальных цифровых индексов вроде 01. или 1_
+    s = s.replace(/^\d+[._\-\s]+/i, '');
+
+    // 5. Замена подчёркиваний на пробелы и нормализация пробелов
+    s = s.replace(/_+/g, ' ').replace(/\s+/g, ' ').trim();
+
+    if (INVALID_PLACE_NAMES.has(s.toLowerCase())) return '';
+    return s;
+  }
+
+  function isValidPlaceName(str) {
+    if (typeof str !== 'string') return false;
+    const clean = str.trim();
+    if (!clean) return false;
+    const cleanedStop = cleanStopOrPlaceIdentifier(clean);
+    if (!cleanedStop) return false;
+    return !INVALID_PLACE_NAMES.has(clean.toLowerCase()) && !INVALID_PLACE_NAMES.has(cleanedStop.toLowerCase());
+  }
+
+  function pickValidPlaceText(candidates) {
+    for (let i = 0; i < candidates.length; i += 1) {
+      if (typeof candidates[i] !== 'string') continue;
+      const clean = candidates[i].trim();
+      if (isValidPlaceName(clean)) {
+        return clean;
+      }
+    }
+    return '';
+  }
+
+  /* ==========================================================================
+     СЛОВАРЬ ГОРОДОВ И ОСТАНОВОК ETS2 / ATS (RU / EN)
+     ========================================================================== */
+  const CITIES_DB = {
+    // Германия (ETS2)
+    berlin: { ru: 'Берлин', en: 'Berlin' },
+    hamburg: { ru: 'Гамбург', en: 'Hamburg' },
+    munchen: { ru: 'Мюнхен', en: 'Munich' },
+    munich: { ru: 'Мюнхен', en: 'Munich' },
+    frankfurt: { ru: 'Франкфурт-на-Майне', en: 'Frankfurt am Main' },
+    frankfurtammain: { ru: 'Франкфурт-на-Майне', en: 'Frankfurt am Main' },
+    koln: { ru: 'Кёльн', en: 'Cologne' },
+    cologne: { ru: 'Кёльн', en: 'Cologne' },
+    stuttgart: { ru: 'Штутгарт', en: 'Stuttgart' },
+    leipzig: { ru: 'Лейпциг', en: 'Leipzig' },
+    dresden: { ru: 'Дрезден', en: 'Dresden' },
+    nurnberg: { ru: 'Нюрнберг', en: 'Nuremberg' },
+    nuremberg: { ru: 'Нюрнберг', en: 'Nuremberg' },
+    bremen: { ru: 'Бремен', en: 'Bremen' },
+    dortmund: { ru: 'Дортмунд', en: 'Dortmund' },
+    dusseldorf: { ru: 'Дюссельдорф', en: 'Düsseldorf' },
+    hannover: { ru: 'Ганновер', en: 'Hannover' },
+    rostock: { ru: 'Росток', en: 'Rostock' },
+    kiel: { ru: 'Киль', en: 'Kiel' },
+    magdeburg: { ru: 'Магдебург', en: 'Magdeburg' },
+    erfurt: { ru: 'Эрфурт', en: 'Erfurt' },
+    kassel: { ru: 'Кассель', en: 'Kassel' },
+    mannheim: { ru: 'Мангейм', en: 'Mannheim' },
+    duisburg: { ru: 'Дуйсбург', en: 'Duisburg' },
+    osnabruck: { ru: 'Оснабрюк', en: 'Osnabrück' },
+
+    // Франция (ETS2)
+    paris: { ru: 'Париж', en: 'Paris' },
+    lyon: { ru: 'Лион', en: 'Lyon' },
+    marseille: { ru: 'Марсель', en: 'Marseille' },
+    toulouse: { ru: 'Тулуза', en: 'Toulouse' },
+    nice: { ru: 'Ницца', en: 'Nice' },
+    nantes: { ru: 'Нант', en: 'Nantes' },
+    strasbourg: { ru: 'Страсбург', en: 'Strasbourg' },
+    montpellier: { ru: 'Монпелье', en: 'Montpellier' },
+    bordeaux: { ru: 'Бордо', en: 'Bordeaux' },
+    lille: { ru: 'Лилль', en: 'Lille' },
+    rennes: { ru: 'Ренн', en: 'Rennes' },
+    reims: { ru: 'Реймс', en: 'Reims' },
+    lehavre: { ru: 'Гавр', en: 'Le Havre' },
+    brest: { ru: 'Брест', en: 'Brest' },
+    calais: { ru: 'Кале', en: 'Calais' },
+    dijon: { ru: 'Дижон', en: 'Dijon' },
+    metz: { ru: 'Мец', en: 'Metz' },
+    limoges: { ru: 'Лимож', en: 'Limoges' },
+    clermontferrand: { ru: 'Клермон-Ферран', en: 'Clermont-Ferrand' },
+    lemans: { ru: 'Ле-Ман', en: 'Le Mans' },
+    larochelle: { ru: 'Ла-Рошель', en: 'La Rochelle' },
+    bourges: { ru: 'Бурж', en: 'Bourges' },
+
+    // Великобритания (ETS2)
+    london: { ru: 'Лондон', en: 'London' },
+    birmingham: { ru: 'Бирмингем', en: 'Birmingham' },
+    manchester: { ru: 'Манчестер', en: 'Manchester' },
+    glasgow: { ru: 'Глазго', en: 'Glasgow' },
+    edinburgh: { ru: 'Эдинбург', en: 'Edinburgh' },
+    liverpool: { ru: 'Ливерпуль', en: 'Liverpool' },
+    bristol: { ru: 'Бристоль', en: 'Bristol' },
+    sheffield: { ru: 'Шеффилд', en: 'Sheffield' },
+    leeds: { ru: 'Лидс', en: 'Leeds' },
+    newcastle: { ru: 'Ньюкасл', en: 'Newcastle' },
+    aberdeen: { ru: 'Абердин', en: 'Aberdeen' },
+    cardiff: { ru: 'Кардифф', en: 'Cardiff' },
+    swansea: { ru: 'Суонси', en: 'Swansea' },
+    plymouth: { ru: 'Плимут', en: 'Plymouth' },
+    southampton: { ru: 'Саутгемптон', en: 'Southampton' },
+    dover: { ru: 'Дувр', en: 'Dover' },
+    felixstowe: { ru: 'Феликстоу', en: 'Felixstowe' },
+    cambridge: { ru: 'Кембридж', en: 'Cambridge' },
+    carlisle: { ru: 'Карлайл', en: 'Carlisle' },
+    grimsby: { ru: 'Гримсби', en: 'Grimsby' },
+
+    // Италия (ETS2)
+    roma: { ru: 'Рим', en: 'Rome' },
+    rome: { ru: 'Рим', en: 'Rome' },
+    milano: { ru: 'Милан', en: 'Milan' },
+    milan: { ru: 'Милан', en: 'Milan' },
+    napoli: { ru: 'Неаполь', en: 'Naples' },
+    naples: { ru: 'Неаполь', en: 'Naples' },
+    torino: { ru: 'Турин', en: 'Turin' },
+    turin: { ru: 'Турин', en: 'Turin' },
+    firenze: { ru: 'Флоренция', en: 'Florence' },
+    florence: { ru: 'Флоренция', en: 'Florence' },
+    venezia: { ru: 'Венеция', en: 'Venice' },
+    venice: { ru: 'Венеция', en: 'Venice' },
+    bologna: { ru: 'Болонья', en: 'Bologna' },
+    genova: { ru: 'Генуя', en: 'Genoa' },
+    genoa: { ru: 'Генуя', en: 'Genoa' },
+    verona: { ru: 'Верона', en: 'Verona' },
+    palermo: { ru: 'Палермо', en: 'Palermo' },
+    catania: { ru: 'Катания', en: 'Catania' },
+    messina: { ru: 'Мессина', en: 'Messina' },
+    bari: { ru: 'Бари', en: 'Bari' },
+    taranto: { ru: 'Таранто', en: 'Taranto' },
+    ancona: { ru: 'Анкона', en: 'Ancona' },
+    trieste: { ru: 'Триест', en: 'Trieste' },
+    parma: { ru: 'Парма', en: 'Parma' },
+    livorno: { ru: 'Ливорно', en: 'Livorno' },
+    cagliari: { ru: 'Кальяри', en: 'Cagliari' },
+    sassari: { ru: 'Сассари', en: 'Sassari' },
+    pescara: { ru: 'Пескара', en: 'Pescara' },
+
+    // Чехия и Словакия (ETS2)
+    praha: { ru: 'Прага', en: 'Prague' },
+    prague: { ru: 'Прага', en: 'Prague' },
+    brno: { ru: 'Брно', en: 'Brno' },
+    ostrava: { ru: 'Острава', en: 'Ostrava' },
+    plzen: { ru: 'Пльзень', en: 'Plzeň' },
+    bratislava: { ru: 'Братислава', en: 'Bratislava' },
+    kosice: { ru: 'Кошице', en: 'Košice' },
+    banskabystrica: { ru: 'Банска-Бистрица', en: 'Banská Bystrica' },
+
+    // Польша (ETS2)
+    warszawa: { ru: 'Варшава', en: 'Warsaw' },
+    warsaw: { ru: 'Варшава', en: 'Warsaw' },
+    krakow: { ru: 'Краков', en: 'Kraków' },
+    lodz: { ru: 'Лодзь', en: 'Łódź' },
+    wroclaw: { ru: 'Вроцлав', en: 'Wrocław' },
+    poznan: { ru: 'Познань', en: 'Poznań' },
+    gdansk: { ru: 'Гданьск', en: 'Gdańsk' },
+    szczecin: { ru: 'Щецин', en: 'Szczecin' },
+    bydgoszcz: { ru: 'Быдгощ', en: 'Bydgoszcz' },
+    lublin: { ru: 'Люблин', en: 'Lublin' },
+    katowice: { ru: 'Катовице', en: 'Katowice' },
+    bialystok: { ru: 'Белосток', en: 'Białystok' },
+    olsztyn: { ru: 'Ольштын', en: 'Olsztyn' },
+
+    // Австрия и Швейцария (ETS2)
+    wien: { ru: 'Вена', en: 'Vienna' },
+    vienna: { ru: 'Вена', en: 'Vienna' },
+    graz: { ru: 'Грац', en: 'Graz' },
+    linz: { ru: 'Линц', en: 'Linz' },
+    salzburg: { ru: 'Зальцбург', en: 'Salzburg' },
+    innsbruck: { ru: 'Инсбрук', en: 'Innsbruck' },
+    klagenfurt: { ru: 'Клагенфурт', en: 'Klagenfurt' },
+    bern: { ru: 'Берн', en: 'Bern' },
+    zurich: { ru: 'Цюрих', en: 'Zurich' },
+    geneve: { ru: 'Женева', en: 'Geneva' },
+    geneva: { ru: 'Женева', en: 'Geneva' },
+    basel: { ru: 'Базель', en: 'Basel' },
+
+    // Скандинавия и Исландия (DLC Coaches & Nordic Horizons)
+    stockholm: { ru: 'Стокгольм', en: 'Stockholm' },
+    goteborg: { ru: 'Гётеборг', en: 'Gothenburg' },
+    gothenburg: { ru: 'Гётеборг', en: 'Gothenburg' },
+    malmo: { ru: 'Мальмё', en: 'Malmö' },
+    uppsala: { ru: 'Уппсала', en: 'Uppsala' },
+    jonkoping: { ru: 'Йёнчёпинг', en: 'Jönköping' },
+    linkoping: { ru: 'Линчёпинг', en: 'Linköping' },
+    orebro: { ru: 'Эребру', en: 'Örebro' },
+    vasteras: { ru: 'Вестерос', en: 'Västerås' },
+    oslo: { ru: 'Осло', en: 'Oslo' },
+    bergen: { ru: 'Берген', en: 'Bergen' },
+    stavanger: { ru: 'Ставангер', en: 'Stavanger' },
+    kristiansand: { ru: 'Кристиансанн', en: 'Kristiansand' },
+    kobenhavn: { ru: 'Копенгаген', en: 'Copenhagen' },
+    copenhagen: { ru: 'Копенгаген', en: 'Copenhagen' },
+    aarhus: { ru: 'Орхус', en: 'Aarhus' },
+    odense: { ru: 'Оденсе', en: 'Odense' },
+    aalborg: { ru: 'Ольборг', en: 'Aalborg' },
+    helsinki: { ru: 'Хельсинки', en: 'Helsinki' },
+    turku: { ru: 'Турку', en: 'Turku' },
+    tampere: { ru: 'Тампере', en: 'Tampere' },
+    lahti: { ru: 'Лахти', en: 'Lahti' },
+    oulu: { ru: 'Оулу', en: 'Oulu' },
+    vaasa: { ru: 'Вааса', en: 'Vaasa' },
+    rovaniemi: { ru: 'Рованиеми', en: 'Rovaniemi' },
+    reykjavik: { ru: 'Рейкьявик', en: 'Reykjavík' },
+    akureyri: { ru: 'Акюрейри', en: 'Akureyri' },
+    jokulsarlon: { ru: 'Йёкюльсаурлоун', en: 'Jökulsárlón' },
+    seydisfjordur: { ru: 'Сейдисфьордюр', en: 'Seyðisfjörður' },
+    vik: { ru: 'Вик', en: 'Vík' },
+    keflavik: { ru: 'Кеблавик', en: 'Keflavík' },
+    egilsstadir: { ru: 'Эгильсстадир', en: 'Egilsstaðir' },
+    isafjordur: { ru: 'Исафьордюр', en: 'Ísafjörður' },
+
+    // Страны Балтии (ETS2)
+    tallinn: { ru: 'Таллин', en: 'Tallinn' },
+    tartu: { ru: 'Тарту', en: 'Tartu' },
+    parnu: { ru: 'Пярну', en: 'Pärnu' },
+    narva: { ru: 'Нарва', en: 'Narva' },
+    riga: { ru: 'Рига', en: 'Riga' },
+    daugavpils: { ru: 'Даугавпилс', en: 'Daugavpils' },
+    liepaja: { ru: 'Лиепая', en: 'Liepāja' },
+    ventspils: { ru: 'Вентспилс', en: 'Ventspils' },
+    valmiera: { ru: 'Валмиера', en: 'Valmiera' },
+    vilnius: { ru: 'Вильнюс', en: 'Vilnius' },
+    kaunas: { ru: 'Каунас', en: 'Kaunas' },
+    klaipeda: { ru: 'Клайпеда', en: 'Klaipėda' },
+    panevezys: { ru: 'Паневежис', en: 'Panevėžys' },
+    siauliai: { ru: 'Шяуляй', en: 'Šiauliai' },
+    utena: { ru: 'Утена', en: 'Utena' },
+
+    // Балканы, Румыния, Болгария, Турция (ETS2)
+    beograd: { ru: 'Белград', en: 'Belgrade' },
+    belgrade: { ru: 'Белград', en: 'Belgrade' },
+    zagreb: { ru: 'Загреб', en: 'Zagreb' },
+    sarajevo: { ru: 'Сараево', en: 'Sarajevo' },
+    ljubljana: { ru: 'Любляна', en: 'Ljubljana' },
+    skopje: { ru: 'Скопье', en: 'Skopje' },
+    podgorica: { ru: 'Подгорица', en: 'Podgorica' },
+    pristina: { ru: 'Приштина', en: 'Pristina' },
+    tirana: { ru: 'Тирана', en: 'Tirana' },
+    sofia: { ru: 'София', en: 'Sofia' },
+    plovdiv: { ru: 'Пловдив', en: 'Plovdiv' },
+    varna: { ru: 'Варна', en: 'Varna' },
+    burgas: { ru: 'Бургас', en: 'Burgas' },
+    ruse: { ru: 'Русе', en: 'Ruse' },
+    bucuresti: { ru: 'Бухарест', en: 'Bucharest' },
+    bucharest: { ru: 'Бухарест', en: 'Bucharest' },
+    clujnapoca: { ru: 'Клуж-Напока', en: 'Cluj-Napoca' },
+    timisoara: { ru: 'Тимишоара', en: 'Timișoara' },
+    iasi: { ru: 'Яссы', en: 'Iași' },
+    constanta: { ru: 'Констанца', en: 'Constanța' },
+    brasov: { ru: 'Брашов', en: 'Brașov' },
+    craiova: { ru: 'Крайова', en: 'Craiova' },
+    galati: { ru: 'Галац', en: 'Galați' },
+    istanbul: { ru: 'Стамбул', en: 'Istanbul' },
+    edirne: { ru: 'Эдирне', en: 'Edirne' },
+    tekirdag: { ru: 'Текирдаг', en: 'Tekirdağ' },
+
+    // Греция (ETS2)
+    athens: { ru: 'Афины', en: 'Athens' },
+    athina: { ru: 'Афины', en: 'Athens' },
+    thessaloniki: { ru: 'Салоники', en: 'Thessaloniki' },
+    patras: { ru: 'Патры', en: 'Patras' },
+    patra: { ru: 'Патры', en: 'Patras' },
+    heraklion: { ru: 'Ираклион', en: 'Heraklion' },
+    irakleio: { ru: 'Ираклион', en: 'Heraklion' },
+    larissa: { ru: 'Лариса', en: 'Larissa' },
+    volos: { ru: 'Волос', en: 'Volos' },
+    rhodes: { ru: 'Родос', en: 'Rhodes' },
+    rodos: { ru: 'Родос', en: 'Rhodes' },
+    chania: { ru: 'Ханья', en: 'Chania' },
+    ioannina: { ru: 'Янина', en: 'Ioannina' },
+    kavala: { ru: 'Кавала', en: 'Kavala' },
+
+    // Пиренейский полуостров (Iberia)
+    madrid: { ru: 'Мадрид', en: 'Madrid' },
+    barcelona: { ru: 'Барселона', en: 'Barcelona' },
+    valencia: { ru: 'Валенсия', en: 'Valencia' },
+    sevilla: { ru: 'Севилья', en: 'Seville' },
+    seville: { ru: 'Севилья', en: 'Seville' },
+    zaragoza: { ru: 'Сарагоса', en: 'Zaragoza' },
+    malaga: { ru: 'Малага', en: 'Málaga' },
+    murcia: { ru: 'Мурсия', en: 'Murcia' },
+    bilbao: { ru: 'Бильбао', en: 'Bilbao' },
+    alicante: { ru: 'Аликанте', en: 'Alicante' },
+    cordoba: { ru: 'Кордова', en: 'Córdoba' },
+    valladolid: { ru: 'Вальядолид', en: 'Valladolid' },
+    vigo: { ru: 'Виго', en: 'Vigo' },
+    gijon: { ru: 'Хихон', en: 'Gijón' },
+    granada: { ru: 'Гранада', en: 'Granada' },
+    acoruna: { ru: 'Ла-Корунья', en: 'A Coruña' },
+    santander: { ru: 'Сантандер', en: 'Santander' },
+    burgos: { ru: 'Бургос', en: 'Burgos' },
+    salamanca: { ru: 'Саламанка', en: 'Salamanca' },
+    albacete: { ru: 'Альбасете', en: 'Albacete' },
+    almeria: { ru: 'Альмерия', en: 'Almería' },
+    badajoz: { ru: 'Бадахос', en: 'Badajoz' },
+    huelva: { ru: 'Уэльва', en: 'Huelva' },
+    lisboa: { ru: 'Лиссабон', en: 'Lisbon' },
+    lisbon: { ru: 'Лиссабон', en: 'Lisbon' },
+    porto: { ru: 'Порту', en: 'Porto' },
+    coimbra: { ru: 'Коимбра', en: 'Coimbra' },
+    faro: { ru: 'Фару', en: 'Faro' },
+    braga: { ru: 'Брага', en: 'Braga' },
+    evora: { ru: 'Эвора', en: 'Évora' },
+
+    // Россия (Балтика / RusMap)
+    saintpetersburg: { ru: 'Санкт-Петербург', en: 'Saint Petersburg' },
+    spb: { ru: 'Санкт-Петербург', en: 'Saint Petersburg' },
+    moscow: { ru: 'Москва', en: 'Moscow' },
+    pskov: { ru: 'Псков', en: 'Pskov' },
+    luga: { ru: 'Луга', en: 'Luga' },
+    sosnovybor: { ru: 'Сосновый Бор', en: 'Sosnovy Bor' },
+    vyborg: { ru: 'Выборг', en: 'Vyborg' },
+    velikiynovgorod: { ru: 'Великий Новгород', en: 'Veliky Novgorod' },
+    tver: { ru: 'Тверь', en: 'Tver' },
+    smolensk: { ru: 'Смоленск', en: 'Smolensk' },
+    kaluga: { ru: 'Калуга', en: 'Kaluga' },
+    bryansk: { ru: 'Брянск', en: 'Bryansk' },
+    oryol: { ru: 'Орёл', en: 'Oryol' },
+    kursk: { ru: 'Курск', en: 'Kursk' },
+    voronezh: { ru: 'Воронеж', en: 'Voronezh' },
+    rostovondon: { ru: 'Ростов-на-Дону', en: 'Rostov-on-Don' },
+
+    // США (American Truck Simulator)
+    losangeles: { ru: 'Лос-Анджелес', en: 'Los Angeles' },
+    sanfrancisco: { ru: 'Сан-Франциско', en: 'San Francisco' },
+    sandiego: { ru: 'Сан-Диего', en: 'San Diego' },
+    sacramento: { ru: 'Сакраменто', en: 'Sacramento' },
+    fresno: { ru: 'Фресно', en: 'Fresno' },
+    bakersfield: { ru: 'Бейкерсфилд', en: 'Bakersfield' },
+    oakland: { ru: 'Окленд', en: 'Oakland' },
+    sanjose: { ru: 'Сан-Хосе', en: 'San Jose' },
+    lasvegas: { ru: 'Лас-Вегас', en: 'Las Vegas' },
+    reno: { ru: 'Рино', en: 'Reno' },
+    carsoncity: { ru: 'Карсон-Сити', en: 'Carson City' },
+    elko: { ru: 'Элко', en: 'Elko' },
+    phoenix: { ru: 'Финикс', en: 'Phoenix' },
+    tucson: { ru: 'Тусон', en: 'Tucson' },
+    flagstaff: { ru: 'Флагстафф', en: 'Flagstaff' },
+    yuma: { ru: 'Юма', en: 'Yuma' },
+    albuquerque: { ru: 'Альбукерке', en: 'Albuquerque' },
+    santafe: { ru: 'Санта-Фе', en: 'Santa Fe' },
+    lascruces: { ru: 'Лас-Крусес', en: 'Las Cruces' },
+    roswell: { ru: 'Розуэлл', en: 'Roswell' },
+    portland: { ru: 'Портленд', en: 'Portland' },
+    salem: { ru: 'Сейлем', en: 'Salem' },
+    eugene: { ru: 'Юджин', en: 'Eugene' },
+    bend: { ru: 'Бенд', en: 'Bend' },
+    medford: { ru: 'Медфорд', en: 'Medford' },
+    seattle: { ru: 'Сиэтл', en: 'Seattle' },
+    spokane: { ru: 'Спокан', en: 'Spokane' },
+    tacoma: { ru: 'Такома', en: 'Tacoma' },
+    olympia: { ru: 'Олимпия', en: 'Olympia' },
+    yakima: { ru: 'Якима', en: 'Yakima' },
+    bellingham: { ru: 'Беллингхем', en: 'Bellingham' },
+    saltlakecity: { ru: 'Солт-Лейк-Сити', en: 'Salt Lake City' },
+    provo: { ru: 'Прово', en: 'Provo' },
+    ogden: { ru: 'Огден', en: 'Ogden' },
+    stgeorge: { ru: 'Сент-Джордж', en: 'St. George' },
+    boise: { ru: 'Бойсе', en: 'Boise' },
+    idahofalls: { ru: 'Айдахо-Фолс', en: 'Idaho Falls' },
+    pocatello: { ru: 'Покателло', en: 'Pocatello' },
+    twinfalls: { ru: 'Твин-Фолс', en: 'Twin Falls' },
+    denver: { ru: 'Денвер', en: 'Denver' },
+    coloradosprings: { ru: 'Колорадо-Спрингс', en: 'Colorado Springs' },
+    pueblo: { ru: 'Пуэбло', en: 'Pueblo' },
+    fortcollins: { ru: 'Форт-Коллинз', en: 'Fort Collins' },
+    grandjunction: { ru: 'Гранд-Джанкшен', en: 'Grand Junction' },
+    cheyenne: { ru: 'Шайенн', en: 'Cheyenne' },
+    casper: { ru: 'Каспер', en: 'Casper' },
+    laramie: { ru: 'Ларами', en: 'Laramie' },
+    billings: { ru: 'Биллингс', en: 'Billings' },
+    missoula: { ru: 'Мизула', en: 'Missoula' },
+    helena: { ru: 'Хелена', en: 'Helena' },
+    bozeman: { ru: 'Бозмен', en: 'Bozeman' },
+    greatfalls: { ru: 'Грейт-Фолс', en: 'Great Falls' },
+    houston: { ru: 'Хьюстон', en: 'Houston' },
+    dallas: { ru: 'Даллас', en: 'Dallas' },
+    austin: { ru: 'Остин', en: 'Austin' },
+    sanantonio: { ru: 'Сан-Антонио', en: 'San Antonio' },
+    elpaso: { ru: 'Эль-Пасо', en: 'El Paso' },
+    fortworth: { ru: 'Форт-Уэрт', en: 'Fort Worth' },
+    lubbock: { ru: 'Лаббок', en: 'Lubbock' },
+    amarillo: { ru: 'Амарилло', en: 'Amarillo' },
+    corpuschristi: { ru: 'Корпус-Кристи', en: 'Corpus Christi' },
+    laredo: { ru: 'Ларедо', en: 'Laredo' },
+    oklahomacity: { ru: 'Оклахома-Сити', en: 'Oklahoma City' },
+    tulsa: { ru: 'Талса', en: 'Tulsa' },
+    lawton: { ru: 'Лотон', en: 'Lawton' },
+    wichita: { ru: 'Уичито', en: 'Wichita' },
+    topeka: { ru: 'Топика', en: 'Topeka' },
+    kansascity: { ru: 'Канзас-Сити', en: 'Kansas City' },
+    omaha: { ru: 'Омаха', en: 'Omaha' },
+    lincoln: { ru: 'Линкольн', en: 'Lincoln' },
+    littlerock: { ru: 'Литл-Рок', en: 'Little Rock' }
+  };
+
+  const RUSSIAN_TO_ENGLISH_CITIES_DB = Object.create(null);
+  Object.keys(CITIES_DB).forEach((key) => {
+    const entry = CITIES_DB[key];
+    if (entry && entry.ru && entry.en) {
+      RUSSIAN_TO_ENGLISH_CITIES_DB[entry.ru.toLowerCase()] = entry.en;
+    }
+  });
+
+  /* ==========================================================================
+     ФОНЕТИЧЕСКАЯ ТРАНСЛИТЕРАЦИЯ (LATIN <-> CYRILLIC) ДЛЯ РЕДКИХ ГОРОДОВ И МОДОВ
+     ========================================================================== */
+  function transliterateLatinToCyrillic(str) {
+    if (!str || typeof str !== 'string') return '';
+    let text = str;
+
+    const multiMap = [
+      [/tsch/gi, 'ч'],
+      [/tion/gi, 'шн'],
+      [/sion/gi, 'жн'],
+      [/sch/gi, 'ш'],
+      [/shh/gi, 'щ'],
+      [/sh/gi, 'ш'],
+      [/ch/gi, 'ч'],
+      [/zh/gi, 'ж'],
+      [/th/gi, 'т'],
+      [/kh/gi, 'х'],
+      [/ph/gi, 'ф'],
+      [/ck/gi, 'к'],
+      [/ts/gi, 'ц'],
+      [/tz/gi, 'ц'],
+      [/qu/gi, 'кв'],
+      [/ee/gi, 'и'],
+      [/oo/gi, 'у'],
+      [/ya/gi, 'я'],
+      [/yu/gi, 'ю'],
+      [/yo/gi, 'ё'],
+      [/ye/gi, 'е'],
+      [/ei/gi, 'эй'],
+      [/ai/gi, 'ай'],
+      [/ay/gi, 'ай'],
+      [/ey/gi, 'ей'],
+      [/oy/gi, 'ой'],
+      [/ij/gi, 'ей']
+    ];
+
+    multiMap.forEach(([regex, repl]) => {
+      text = text.replace(regex, (match) => {
+        if (match === match.toUpperCase()) return repl.toUpperCase();
+        if (match[0] === match[0].toUpperCase()) return repl.charAt(0).toUpperCase() + repl.slice(1);
+        return repl;
+      });
+    });
+
+    const diacriticsMap = {
+      'ä': 'э', 'Ä': 'Э', 'ö': 'ё', 'Ö': 'Ё', 'ü': 'ю', 'Ü': 'Ю',
+      'å': 'о', 'Å': 'О', 'æ': 'э', 'Æ': 'Э', 'ø': 'ё', 'Ø': 'Ё',
+      'é': 'е', 'É': 'Е', 'è': 'е', 'È': 'Е', 'ê': 'е', 'Ê': 'Е', 'ë': 'ё', 'Ë': 'Ё',
+      'á': 'а', 'Á': 'А', 'à': 'а', 'À': 'А', 'í': 'и', 'Í': 'И', 'ó': 'о', 'Ó': 'О',
+      'ú': 'у', 'Ú': 'У', 'ý': 'и', 'Ý': 'И', 'č': 'ч', 'Č': 'Ч', 'š': 'ш', 'Š': 'Ш',
+      'ž': 'ж', 'Ž': 'Ж', 'ř': 'рж', 'Ř': 'Рж', 'ď': 'дь', 'Ď': 'Дь', 'ť': 'ть', 'Ť': 'Ть',
+      'ň': 'нь', 'Ň': 'Нь', 'ł': 'л', 'Ł': 'Л', 'ń': 'нь', 'Ń': 'Нь', 'ś': 'сь', 'Ś': 'Сь',
+      'ź': 'зь', 'Ź': 'Зь', 'ż': 'ж', 'Ż': 'Ж', 'ş': 'ш', 'Ş': 'Ш', 'ğ': 'г', 'Ğ': 'Г',
+      'ç': 'ч', 'Ç': 'Ч', 'ð': 'д', 'Ð': 'Д', 'þ': 'т', 'Þ': 'Т'
+    };
+
+    text = text.replace(/[^\u0000-\u007F]/g, (char) => diacriticsMap[char] || char);
+
+    const singleMap = {
+      'a': 'а', 'b': 'б', 'c': 'к', 'd': 'д', 'e': 'е', 'f': 'ф', 'g': 'г',
+      'h': 'х', 'i': 'и', 'j': 'й', 'k': 'к', 'l': 'л', 'm': 'м', 'n': 'н',
+      'o': 'о', 'p': 'п', 'q': 'к', 'r': 'р', 's': 'с', 't': 'т', 'u': 'у',
+      'v': 'в', 'w': 'в', 'x': 'кс', 'y': 'и', 'z': 'з',
+      'A': 'А', 'B': 'Б', 'C': 'К', 'D': 'Д', 'E': 'Е', 'F': 'Ф', 'G': 'Г',
+      'H': 'Х', 'I': 'И', 'J': 'Й', 'K': 'К', 'L': 'Л', 'M': 'М', 'N': 'Н',
+      'O': 'О', 'P': 'П', 'Q': 'К', 'R': 'Р', 'S': 'С', 'T': 'Т', 'U': 'У',
+      'V': 'В', 'W': 'В', 'X': 'Кс', 'Y': 'И', 'Z': 'З'
+    };
+
+    return text.replace(/[a-zA-Z]/g, (ch) => singleMap[ch] || ch);
+  }
+
+  function transliterateCyrillicToLatin(str) {
+    if (!str || typeof str !== 'string') return '';
+    let text = str;
+
+    const multiMap = [
+      [/щ/gi, 'shch'],
+      [/ш/gi, 'sh'],
+      [/ч/gi, 'ch'],
+      [/ж/gi, 'zh'],
+      [/х/gi, 'kh'],
+      [/ц/gi, 'ts'],
+      [/ю/gi, 'yu'],
+      [/я/gi, 'ya'],
+      [/ё/gi, 'yo']
+    ];
+
+    multiMap.forEach(([regex, repl]) => {
+      text = text.replace(regex, (match) => {
+        if (match === match.toUpperCase()) return repl.toUpperCase();
+        if (match[0] === match[0].toUpperCase()) return repl.charAt(0).toUpperCase() + repl.slice(1);
+        return repl;
+      });
+    });
+
+    const singleMap = {
+      'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'з': 'z',
+      'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o',
+      'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u', 'ф': 'f', 'ъ': '',
+      'ы': 'y', 'ь': '', 'э': 'e',
+      'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'З': 'Z',
+      'И': 'I', 'Й': 'Y', 'К': 'K', 'L': 'L', 'М': 'M', 'N': 'N', 'О': 'O',
+      'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T', 'У': 'U', 'Ф': 'F', 'Ъ': '',
+      'Ы': 'Y', 'Ь': '', 'Э': 'E'
+    };
+
+    return text.replace(/[а-яА-ЯёЁ]/g, (ch) => singleMap[ch] !== undefined ? singleMap[ch] : ch);
+  }
+
+  function formatToTitleCase(str) {
+    if (!str || typeof str !== 'string') return '';
+    return str.replace(/\b[\wа-яА-ЯёЁ]+/g, (word) => {
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    });
+  }
+
+  function normalizeCityKey(str) {
+    if (!str || typeof str !== 'string') return '';
+    return str.toLowerCase().replace(/[^a-z0-9]/g, '');
+  }
+
+  function localizePlaceName(rawDisplay, rawId, targetLang) {
+    const rawClean = cleanStopOrPlaceIdentifier(rawDisplay);
+    const idClean = cleanStopOrPlaceIdentifier(rawId);
+
+    if (!rawClean && !idClean) return '';
+
+    const effectiveTargetLang = (targetLang === 'en' || targetLang === 'ru') ? targetLang : 'ru';
+
+    const keyCandidates = [
+      normalizeCityKey(idClean),
+      normalizeCityKey(rawClean),
+      normalizeCityKey(rawId),
+      normalizeCityKey(rawDisplay)
+    ].filter(Boolean);
+
+    let dictMatch = null;
+    for (let i = 0; i < keyCandidates.length; i += 1) {
+      const k = keyCandidates[i];
+      if (CITIES_DB[k]) {
+        dictMatch = CITIES_DB[k];
+        break;
+      }
+    }
+
+    const hasCyrillicInDisplay = /[а-яё]/i.test(rawClean);
+
+    if (effectiveTargetLang === 'ru') {
+      if (hasCyrillicInDisplay) {
+        return rawClean;
+      }
+      if (dictMatch && dictMatch.ru) {
+        return dictMatch.ru;
+      }
+      const baseStr = rawClean || idClean;
+      return transliterateLatinToCyrillic(formatToTitleCase(baseStr));
+    } else {
+      if (dictMatch && dictMatch.en) {
+        return dictMatch.en;
+      }
+      if (hasCyrillicInDisplay) {
+        const ruLower = rawClean.toLowerCase();
+        if (RUSSIAN_TO_ENGLISH_CITIES_DB[ruLower]) {
+          return RUSSIAN_TO_ENGLISH_CITIES_DB[ruLower];
+        }
+        return formatToTitleCase(transliterateCyrillicToLatin(rawClean));
+      }
+      const baseStr = idClean || rawClean;
+      return formatToTitleCase(baseStr);
+    }
+  }
+
+  function cleanAndFormatStopOrCompany(rawText, targetLang) {
+    if (!rawText || typeof rawText !== 'string') return '';
+    const clean = rawText.trim();
+    if (!isValidPlaceName(clean)) return '';
+
+    const isStopToken = /^(?:stop|station|terminal)[._\-\s]+/i.test(clean) ||
+                        /[._\-\s]+(?:bus[._\-\s]*(?:station|stop)|terminal|station)$/i.test(clean) ||
+                        /^[a-z0-9]+_[a-z0-9]+$/i.test(clean);
+
+    if (isStopToken) {
+      const loc = localizePlaceName(clean, '', targetLang);
+      if (loc) return loc;
+    }
+
+    if (targetLang === 'en') {
+      if (/[а-яё]/i.test(clean)) {
+        const ruLower = clean.toLowerCase();
+        if (RUSSIAN_TO_ENGLISH_CITIES_DB[ruLower]) return RUSSIAN_TO_ENGLISH_CITIES_DB[ruLower];
+        return formatToTitleCase(transliterateCyrillicToLatin(clean));
+      }
+      return clean.replace(/_+/g, ' ').trim();
+    } else {
+      const norm = normalizeCityKey(clean);
+      if (CITIES_DB[norm] && CITIES_DB[norm].ru) {
+        return CITIES_DB[norm].ru;
+      }
+      return clean.replace(/_+/g, ' ').trim();
+    }
+  }
+
+  /* ==========================================================================
+     СЛОВАРЬ ГРУЗОВ (CARGO TRANSLATIONS)
+     ========================================================================== */
+  const CARGO_TRANSLATIONS = {
+    passengers: { ru: 'Пассажирский рейс', en: 'Passengers' },
+    passenger: { ru: 'Пассажирский рейс', en: 'Passengers' },
+    electronics: { ru: 'Электроника', en: 'Electronics' },
+    apples: { ru: 'Яблоки', en: 'Apples' },
+    cars: { ru: 'Автомобили', en: 'Cars' },
+    diesel: { ru: 'Дизель', en: 'Diesel' },
+    petrol: { ru: 'Бензин', en: 'Petrol' },
+    gasoline: { ru: 'Бензин', en: 'Gasoline' },
+    grain: { ru: 'Зерно', en: 'Grain' },
+    wheat: { ru: 'Пшеница', en: 'Wheat' },
+    barley: { ru: 'Ячмень', en: 'Barley' },
+    milk: { ru: 'Молоко', en: 'Milk' },
+    flour: { ru: 'Мука', en: 'Flour' },
+    meat: { ru: 'Мясо', en: 'Meat' },
+    pork: { ru: 'Свинина', en: 'Pork' },
+    beef: { ru: 'Говядина', en: 'Beef' },
+    chicken: { ru: 'Курица', en: 'Chicken' },
+    fish: { ru: 'Рыба', en: 'Fish' },
+    potatoes: { ru: 'Картофель', en: 'Potatoes' },
+    tomatoes: { ru: 'Помидоры', en: 'Tomatoes' },
+    sugar: { ru: 'Сахар', en: 'Sugar' },
+    salt: { ru: 'Соль', en: 'Salt' },
+    timber: { ru: 'Бревна', en: 'Timber' },
+    logs: { ru: 'Бревна', en: 'Logs' },
+    lumber: { ru: 'Пиломатериалы', en: 'Lumber' },
+    wood: { ru: 'Древесина', en: 'Wood' },
+    wood_chips: { ru: 'Древесная щепа', en: 'Wood Chips' },
+    woodchips: { ru: 'Древесная щепа', en: 'Wood Chips' },
+    gravel: { ru: 'Гравий', en: 'Gravel' },
+    sand: { ru: 'Песок', en: 'Sand' },
+    coal: { ru: 'Уголь', en: 'Coal' },
+    iron: { ru: 'Железо', en: 'Iron' },
+    steel: { ru: 'Сталь', en: 'Steel' },
+    copper: { ru: 'Медь', en: 'Copper' },
+    chemicals: { ru: 'Химикаты', en: 'Chemicals' },
+    fertilizer: { ru: 'Удобрения', en: 'Fertilizer' },
+    furniture: { ru: 'Мебель', en: 'Furniture' },
+    glass: { ru: 'Стекло', en: 'Glass' },
+    tires: { ru: 'Шины', en: 'Tires' },
+    paper: { ru: 'Бумага', en: 'Paper' },
+    beverages: { ru: 'Напитки', en: 'Beverages' },
+    clothes: { ru: 'Одежда', en: 'Clothes' },
+    toys: { ru: 'Игрушки', en: 'Toys' },
+    explosives: { ru: 'Взрывчатка', en: 'Explosives' },
+    fireworks: { ru: 'Фейерверки', en: 'Fireworks' },
+    yacht: { ru: 'Яхта', en: 'Yacht' },
+    tractor: { ru: 'Трактор', en: 'Tractor' },
+    excavator: { ru: 'Экскаватор', en: 'Excavator' },
+    bulldozer: { ru: 'Бульдозер', en: 'Bulldozer' },
+    heavy_machinery: { ru: 'Тяжелая техника', en: 'Heavy Machinery' },
+    medical_supplies: { ru: 'Медикаменты', en: 'Medical Supplies' },
+    vaccines: { ru: 'Вакцины', en: 'Vaccines' }
+  };
+
+  const RUSSIAN_TO_ENGLISH_CARGO_DB = Object.create(null);
+  Object.keys(CARGO_TRANSLATIONS).forEach((key) => {
+    const entry = CARGO_TRANSLATIONS[key];
+    if (entry && entry.ru && entry.en) {
+      RUSSIAN_TO_ENGLISH_CARGO_DB[entry.ru.toLowerCase()] = entry.en;
+    }
+  });
+
+  function localizeCargoName(rawCargo, targetLang) {
+    if (!rawCargo || typeof rawCargo !== 'string') return '';
+    const clean = rawCargo.trim();
+    if (!clean) return '';
+
+    const effectiveTargetLang = (targetLang === 'en' || targetLang === 'ru') ? targetLang : 'ru';
+    const norm = clean.toLowerCase().replace(/[\s\-_]+/g, '_');
+    const normAlpha = clean.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    const dictMatch = CARGO_TRANSLATIONS[norm] || CARGO_TRANSLATIONS[normAlpha];
+    const hasCyrillic = /[а-яё]/i.test(clean);
+
+    if (effectiveTargetLang === 'ru') {
+      if (hasCyrillic) return clean;
+      if (dictMatch && dictMatch.ru) return dictMatch.ru;
+      if (clean.toLowerCase() === 'passengers' || clean.toLowerCase() === 'passenger') return t('coachPassengerRoute');
+      return transliterateLatinToCyrillic(formatToTitleCase(clean));
+    } else {
+      if (dictMatch && dictMatch.en) return dictMatch.en;
+      if (hasCyrillic) {
+        const ruLower = clean.toLowerCase();
+        if (RUSSIAN_TO_ENGLISH_CARGO_DB[ruLower]) return RUSSIAN_TO_ENGLISH_CARGO_DB[ruLower];
+        return formatToTitleCase(transliterateCyrillicToLatin(clean));
+      }
+      return formatToTitleCase(clean.replace(/_+/g, ' '));
+    }
+  }
+
   function extractCargoFromContainer(container) {
     if (!container) return '';
     if (typeof container === 'string') {
@@ -1029,7 +1810,7 @@
     return false;
   }
 
-  function extractCargoName(data) {
+  function extractRawCargoName(data) {
     if (!data || typeof data !== 'object') return '';
     if (isContainerJobInactive(data)) return '';
 
@@ -1054,31 +1835,52 @@
     return '';
   }
 
+  function extractCargoName(data) {
+    const raw = extractRawCargoName(data);
+    if (!raw) return '';
+    return localizeCargoName(raw, lang);
+  }
+
   function resolveTrailerAndCargoState(data, jobState) {
     const cargoName = extractCargoName(data);
-    if (cargoName) {
-      const upperCargo = cargoName.toUpperCase();
-      return {
-        connected: true,
-        hasCargo: true,
-        text: upperCargo,
-        title: `${t('cargoPrefix')} ${upperCargo}`,
-        statusClass: 'is-ok'
-      };
-    }
+    const massKg = jobState && jobState.massKg;
+    const massText = (massKg !== null && massKg !== undefined && Number.isFinite(massKg) && massKg > 0)
+      ? formatCargoMassTons(massKg)
+      : '';
 
     const isCoachOrPassenger = Boolean(
       (jobState && (jobState.isCoach || (jobState.hasJob && !isTrailerConnected(data)))) ||
       (data && data.cfg && data.cfg.job && (data.cfg.job.busJob || data.cfg.job.market === 'bus_job')) ||
-      (data && (data.jobMarket === 'bus_job' || data.isBusJob))
+      (data && (data.jobMarket === 'bus_job' || data.isBusJob)) ||
+      (cargoName && (cargoName.toLowerCase().includes('пассажир') || cargoName.toLowerCase().includes('passenger')))
     );
 
     if (isCoachOrPassenger) {
+      const busSat = parseFiniteTelemetryNumber(
+        data.busSat ?? (data.tel && data.tel.busSat) ?? (data.trip && data.trip.busSat) ?? (data.cfg && data.cfg.bus && data.cfg.bus.satisfaction)
+      );
+      let passengerText = t('coachPassengerRoute');
+      if (busSat !== null && busSat > 0) {
+        const satPct = Math.round(busSat > 1 ? busSat : busSat * 100);
+        passengerText = `${t('coachPassengerRoute')} • ${t('comfortLabel')}: ${satPct}%`;
+      }
       return {
         connected: true,
         hasCargo: true,
-        text: t('coachPassengerRoute'),
+        text: passengerText,
         title: t('coachPassengerTitle'),
+        statusClass: 'is-ok'
+      };
+    }
+
+    if (cargoName) {
+      const upperCargo = cargoName.toUpperCase();
+      const cargoWithMass = massText ? `${upperCargo} • ${massText}` : upperCargo;
+      return {
+        connected: true,
+        hasCargo: true,
+        text: cargoWithMass,
+        title: `${t('cargoPrefix')} ${upperCargo}${massText ? ' (' + massText + ')' : ''}`,
         statusClass: 'is-ok'
       };
     }
@@ -1153,7 +1955,7 @@
       (cfg && cfg.licensePlate)
     );
 
-    let modelText = 'TRUCK // STANDBY';
+    let modelText = t('truckStandby');
     if (brand && name) {
       modelText = name.toLowerCase().startsWith(brand.toLowerCase())
         ? name.toUpperCase()
@@ -1204,7 +2006,7 @@
     const air = parseFiniteTelemetryNumber(rawAir);
     if (air === null || air < 0) return '--';
     const barVal = air > 20 ? air * 0.0689476 : air;
-    return `${barVal.toFixed(1)} bar`;
+    return `${barVal.toFixed(1)} ${t('barUnit')}`;
   }
 
   function formatAdblueLiters(rawAdblue) {
@@ -1216,7 +2018,7 @@
   function formatBatteryVoltage(rawBattery) {
     const val = parseFiniteTelemetryNumber(rawBattery);
     if (val === null || val < 0) return '--';
-    return `${val.toFixed(1)} V`;
+    return `${val.toFixed(1)} ${t('voltUnit')}`;
   }
 
   function formatFuelRangeKm(rawRange) {
@@ -1265,15 +2067,15 @@
       const node = candidates[i];
       if (node && typeof node === 'object') {
         const val = node[propName] ?? (propName === 'city' ? (node.name || node.city_name) : (node.company || node.station));
-        const picked = pickValidCargoText([val]);
+        const picked = pickValidPlaceText([val]);
         if (picked) return picked;
       } else if (typeof node === 'string' && propName === 'city') {
-        const picked = pickValidCargoText([node]);
+        const picked = pickValidPlaceText([node]);
         if (picked) return picked;
       }
     }
 
-    const flatPicked = pickValidCargoText([
+    const flatPicked = pickValidPlaceText([
       container[`${kind}.${propName}`],
       container[`${kind}${capProp}`],
       container[`${stopKind}.${propName}`],
@@ -1287,6 +2089,44 @@
       ? container.job
       : null;
     return jobObj ? extractEndpointFieldFromContainer(jobObj, kind, propName) : '';
+  }
+
+  function extractEndpointIdFromContainer(container, kind) {
+    if (!container || typeof container !== 'object' || isContainerJobInactive(container)) {
+      return '';
+    }
+    const stopKind = kind === 'source' ? 'source_stop' : 'destination_stop';
+    const stopKindCamel = kind === 'source' ? 'sourceStop' : 'destinationStop';
+
+    const candidates = [
+      container[`${kind}CityId`],
+      container[`${kind}.cityId`],
+      container[`${kind}.id`],
+      container[`${kind}Id`],
+      container[`${stopKindCamel}CityId`],
+      container[`${stopKind}.id`],
+      container[`${stopKindCamel}.id`],
+      container[kind] && (container[kind].cityId || container[kind].id),
+      container[stopKind] && (container[stopKind].cityId || container[stopKind].id),
+      container[stopKindCamel] && (container[stopKindCamel].cityId || container[stopKindCamel].id),
+      container.bus && container.bus[stopKindCamel] && (container.bus[stopKindCamel].cityId || container.bus[stopKindCamel].id),
+      container.bus && container.bus[kind] && (container.bus[kind].cityId || container.bus[kind].id)
+    ];
+
+    for (let i = 0; i < candidates.length; i += 1) {
+      const val = candidates[i];
+      if (typeof val === 'string' && val.trim()) {
+        const cleaned = cleanStopOrPlaceIdentifier(val);
+        if (cleaned && !INVALID_PLACE_NAMES.has(cleaned.toLowerCase())) {
+          return cleaned;
+        }
+      }
+    }
+
+    const jobObj = container.job && typeof container.job === 'object' && !isContainerJobInactive(container.job)
+      ? container.job
+      : null;
+    return jobObj ? extractEndpointIdFromContainer(jobObj, kind) : '';
   }
 
   function extractJobStringFromContainer(container, flatKeys, nestedObjKey, nestedPropKey) {
@@ -1369,6 +2209,8 @@
     const containers = resolveActiveJobContainers(data);
     let srcCity = '';
     let dstCity = '';
+    let srcCityId = '';
+    let dstCityId = '';
     let srcCompany = '';
     let dstCompany = '';
     let massKg = null;
@@ -1380,6 +2222,8 @@
     containers.forEach((c) => {
       if (!srcCity) srcCity = extractEndpointFieldFromContainer(c, 'source', 'city');
       if (!dstCity) dstCity = extractEndpointFieldFromContainer(c, 'destination', 'city');
+      if (!srcCityId) srcCityId = extractEndpointIdFromContainer(c, 'source');
+      if (!dstCityId) dstCityId = extractEndpointIdFromContainer(c, 'destination');
       if (!srcCompany) srcCompany = extractEndpointFieldFromContainer(c, 'source', 'company');
       if (!dstCompany) dstCompany = extractEndpointFieldFromContainer(c, 'destination', 'company');
       if (massKg === null) {
@@ -1408,14 +2252,23 @@
       isBusJobFlag = true;
     }
 
+    // 100% раздельная локализация и очистка названий городов и остановок (RU / EN)
+    srcCity = localizePlaceName(srcCity, srcCityId, lang);
+    dstCity = localizePlaceName(dstCity, dstCityId, lang);
+    srcCompany = cleanAndFormatStopOrCompany(srcCompany, lang);
+    dstCompany = cleanAndFormatStopOrCompany(dstCompany, lang);
+
+    const effectiveSrc = srcCity || srcCompany;
+    const effectiveDst = dstCity || dstCompany;
+
     const cargoName = extractCargoName(data);
 
     // Сценарий 1: Рейс с заданным пунктом назначения/отправления (груз или автобусный маршрут)
     const hasJobFromEndpoints = Boolean(
       cargoName ||
-      (srcCity && dstCity) ||
-      dstCity ||
-      srcCity ||
+      (effectiveSrc && effectiveDst) ||
+      effectiveDst ||
+      effectiveSrc ||
       (income !== null && income > 0) ||
       (plannedKm !== null && plannedKm > 0)
     );
@@ -1434,25 +2287,31 @@
 
     const hasJob = hasJobFromEndpoints || isGpsRoute;
 
-    const massText = (!isCoach && massKg !== null) ? formatCargoMassTons(massKg) : '';
-    const suffix = massText ? ` • ${massText}` : '';
     const metaText = plannedKm !== null ? `${formatIntWithSpaces(plannedKm)} ${t('km')}` : t('enRouteMeta');
 
     let routeText = t('freeRoam');
     let routeMeta = t('liveMeta');
 
     if (hasJobFromEndpoints) {
-      if (srcCity && dstCity) {
-        routeText = `${srcCity.toUpperCase()} → ${dstCity.toUpperCase()}${suffix}`;
+      if (srcCity && dstCity && srcCity.toLowerCase() !== dstCity.toLowerCase()) {
+        routeText = `${srcCity.toUpperCase()} → ${dstCity.toUpperCase()}`;
         routeMeta = metaText;
-      } else if (dstCity && !srcCity) {
-        routeText = `→ ${dstCity.toUpperCase()}${suffix}`;
+      } else if (srcCompany && dstCompany && srcCompany.toLowerCase() !== dstCompany.toLowerCase()) {
+        routeText = (srcCity && dstCity && srcCity.toLowerCase() === dstCity.toLowerCase())
+          ? `${srcCity.toUpperCase()}: ${srcCompany.toUpperCase()} → ${dstCompany.toUpperCase()}`
+          : `${srcCompany.toUpperCase()} → ${dstCompany.toUpperCase()}`;
         routeMeta = metaText;
-      } else if (srcCity && !dstCity) {
-        routeText = `${srcCity.toUpperCase()} →${suffix}`;
+      } else if (effectiveSrc && effectiveDst) {
+        routeText = `${effectiveSrc.toUpperCase()} → ${effectiveDst.toUpperCase()}`;
+        routeMeta = metaText;
+      } else if (effectiveDst) {
+        routeText = `→ ${effectiveDst.toUpperCase()}`;
+        routeMeta = metaText;
+      } else if (effectiveSrc) {
+        routeText = `${effectiveSrc.toUpperCase()} →`;
         routeMeta = metaText;
       } else if (cargoName) {
-        routeText = `${cargoName.toUpperCase()}${suffix}`;
+        routeText = cargoName.toUpperCase();
         routeMeta = metaText;
       }
     } else if (isGpsRoute) {
@@ -1466,20 +2325,33 @@
       : (hasJobFromEndpoints ? '--' : (isGpsRoute ? '--' : t('freeRoam')));
 
     let companiesText = hasJob ? '--' : t('freeRoam');
-    if (hasJobFromEndpoints && (srcCompany || dstCompany)) {
-      if (srcCompany && dstCompany) {
-        companiesText = `${srcCompany.toUpperCase()} → ${dstCompany.toUpperCase()}`;
+    if (srcCompany && dstCompany) {
+      const compRoute = `${srcCompany.toUpperCase()} → ${dstCompany.toUpperCase()}`;
+      if (compRoute !== routeText) {
+        companiesText = compRoute;
+      } else if (isCoach) {
+        const busSat = parseFiniteTelemetryNumber(
+          data.busSat ?? (data.tel && data.tel.busSat) ?? (data.trip && data.trip.busSat) ?? (data.cfg && data.cfg.bus && data.cfg.bus.satisfaction)
+        );
+        if (busSat !== null && busSat > 0) {
+          const satPct = Math.round(busSat > 1 ? busSat : busSat * 100);
+          companiesText = `${t('comfortLabel')}: ${satPct}%`;
+        } else {
+          companiesText = t('coachPassengerRoute');
+        }
       } else {
-        companiesText = (srcCompany || dstCompany).toUpperCase();
+        companiesText = srcCompany.toUpperCase();
       }
+    } else if (srcCompany || dstCompany) {
+      const singleComp = (srcCompany || dstCompany).toUpperCase();
+      companiesText = singleComp !== routeText ? singleComp : '--';
     } else if (isCoach) {
       const busSat = parseFiniteTelemetryNumber(
         data.busSat ?? (data.tel && data.tel.busSat) ?? (data.trip && data.trip.busSat) ?? (data.cfg && data.cfg.bus && data.cfg.bus.satisfaction)
       );
       if (busSat !== null && busSat > 0) {
         const satPct = Math.round(busSat > 1 ? busSat : busSat * 100);
-        const satLabel = lang === 'en' ? 'SATISFACTION' : 'КОМФОРТ';
-        companiesText = `${satLabel}: ${satPct}%`;
+        companiesText = `${t('comfortLabel')}: ${satPct}%`;
       }
     }
 
@@ -1499,6 +2371,7 @@
       text: routeText,
       meta: routeMeta,
       tag,
+      massKg,
       plannedKm,
       incomeText,
       companiesText,
@@ -1805,7 +2678,7 @@
       speedBlockEl.classList.toggle('is-overspeed', limitKmh > 0 && speedKmh > limitKmh + 4);
     }
 
-    if (rpmTextEl) rpmTextEl.textContent = `${rpm} RPM`;
+    if (rpmTextEl) rpmTextEl.textContent = `${rpm} ${t('rpm')}`;
     if (rpmFillEl) {
       rpmFillEl.style.transform = `scaleX(${rpmRatio.toFixed(3)})`;
       rpmFillEl.classList.toggle('is-redline', rpmRatio >= 0.84);
@@ -1818,10 +2691,10 @@
 
     if (cruiseEl) {
       if (isCcActive) {
-        cruiseEl.textContent = ccSpeed > 0 ? `CC ${ccSpeed}` : 'CC ON';
+        cruiseEl.textContent = ccSpeed > 0 ? `${t('cruisePill')} ${ccSpeed}` : t('cruiseOn');
         cruiseEl.classList.add('is-active');
       } else {
-        cruiseEl.textContent = 'CC --';
+        cruiseEl.textContent = t('cruiseStandby');
         cruiseEl.classList.remove('is-active');
       }
     }

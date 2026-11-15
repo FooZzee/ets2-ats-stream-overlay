@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================================
  * PIP-BOY 3000 // GITHUB AUTO-UPDATE DETECTOR & CRT TERMINAL
  * ETS2 / ATS Cockpit Telemetry Stream Overlay

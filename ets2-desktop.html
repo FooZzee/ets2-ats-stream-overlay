@@ -29,10 +29,10 @@
       <div class="cam-hud-bar">
         <div class="cam-hud-left">
           <span class="status-led" aria-hidden="true"></span>
-          <span class="obc-micro-tag" id="cam-driver-label">CAM // FOOZZEE</span>
+          <span class="obc-micro-tag" id="cam-driver-label" data-i18n="camTitle">КАМЕРА // FOOZZEE</span>
         </div>
         <div class="cam-hud-right">
-          <span class="cam-cb-badge" id="cam-cb-badge">CB 19</span>
+          <span class="cam-cb-badge" id="cam-cb-badge" data-i18n="cbDefault">РАЦИЯ 19</span>
           <span class="cam-clock" id="cam-clock">--:--</span>
         </div>
       </div>
@@ -48,9 +48,9 @@
         <div class="obc-header">
           <div class="obc-micro-tag obc-micro-tag--accent">
             <span class="status-led" aria-hidden="true"></span>
-            <span>COMMS // CHAT</span>
+            <span data-i18n="chatTitle">РАЦИЯ // ЧАТ</span>
           </div>
-          <span class="chat-channels" id="chat-channels-label">STANDBY</span>
+          <span class="chat-channels" id="chat-channels-label" data-i18n="chatStandby">ОЖИДАНИЕ</span>
         </div>
         <div class="chat-viewport" id="chat-viewport"></div>
       </div>
@@ -71,12 +71,12 @@
                 <span class="lt-speed-unit" data-i18n="kmh">КМ/Ч</span>
               </div>
               <div class="lt-badges">
-                <span class="lt-pill lt-pill--cruise" id="lt-cruise">CC --</span>
+                <span class="lt-pill lt-pill--cruise" id="lt-cruise" data-i18n="cruiseStandby">КК --</span>
                 <span class="lt-pill lt-pill--gear" id="lt-gear">--</span>
               </div>
             </div>
             <div class="dash-rpm-row">
-              <span class="lt-rpm-meta" id="lt-rpm-text">-- RPM</span>
+              <span class="lt-rpm-meta" id="lt-rpm-text" data-i18n="rpmStandby">-- ОБ/МИН</span>
               <div class="lt-rpm-track" aria-hidden="true">
                 <div class="lt-rpm-fill" id="lt-rpm-fill"></div>
               </div>
@@ -177,7 +177,7 @@
         <div class="dash-mod dash-mod--truck is-offline" id="truck-board" aria-label="Тягач и состояние узлов">
           <div class="truck-board-head">
             <div class="truck-identity">
-              <span class="truck-model" id="lt-truck-model">TRUCK // STANDBY</span>
+              <span class="truck-model" id="lt-truck-model" data-i18n="truckStandby">ТЯГАЧ // ОЖИДАНИЕ</span>
               <span class="truck-plate is-empty" id="lt-truck-plate"></span>
             </div>
             <span class="truck-odometer" id="lt-truck-odometer">-- КМ</span>
@@ -213,7 +213,7 @@
               <span class="truck-sensor-value" id="lt-sensor-air">--</span>
             </div>
             <div class="truck-sensor-cell">
-              <span class="truck-sensor-label" data-i18n="adblue">ADBLUE</span>
+              <span class="truck-sensor-label" data-i18n="adblue">МОЧЕВИНА</span>
               <span class="truck-sensor-value" id="lt-sensor-adblue">--</span>
             </div>
             <div class="truck-sensor-cell">
@@ -269,7 +269,7 @@
             <span class="dash-game-badge is-standby" id="game-badge">--</span>
             <span class="dash-status-pill is-standby" id="game-status-pill">
               <span class="dash-status-dot" aria-hidden="true"></span>
-              <span id="game-status-text">STANDBY // ОЖИДАНИЕ</span>
+              <span id="game-status-text" data-i18n="statusStandby">ОЖИДАНИЕ // ОФЛАЙН</span>
             </span>
           </div>
           <div class="dash-socials" id="dash-socials">

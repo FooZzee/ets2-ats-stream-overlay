@@ -1,4 +1,4 @@
-﻿# 🚛 Cockpit Telemetry Stream Overlay for ETS2 & ATS
+# 🚛 Cockpit Telemetry Stream Overlay for ETS2 & ATS
 
 > **Professional broadcast cockpit HUD for OBS Studio powered by native SCS Telemetry SDK 1.16**
 

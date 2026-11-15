@@ -9,9 +9,9 @@
     lang: 'ru',
     debug: true,
     channels: {
-      twitch: { enabled: true, channelName: 'your_channel', oauthToken: '', clientId: '' },
-      vk: { enabled: false, channelUrl: '', token: '' },
-      donationAlerts: { enabled: false, socketToken: '' },
+      twitch: { enabled: true, channelName: 'foozzee', oauthToken: '', clientId: '' },
+      vk: { enabled: true, channelUrl: 'https://live.vkvideo.ru/foozzee', token: '' },
+      donationAlerts: { enabled: true, socketToken: 'CsNPR4wulOmEgXoMT4OT' },
       obsWebSocket: { enabled: false, url: 'ws://127.0.0.1:4455', password: '' }
     },
     alerts: {
@@ -33,7 +33,7 @@
       maxMessages: 30,
       messageLifetimeMs: 0,
       hideCommands: true,
-      ignoredUsers: ['Nightbot', 'StreamElements', 'Moobot']
+      ignoredUsers: ['Nightbot', 'StreamElements', 'Moobot', 'FooZzee_Bot']
     },
     theme: {
       cockpitPreset: 'amber', // 'amber' | 'ice'
@@ -53,7 +53,7 @@
       cbChannel: 'CB 19'
     },
     ets2: {
-      driverName: 'STREAMER',
+      driverName: 'FooZzee',
       routeTag: 'ETS2 // ATS',
       routeText: 'В РЕЙСЕ // ОНЛАЙН',
       routeMeta: 'CRUISE',
@@ -153,6 +153,22 @@
   const lang = resolveOverlayLanguage(params, config, rawConfig);
   config.lang = lang;
   global.document.documentElement.setAttribute('lang', lang);
+
+  if (lang === 'en') {
+    if (!rawConfig.webcam || !rawConfig.webcam.cbChannel) {
+      config.webcam.cbChannel = 'CB 19';
+    }
+    if (!rawConfig.ets2 || !rawConfig.ets2.routeText) {
+      config.ets2.routeText = 'IN TRANSIT // LIVE';
+    }
+  } else {
+    if (!rawConfig.webcam || !rawConfig.webcam.cbChannel) {
+      config.webcam.cbChannel = 'РАЦИЯ 19';
+    }
+    if (!rawConfig.ets2 || !rawConfig.ets2.routeText) {
+      config.ets2.routeText = 'В РЕЙСЕ // В ЭФИРЕ';
+    }
+  }
 
   const isTestMode = params.get('test') === '1' || params.get('test') === 'true';
   const isDebug = Boolean(config.debug) || params.get('debug') === '1' || isTestMode;

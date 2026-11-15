@@ -1,4 +1,4 @@
-﻿# 📜 Project Version History (Changelog)
+# 📜 Project Version History (Changelog)
 
 > **ETS2 / ATS Cockpit Telemetry Stream Overlay**  
 > All notable changes are documented in strict adherence to [Keep a Changelog](https://keepachangelog.com/) and [Semantic Versioning 2.0.0](https://semver.org/).
@@ -52,6 +52,22 @@
 
 #### 🎥 OBS Studio Interactive Setup Guidelines
 * Updated documentation across all README files: explicitly instructing users to **uncheck "Local file"** and add the overlay strictly via the **"URL"** field (`D:\html\Overlay\ets2-desktop.html`). This bypasses OBS sandbox restrictions and enables full interactivity for HUD buttons, links, and the Pip-Boy terminal.
+
+### 🛠 Fixed & Improved
+
+#### 🗺️ Route Display & City Localization (ETS2, ATS, DLC Coaches)
+* **Concrete Job Display in Main Dashboard Route Module:**
+  * Eliminated internal engine debug tokens (`city`, `viewpoints`, `stop`, etc.) from polluting origin and destination labels.
+  * Moved the active job title, cargo mass, and passenger comfort rating directly into the primary cockpit module (`#route-value` and `#lt-cargo`), reserving the scrolling ticker strictly for trip telemetry and economy summaries.
+* **100% Bilingual Language Separation:**
+  * In Russian mode (`lang: 'ru'`), no raw Latin city or cargo strings remain; unknown/mod cities are cleanly phonetically transliterated into Cyrillic.
+  * In English mode (`lang: 'en'`), no Cyrillic leaks even when the game is played in Russian; names are converted into clean English Title Case.
+* **Comprehensive ETS2 & ATS City Database (`CITIES_DB`):**
+  * Embedded dictionary covering hundreds of European and American cities across all expansions (Scandinavia, Iberia, West Balkans, Greece, Nordic Horizons, and US states in ATS), featuring reverse lookup and transliteration fallback.
+* **Bus Stop Prefix & Suffix Sanitation (DLC Coaches):**
+  * Automatically strips internal stop tags (`stop.`, `_bus_station`, `_terminal`, indices like `.01` or `_01`) leaving pure city and station names.
+* **SCS SDK Native Plugin & UDP Bridge ID Pipeline:**
+  * `scs_direct_telemetry.dll` and `scripts/udp-bridge.ps1` now extract and stream `cityId` / `companyId` tokens alongside localized UTF-8 names, ensuring flawless city resolution regardless of the game client's language.
 
 ---
 

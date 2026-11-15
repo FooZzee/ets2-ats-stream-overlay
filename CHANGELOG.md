@@ -1,4 +1,4 @@
-﻿# 📜 Project Version History / История версий проекта
+# 📜 Project Version History / История версий проекта
 
 > **ETS2 / ATS Cockpit Telemetry Stream Overlay**  
 > All notable changes are documented in strict adherence to [Keep a Changelog](https://keepachangelog.com/) and [Semantic Versioning 2.0.0](https://semver.org/).  
@@ -55,6 +55,14 @@
   * Added interactive button in `Install-Overlay.bat` (`scripts/installer.ps1`) opening the author's DonationAlerts page: `https://www.donationalerts.com/r/foozzee`.
 * **🎥 OBS Studio Interactive Setup Guidelines:**
   * Updated documentation across all README files: explicitly instructing users to **uncheck "Local file"** and add the overlay via **"URL"** (`D:\html\Overlay\ets2-desktop.html`) to preserve interactivity for cockpit buttons and the Pip-Boy terminal.
+
+#### 🛠 Fixed & Improved
+* **🗺️ Route Display & City Localization (ETS2, ATS, DLC Coaches):**
+  * **Concrete Job in Primary HUD Module:** Fixed technical tokens (`city`, `viewpoints`, `stop`) leaking into labels; moved the active cargo name/tons or passenger route/comfort directly into the main cockpit module (`#route-value` and `#lt-cargo`).
+  * **100% Strict Bilingual Separation:** No raw Latin remains in Russian mode, and no Cyrillic leaks in English mode regardless of game client language.
+  * **Comprehensive ETS2 & ATS City Database (`CITIES_DB`):** Embedded dictionary covering hundreds of European and American cities across all expansions, with reverse Cyrillic lookup and phonetic transliteration fallback for mod maps.
+  * **Bus Stop Prefix & Suffix Cleaning:** Automatically strips `stop.`, `_bus_station`, `_terminal`, and index tags (`.01`), displaying pure city and station names.
+  * **SCS SDK Native Plugin & UDP Bridge ID Pipeline:** `scs_direct_telemetry.dll` and `scripts/udp-bridge.ps1` now stream `cityId` / `companyId` tokens alongside localized UTF-8 names.
 
 ---
 
@@ -145,6 +153,14 @@
   * В нижнюю панель визарда `Install-Overlay.bat` (`scripts/installer.ps1`) добавлена кнопка **«💖 ПОДДЕРЖАТЬ ПРОЕКТ»** / **«💖 SUPPORT PROJECT»**, открывающая страницу DonationAlerts: `https://www.donationalerts.com/r/foozzee`.
 * **🎥 Обновление руководства по OBS Studio:**
   * Добавлено обязательное указание снимать галочку **«Локальный файл»** и подключать оверлей через строку **«Ссылка» (URL)**, что сохраняет интерактивность кнопок приборной панели, окна Pip-Boy и ссылок.
+
+#### 🛠 Исправлено и улучшено
+* **🗺️ Отображение маршрута и локализация городов (ETS2, ATS, DLC Coaches):**
+  * **Конкретный рейс в основном блоке приборной панели:** Исключено попадание технических токенов (`city`, `viewpoints`, `stop`); заказ и тип рейса (груз с массой или пассажирский рейс с комфортом) выводятся прямо в основном модуле маршрута (`#route-value` и `#lt-cargo`).
+  * **100% строгое разделение языков RU и EN:** В русском оверлее исключена латиница (города и остановки переводятся или транслитерируются в кириллицу), в английском оверлее исключена кириллица.
+  * **Обширная база городов ETS2 и ATS (`CITIES_DB`):** Встроен словарь сотен городов Европы и США со всеми дополнениями, с обратным словарем и фонетической транслитерацией для карт-модов.
+  * **Очистка служебных префиксов автобусных остановок:** Автоматическое удаление токенов `stop.`, `_bus_station`, `_terminal`, цифровых индексов (`.01` / `_01`).
+  * **Синхронизация передачи ID в плагине и мосту:** Плагин `scs_direct_telemetry.dll` и скрипт `scripts/udp-bridge.ps1` передают `cityId` / `companyId` для точной идентификации городов независимо от языка игры.
 
 ---
 

@@ -1,50 +1,47 @@
 /**
- * ETS2 / ATS Stream Overlay configuration template (Twitch-only, Native SCS SDK 1.16).
- * Copy to config.js and fill in your channel details (or run Install-Overlay.bat).
- *
- * Шаблон конфигурации оверлея ETS2 / ATS (только Twitch, прямой плагин SCS SDK 1.16).
- * Скопируйте в config.js и укажите свои данные (либо запустите Install-Overlay.bat).
+ * Шаблон конфигурации OBS Overlays.
+ * Скопируйте этот файл в config.js и заполните своими данными.
  */
 window.OVERLAY_CONFIG = {
-  // Overlay UI language / Язык интерфейса оверлея ('en' | 'ru')
-  lang: 'en',
+  // Язык интерфейса оверлея ('ru' | 'en')
+  lang: 'ru',
 
-  // Debug console logs & ?test=1 demo mode / Отладочные логи в OBS и разрешение ?test=1
+  // Режим отладки (true — выводит подробные логи в консоль OBS и разрешает ?test=1)
   debug: false,
 
-  // Channel & integration settings / Настройки каналов и интеграций
+  // Настройки каналов и подключений
   channels: {
     twitch: {
       enabled: true,
       channelName: 'YOUR_TWITCH_CHANNEL',
-      oauthToken: '', // Optional OAuth token for authenticated IRC / Опционально
-      clientId: ''
+      oauthToken: 'oauth:YOUR_TWITCH_TOKEN', // Без реального ключа в шаблоне
+      clientId: 'YOUR_TWITCH_CLIENT_ID'
     },
     vk: {
       enabled: false,
-      channelUrl: '',
-      token: ''
+      channelUrl: 'https://live.vkvideo.ru/YOUR_CHANNEL',
+      token: 'YOUR_VK_TOKEN'
     },
     donationAlerts: {
-      enabled: false,
-      socketToken: '' // Account Settings -> Secret Token / Настройки аккаунта -> Секретный токен
+      enabled: true,
+      socketToken: 'YOUR_DONATIONALERTS_TOKEN'
     },
     obsWebSocket: {
       enabled: false,
       url: 'ws://127.0.0.1:4455',
-      password: ''
+      password: 'YOUR_OBS_WS_PASSWORD'
     }
   },
 
-  // FIFO Alert Queue / Система последовательных алертов
+  // Настройки системы алертов (FIFO-очередь)
   alerts: {
-    volume: 0.65,               // Sound volume (0.0 .. 1.0) / Громкость (0.0 .. 1.0)
-    displayDurationMs: 5000,    // Alert card duration (ms) / Длительность показа (мс)
-    pauseBetweenMs: 800,        // Pause between queued alerts / Пауза между алертами
-    fallbackTimeoutMs: 10000,   // Safety unlock timeout / Страховочный таймер очереди
-    minDonateAmount: 1,         // Minimum donation amount / Минимальная сумма доната
-    ttsEnabled: false,          // Donation text-to-speech / Озвучка донатов
-    synthFallback: true,        // Built-in WebAudio chime if no .mp3 / Звуковой сигнал приборки
+    volume: 0.65,               // Общая громкость звуков (от 0.0 до 1.0)
+    displayDurationMs: 5000,    // Длительность показа одного алерта (мс)
+    pauseBetweenMs: 800,        // Пауза между алертами в очереди (мс)
+    fallbackTimeoutMs: 10000,   // Страховочный таймер принудительной разблокировки очереди
+    minDonateAmount: 50,        // Минимальная сумма доната для показа на экране (₽)
+    ttsEnabled: true,           // Озвучка текста доната
+    synthFallback: true,        // Мягкий WebAudio-сигнал приборки, если аудиофайл не найден
     sounds: {
       follow: './assets/sounds/follow.mp3',
       sub: './assets/sounds/sub.mp3',
@@ -53,18 +50,21 @@ window.OVERLAY_CONFIG = {
     }
   },
 
-  // Chat settings / Настройки чата Twitch
+  // Настройки чата
   chat: {
-    maxMessages: 30,            // Max DOM nodes / Максимум сообщений в DOM
-    messageLifetimeMs: 0,       // Auto-hide after N ms (0 = keep) / Автоскрытие (0 = откл.)
-    hideCommands: true,         // Hide '!' bot commands / Скрывать команды '!'
+    maxMessages: 30,            // Максимум сообщений в DOM (защита от утечки памяти)
+    messageLifetimeMs: 0,       // Автоудаление сообщения через N мс (0 — не удалять по таймеру)
+    hideCommands: true,         // Скрывать сообщения, начинающиеся с '!'
     ignoredUsers: ['Nightbot', 'StreamElements', 'Moobot']
   },
 
-  // Visual theme / Оформление приборной панели
+  // Визуальные параметры (переопределяют CSS-переменные :root при загрузке)
   theme: {
-    cockpitPreset: 'amber',     // 'amber' | 'ice' (янтарная | ледяная)
-    cockpitAccentColor: '',     // Optional hex override / Опциональный hex-акцент
+    fontMain: "'Inter', sans-serif",
+    fontAccent: "'Tektur', sans-serif",
+    accentColor: '#9146FF',
+    cockpitPreset: 'amber',     // Подсветка приборки ETS2/ATS: 'amber' (янтарная) | 'ice' (ледяная)
+    cockpitAccentColor: '',     // Опциональный hex-акцент (например '#ff9e1b'), пусто — из cockpitPreset
     safeZoneVertical: {
       topPx: 140,
       bottomPx: 370,
@@ -72,24 +72,24 @@ window.OVERLAY_CONFIG = {
     }
   },
 
-  // Webcam HUD frame / Рамка веб-камеры (346x195, left: 24, top: 180)
+  // Рамка веб-камеры (ETS2 / ATS)
   webcam: {
-    enabled: true,
+    enabled: true,              // false — полностью скрывает рамку камеры
     cbChannel: 'CB 19'
   },
 
-  // Onboard computer & Native SCS SDK Telemetry / Бортовой компьютер и телеметрия SCS SDK 1.16
+  // Настройки бортового компьютера ETS2 / ATS
   ets2: {
-    driverName: 'STREAMER',
+    driverName: 'YOUR_DRIVER_TAG',
     routeTag: 'ETS2 // ATS',
-    routeText: 'IN TRANSIT // LIVE',
+    routeText: 'В РЕЙСЕ // ОНЛАЙН',
     routeMeta: 'CRUISE',
     telemetryApi: {
-      enabled: true,            // Poll local bridge ./scripts/udp-bridge.ps1 (Shared Memory -> HTTP)
+      enabled: true,            // true — опрос локального HTTP-моста ./scripts/udp-bridge.ps1 (SCS SDK 1.16 Shared Memory)
       url: 'http://127.0.0.1:30002/telemetry',
-      pollIntervalMs: 300,
-      staleAfterMs: 9000,
-      offlineBackoffMaxMs: 15000,
+      pollIntervalMs: 300,      // Частота опроса при активном подключении (мс)
+      staleAfterMs: 9000,       // Таймаут неактивности моста (8–10 с), после которого статус переходит в offline
+      offlineBackoffMaxMs: 15000, // Максимальная пауза ожидания, если мост ещё не запущен
       speedUnit: 'auto',        // 'auto' | 'ms' | 'kmh'
       navDistUnit: 'auto',      // 'auto' | 'm' | 'km'
       navTimeUnit: 'auto',      // 'auto' | 's' | 'min'
@@ -98,18 +98,21 @@ window.OVERLAY_CONFIG = {
     }
   },
 
-  // Current music track widget / Виджет текущего трека (опционально OBS Tuna)
+  // Виджет текущего трека (опционально можно подключить локальный JSON от OBS Tuna)
   music: {
     enabled: true,
     title: 'TRUCK CABIN FM',
     artist: 'LIVE STREAM',
-    sourceUrl: '',
+    sourceUrl: '',              // Например 'http://127.0.0.1:1608/' (пусто — статический текст)
     pollIntervalMs: 3000
   },
 
-  // Bottom strip socials / Ротатор соцсетей (оставьте пустым, чтобы не показывать лишнее)
+  // Ротатор соцсетей в нижней панели телеметрии (оставьте пустым, чтобы скрыть полосу)
   socials: {
     switchIntervalMs: 9000,
-    items: []
+    items: [
+      // { label: 'TG', value: 't.me/YOUR_CHANNEL' },
+      // { label: 'TWITCH', value: 'twitch.tv/YOUR_CHANNEL' }
+    ]
   }
 };

@@ -271,6 +271,7 @@
       ws.addEventListener('open', () => {
         backoffMs = 3000;
         log(`Twitch IRC подключен к каналу #${channel}`);
+        updateChannelsStatus('live');
         ws.send('CAP REQ :twitch.tv/tags twitch.tv/commands');
 
         if (!isPlaceholder(tw.oauthToken)) {
@@ -348,6 +349,7 @@
 
       ws.addEventListener('close', () => {
         if (closedByPage) return;
+        updateChannelsStatus('connecting');
         warn(`Twitch IRC отключен, переподключение через ${backoffMs}мс`);
         const t = setTimeout(openSocket, backoffMs);
         reconnectTimers.push(t);
@@ -367,18 +369,28 @@
     return true;
   }
 
+  function updateChannelsStatus(statusKey) {
+    const channelsLabel = global.document.getElementById('chat-channels-label');
+    if (!channelsLabel) return;
+    const isRu = app.lang === 'ru';
+    const labels = {
+      test: isRu ? 'ТЕСТ // В ЭФИРЕ' : 'TEST // LIVE',
+      live: isRu ? 'TWITCH // В ЭФИРЕ' : 'TWITCH // LIVE',
+      standby: isRu ? 'ОЖИДАНИЕ' : 'STANDBY',
+      connecting: isRu ? 'ПОДКЛЮЧЕНИЕ' : 'CONNECTING',
+      offline: isRu ? 'НЕ В СЕТИ' : 'OFFLINE'
+    };
+    channelsLabel.textContent = labels[statusKey] || (isRu ? 'ОЖИДАНИЕ' : 'STANDBY');
+  }
+
   function initConnections() {
     const twitchActive = connectTwitchIRC();
-
-    const channelsLabel = global.document.getElementById('chat-channels-label');
-    if (channelsLabel) {
-      if (app.isTestMode) {
-        channelsLabel.textContent = 'TEST // LIVE';
-      } else if (twitchActive) {
-        channelsLabel.textContent = 'TWITCH // LIVE';
-      } else {
-        channelsLabel.textContent = 'STANDBY';
-      }
+    if (app.isTestMode) {
+      updateChannelsStatus('test');
+    } else if (twitchActive) {
+      updateChannelsStatus('connecting');
+    } else {
+      updateChannelsStatus('standby');
     }
   }
 
