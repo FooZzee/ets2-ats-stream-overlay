@@ -5,7 +5,7 @@
 
 [![Keep a Changelog](https://img.shields.io/badge/Changelog-Keep%20a%20Changelog%201.1.1-orange?style=for-the-badge&logo=git)](https://keepachangelog.com/)
 [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-blue?style=for-the-badge&logo=semver)](https://semver.org/)
-[![Latest Release](https://img.shields.io/badge/Latest-v1.1.1-green?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.1.1)
+[![Latest Release](https://img.shields.io/badge/Latest-v1.1.2-green?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.1.2)
 [![License](https://img.shields.io/badge/License-MIT-purple?style=for-the-badge)](./LICENSE)
 
 ---
@@ -16,16 +16,16 @@
 
 ## 📌 Version Index
 
-* [v1.1.1 (2026-11-15) — Pip-Boy 3000 Standalone Auto-Update Terminal, Support Button & Interactive OBS Mode](#111---2026-11-15)
+* [v1.1.2 (2026-11-15) — Pip-Boy 3000 Standalone Auto-Update Terminal, 100% Bilingual Localization & DLC Coaches](#112---2026-11-15)
 * [v1.1.0 (2026-11-15) — ETS2 DLC Coaches Support, Solid Dashboard & Enhanced SCS Telemetry](#110---2026-11-15)
 * [v1.0.0 (2026-11-12) — Initial Release (Native SCS Telemetry SDK 1.16 & Broadcast HUD)](#100---2026-11-12)
 
 ---
 
-## [1.1.1] - 2026-11-15
+## [1.1.2] - 2026-11-15
 
 > [!IMPORTANT]
-> **Release v1.1.1** introduces a standalone GitHub update detector and notification system styled as an authentic Pip-Boy 3000 (Fallout) retro terminal with synthesized typewriter and CRT audio, full bilingual adaptation (EN/RU), an interactive project support button in the GUI installer, and updated OBS Studio integration guidelines.
+> **Release v1.1.2** introduces a standalone GitHub update detector and notification system styled as an authentic Pip-Boy 3000 (Fallout) retro terminal with synthesized typewriter and CRT audio, 100% bilingual adaptation (EN/RU), built-in ETS2/ATS city & stops database with transliteration, an interactive project support button in the GUI installer, and updated OBS Studio integration guidelines.
 
 ### 🚀 Added
 
@@ -143,6 +143,6 @@ Integrated 4 new native telemetry channels into the C++ plugin (`scs_direct_tele
 * **Telegram:** [@foozzeestream](https://t.me/foozzeestream)
 * **VK:** [vk.ru/gtfun](https://vk.ru/gtfun)
 
-[1.1.1]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.0...v1.1.1
+[1.1.2]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.0...v1.1.2
 [1.1.0]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.0.0

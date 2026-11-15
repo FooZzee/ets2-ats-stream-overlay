@@ -2,7 +2,7 @@
 
 > **Профессиональный приборный HUD-оверлей для OBS Studio на базе нативного SCS Telemetry SDK 1.16**
 
-[![Релиз](https://img.shields.io/badge/Релиз-v1.1.1-orange?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases)
+[![Релиз](https://img.shields.io/badge/Релиз-v1.1.2-orange?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases)
 [![Платформа](https://img.shields.io/badge/Платформа-Windows%20x64-blue?style=for-the-badge&logo=windows)](https://www.microsoft.com/windows)
 [![SCS SDK](https://img.shields.io/badge/SCS%20SDK-v1.16%20Native-yellow?style=for-the-badge)](https://modding.scssoft.com/wiki/Documentation/Tools/Telemetry_server)
 [![DLC Coaches](https://img.shields.io/badge/ETS2-DLC%20Coaches%20Поддерживается-green?style=for-the-badge)](https://scssoft.com/)
@@ -18,7 +18,7 @@
 ## 📌 Оглавление
 
 1. [Обзор и преимущества](#-обзор-и-преимущества)
-2. [Нововведения версии 1.1.1](#-нововведения-версии-111)
+2. [Нововведения версии 1.1.2](#-нововведения-версии-112)
 3. [Архитектура и компоненты](#-архитектура-и-компоненты)
 4. [Интерфейс сцен и расположение](#-интерфейс-сцен-и-расположение)
 5. [Системные требования](#-системные-требования)
@@ -43,10 +43,10 @@
 
 ---
 
-## 🚀 Нововведения версии 1.1.1
+## 🚀 Нововведения версии 1.1.2
 
 > [!IMPORTANT]
-> **Релиз v1.1.1** добавляет автономный терминал проверки обновлений с GitHub в ретро-стиле Pip-Boy 3000 (Fallout) с синтезом звуков CRT и печатной машинки, кнопку поддержки автора в графическом установщике и обновлённые инструкции для OBS Studio.
+> **Релиз v1.1.2** добавляет автономный терминал проверки обновлений с GitHub в ретро-стиле Pip-Boy 3000 (Fallout) с синтезом звуков CRT и печатной машинки, полную 100% двуязычную адаптацию (RU/EN), встроенную базу городов и остановок ETS2/ATS с транслитерацией, кнопку поддержки автора в графическом установщике и обновлённые инструкции для OBS Studio.
 
 * 📟 **Автономный терминал обновлений Pip-Boy 3000:**
   * Фоновая проверка новых релизов через официальный GitHub API (`releases/latest`) без прерывания стрима.
@@ -108,7 +108,7 @@ flowchart LR
 
 ## ⚡ Быстрая установка (1-клик установщик)
 
-1. Скачайте архив релиза **`ETS2-ATS-Stream-Overlay-v1.1.1.zip`** из раздела [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
+1. Скачайте архив релиза **`ETS2-ATS-Stream-Overlay-v1.1.2.zip`** из раздела [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
 2. Распакуйте архив в постоянную папку (например, `C:\ETS2-ATS-Stream-Overlay`).
 3. Запустите файл **`Install-Overlay.bat`**:
    * В правом верхнем углу выберите язык: **`Русский (RU)`** или **`English (EN)`**.

@@ -5,7 +5,7 @@
 
 [![Keep a Changelog](https://img.shields.io/badge/Changelog-Keep%20a%20Changelog%201.1.1-orange?style=for-the-badge&logo=git)](https://keepachangelog.com/)
 [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-blue?style=for-the-badge&logo=semver)](https://semver.org/)
-[![Latest Release](https://img.shields.io/badge/Релиз-v1.1.1-green?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.1.1)
+[![Latest Release](https://img.shields.io/badge/Релиз-v1.1.2-green?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.1.2)
 [![License](https://img.shields.io/badge/Лицензия-MIT-purple?style=for-the-badge)](./LICENSE)
 
 ---
@@ -16,16 +16,16 @@
 
 ## 📌 Навигация по версиям
 
-* [v1.1.1 (2026-11-15) — Автономная проверка обновлений Pip-Boy 3000, кнопка поддержки и интерактивный OBS](#111---2026-11-15)
+* [v1.1.2 (2026-11-15) — Автономная проверка обновлений Pip-Boy 3000, 100% двуязычная локализация и DLC Coaches](#112---2026-11-15)
 * [v1.1.0 (2026-11-15) — Поддержка ETS2 DLC Coaches, непрозрачная торпеда и новые каналы SCS SDK](#110---2026-11-15)
 * [v1.0.0 (2026-11-12) — Первый публичный релиз (Нативный плагин SCS SDK 1.16 и приборный HUD)](#100---2026-11-12)
 
 ---
 
-## [1.1.1] - 2026-11-15
+## [1.1.2] - 2026-11-15
 
 > [!IMPORTANT]
-> **Релиз v1.1.1** добавляет встроенную автономную систему проверки обновлений с GitHub в стилистике терминала Pip-Boy 3000 (Fallout) с синтезом звуков CRT и печатной машинки, полную двуязычную адаптацию, кнопку поддержки автора в графическом установщике и обновлённые инструкции интеграции в OBS Studio.
+> **Релиз v1.1.2** добавляет встроенную автономную систему проверки обновлений с GitHub в стилистике терминала Pip-Boy 3000 (Fallout) с синтезом звуков CRT и печатной машинки, полную 100% двуязычную адаптацию (RU/EN), встроенную базу городов и остановок ETS2/ATS, кнопку поддержки автора в графическом установщике и обновлённые инструкции интеграции в OBS Studio.
 
 ### 🚀 Добавлено (Added)
 
@@ -144,6 +144,6 @@
 * **Telegram:** [@foozzeestream](https://t.me/foozzeestream)
 * **VK:** [vk.ru/gtfun](https://vk.ru/gtfun)
 
-[1.1.1]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.0...v1.1.1
+[1.1.2]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.0...v1.1.2
 [1.1.0]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.0.0
