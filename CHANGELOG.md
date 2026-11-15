@@ -1,6 +1,7 @@
-# 📜 Changelog / История версий проекта
+# 📜 Project Version History / История версий проекта
 
 > **ETS2 / ATS Cockpit Telemetry Stream Overlay**  
+> All notable changes are documented in strict adherence to [Keep a Changelog](https://keepachangelog.com/) and [Semantic Versioning 2.0.0](https://semver.org/).  
 > Все значимые изменения документируются в соответствии со стандартами [Keep a Changelog](https://keepachangelog.com/) и [Semantic Versioning 2.0.0](https://semver.org/).
 
 [![Keep a Changelog](https://img.shields.io/badge/Changelog-Keep%20a%20Changelog%201.1.0-orange?style=for-the-badge&logo=git)](https://keepachangelog.com/)
@@ -10,76 +11,137 @@
 
 ---
 
-### 🧭 Навигация по версиям / Version Index
-* [v1.1.0 (2026-11-15) — ETS2 DLC Coaches, Solid Cockpit HUD & Enhanced SCS Telemetry](#110---2026-11-15)
-* [v1.0.0 (2026-11-12) — Initial Release (Native SCS SDK 1.16 & Broadcast HUD)](#100---2026-11-12)
+### 🌐 Quick Language Jump / Выбор языка
+
+[![English Changelog](https://img.shields.io/badge/Changelog-English-2563eb?style=flat-square&logo=gitbook&logoColor=white)](#-english-changelog)
+[![Русская история версий](https://img.shields.io/badge/История_версий-Русский-dc2626?style=flat-square&logo=gitbook&logoColor=white)](#-русская-история-версий)
+[![Main README](https://img.shields.io/badge/Documentation-Main_README-10b981?style=flat-square&logo=github)](./README.md)
+
+*Standalone files / Отдельные файлы:* [English (CHANGELOG.en.md)](./CHANGELOG.en.md) • [Русский (CHANGELOG.ru.md)](./CHANGELOG.ru.md)
 
 ---
 
-## [1.1.0] - 2026-11-15
+<a id="-english-changelog"></a>
+## 🇬🇧 English Changelog
+
+### 📌 Version Index (EN)
+* [v1.1.0 (2026-11-15) — ETS2 DLC Coaches Support, Solid Dashboard & Enhanced SCS Telemetry](#110---2026-11-15-en)
+* [v1.0.0 (2026-11-12) — Initial Release (Native SCS Telemetry SDK 1.16 & Broadcast HUD)](#100---2026-11-12-en)
+
+---
+
+<a id="110---2026-11-15-en"></a>
+### [1.1.0] - 2026-11-15
 
 > [!IMPORTANT]
-> **Релиз v1.1.0** добавляет полноценную нативную поддержку пассажирских перевозок из **DLC Coaches** для Euro Truck Simulator 2, новые каналы SCS SDK, улучшает читаемость приборной панели в OBS Studio и расширяет установщик.
+> **Release v1.1.0** introduces full native support for bus passenger trips from the new **DLC Coaches** in Euro Truck Simulator 2, expands the collection of SCS SDK telemetry channels, maximizes lower cockpit HUD legibility in OBS Studio, and adds stream-safe DonationAlerts configuration to the graphical installer.
 
-### ✨ Added / Добавлено
+#### 🚀 Added
+* **🚌 Euro Truck Simulator 2 — DLC Coaches (Passenger Jobs):**
+  * Seamless detection of bus passenger trips (`bus_job`) with 100% backwards compatibility for standard freight cargo hauling in ETS2 & ATS.
+  * Direct extraction of origin and destination terminal names using official SCS SDK stop attributes (`source_stop.*` ➔ `destination_stop.*`).
+  * Real-time passenger satisfaction comfort rating display: **`SATISFACTION: XX%`** in the onboard computer ticker.
+  * Added `isBusJob` state flag and dedicated bus stop endpoint data in the bridge server and web overlay.
+* **⚡ New SCS Telemetry SDK 1.16 Channels:**
+  * Integrated 4 new native telemetry channels into `scs_direct_telemetry.dll` and `scripts/udp-bridge.ps1`:
+    * `bus_job.average_satisfaction` (`FLOAT`) — Live coach passenger satisfaction comfort rating (0.0 .. 1.0).
+    * `rest.stop` (`S32`) — Mandatory driver rest / fatigue countdown timer (in minutes).
+    * `truck.electric.enabled` (`BOOL`) — Onboard electrical system and ignition switch status.
+    * `truck.engine.enabled` (`BOOL`) — Engine operational running state.
+* **💳 DonationAlerts GUI Installer Wizard:**
+  * Added a secret DonationAlerts socket token field in `Install-Overlay.bat` (`scripts/installer.ps1`).
+  * Features stream-safe password masking (asterisks) with an interactive **Show / Hide** toggle.
+  * Automatically writes your token into `channels.donationAlerts.socketToken` in `config.js` for instant live donation alerts above the dashboard.
 
-#### 🚌 Euro Truck Simulator 2 — DLC Coaches (Пассажирские рейсы)
-* **RU:** Полная интеграция автобусных рейсов из нового **DLC Coaches** в ETS2 с сохранением 100% совместимости с грузоперевозками в ETS2 и ATS.
-  * Автоматический разбор маршрута «Откуда ➔ Куда» через официальные атрибуты остановок SCS SDK (`source_stop.*` ➔ `destination_stop.*`).
-  * Отображение показателя комфорта пассажиров в реальном времени: **`КОМФОРТ: XX%`** в бегущей строке бортового компьютера.
-  * Передача флага `isBusJob` и специализированных данных остановок в веб-интерфейс оверлея.
-* **EN:** Native bus passenger job detection (`bus_job`) from the new **DLC Coaches** with seamless backwards compatibility for standard freight cargo hauling in ETS2 & ATS.
-  * Real-time stop-to-stop route extraction via official SCS SDK attributes (`source_stop.*` ➔ `destination_stop.*`).
-  * Dynamic passenger satisfaction rating: **`SATISFACTION: XX%`** in the onboard computer ticker.
-  * Propagation of `isBusJob` state and dedicated stop endpoints to the HUD frontend.
-
-#### ⚡ New SCS Telemetry SDK Channels / Новые каналы телеметрии
-* **RU / EN:** В C++ плагин `scs_direct_telemetry.dll` и скрипт моста `scripts/udp-bridge.ps1` добавлены 4 новых нативных канала телеметрии:
-
-| Канал / SDK Channel | Тип / Type | Описание (RU) | Description (EN) |
-|---|---|---|---|
-| `bus_job.average_satisfaction` | `FLOAT` | Средний уровень комфорта пассажиров автобуса (0.0 .. 1.0) | Live coach passenger satisfaction comfort rating |
-| `rest.stop` | `S32` | Оставшееся время до обязательного отдыха/сна водителя (в минутах) | Fatigue / mandatory driver rest countdown timer (minutes) |
-| `truck.electric.enabled` | `BOOL` | Статус бортовой электросети и зажигания | Onboard electrical system & ignition status |
-| `truck.engine.enabled` | `BOOL` | Статус работы двигателя тягача / автобуса | Engine running status |
-
-#### 💳 DonationAlerts Wizard Integration / Интеграция DonationAlerts в установщик
-* **RU:** В графический 1-клик установщик (`scripts/installer.ps1` / `Install-Overlay.bat`) добавлено поле для секретного токена DonationAlerts с маскированием звёздочками и кнопкой **Показать / Скрыть** (**Show / Hide**).
-* **EN:** Added a password-masked DonationAlerts secret token field in the GUI installer wizard with stream-safe **Show / Hide** toggle and automatic `config.js` generation.
-
----
-
-### 🔄 Changed / Изменено
-
-#### 🎛️ 100% Solid Opacity Lower Cockpit HUD / Непрозрачность торпеды
-* **RU:** Фон нижней приборной панели («торпеды») в `assets/css/ets2-desktop.css` сделан **на 100% сплошным и непрозрачным (`alpha = 1`)**. Дорожные текстуры, яркая разметка и фары больше не просвечивают сквозь шкалы спидометра, навигацию и датчики в OBS Studio. При этом рамка веб-камеры, чат и алерты сохраняют прозрачность.
-* **EN:** Lower cockpit dashboard background in `assets/css/ets2-desktop.css` set to **100% solid opacity (`alpha = 1`)**. Eliminates asphalt and road texture bleed-through in OBS Studio while retaining transparent webcam, chat, and alert overlays.
-
-#### 🧹 Twitch-Only Streamlining / Очистка от Kick
-* **RU:** Из всех сцен (`ets2-desktop.html`, `ets2-vertical.html`), стилей и скриптов удалены устаревшие ссылки и упоминания Kick.com. Блок соцсетей в правом нижнем углу аккуратно выровнен под единый канал Twitch.
-* **EN:** Completely removed legacy Kick.com badges and references across all HUD scenes and scripts, streamlining layout and alignment for single Twitch channel streaming (`twitch.tv/...`).
-
-#### 🛡️ C++ Native Plugin & Repository Setup / Обновление плагина и репозитория
-* **RU:** Скомпилирована чистая Release x64 сборка `scs_direct_telemetry.dll` (210 КБ, SHA256: `6E9B18395E41C99A46FA9643301805F1D340D64A9069250CC6CFEBB038728DF9`). В `.gitattributes` добавлена строгая защита бинарных файлов (`*.dll`, `*.ttf`, `*.zip`).
-* **EN:** Cleanly rebuilt Release x64 `scs_direct_telemetry.dll` (210 KB). Added explicit binary file protection in `.gitattributes` (`*.dll`, `*.ttf`, `*.zip`).
+#### 🔄 Changed
+* **🎛️ 100% Solid Opacity Lower Cockpit HUD:**
+  * Lower dashboard background in `assets/css/ets2-desktop.css` set to **100% solid opacity (`alpha = 1`)**.
+  * Eliminates see-through distraction from bright asphalt textures, road lines, and headlights in OBS Studio.
+  * Webcam frame, chat box, and alert popups retain their elegant semi-transparent styling.
+* **🧹 Twitch-Only Streamlining:**
+  * Completely removed legacy Kick.com links, badges, and code references from `ets2-desktop.html`, `ets2-vertical.html`, CSS stylesheets, and configuration templates.
+  * Neatly aligned the lower-right social badge exclusively for single-channel Twitch streaming.
+* **🛡️ C++ Native Plugin & Repository Hardening:**
+  * Clean Release x64 compilation of `scs_direct_telemetry.dll` (210 KB, SHA256: `6E9B18395E41C99A46FA9643301805F1D340D64A9069250CC6CFEBB038728DF9`).
+  * Strict `.gitattributes` configuration guaranteeing binary file protection (`*.dll`, `*.ttf`, `*.zip`) against Git line-ending modification.
 
 ---
 
-## [1.0.0] - 2026-11-12
+<a id="100---2026-11-12-en"></a>
+### [1.0.0] - 2026-11-12
 
 > [!NOTE]
-> **Первый публичный релиз (Initial Public Release)** проекта ETS2 / ATS Cockpit Telemetry Stream Overlay.
+> Initial public release of the ETS2 / ATS Cockpit Telemetry Stream Overlay system.
 
-### ✨ Initial Features / Базовые возможности
-* ⚡ **Нативный C++ плагин SCS Telemetry SDK 1.16:** Прямое чтение телеметрии через Win32 Shared Memory (`Local\FooZzeeSCSTelemetry`) с частотой 30–60 FPS без сторонних утилит и серверов.
-* 🖥️ **Двухрядная приборная панель Desktop (`1920×1080`):**
-  * Спидометр (`КМ/Ч`), круиз-контроль, КПП, тахометр (`RPM`), индикаторы педалей и руля (**ГАЗ / ТОРМ / РУЛЬ**), полный блок приборных ламп.
-  * 7 аналогово-цифровых датчиков бортового компьютера (Топливо, Запас хода, Расход, Масло/Вода, Воздух, AdBlue, АКБ).
-  * Бегущая строка статистики рейса, прогресс-бар маршрута и навигация.
+#### 🚀 Initial Features
+* ⚡ **Native SCS SDK 1.16 C++ Plugin:** Direct telemetry acquisition via Win32 Shared Memory (`Local\FooZzeeSCSTelemetry`) at 30–60 FPS with zero external proxy dependencies.
+* 🖥️ **2-Row Desktop Cockpit Dashboard (`1920×1080`):** Speedometer, Cruise Control, Gear, Tachometer, inputs, full light cluster, 7 onboard sensors, scrolling economy ticker, and route progress.
+* 📱 **Mobile Vertical Layout (`1080×1920`):** Purpose-built safe-zone layout for TikTok Live, YouTube Shorts, and Reels.
+* ⏱️ **Real-World ETA Calculation (`real-eta-panel`):** Automatically factors active map scale (`1:19`, `1:3`, `1:10`) to compute real-world time remaining.
+* 💬 **Twitch IRC Chat & FIFO Alert Queue:** Sequential alert cards with DonationAlerts integration.
+* ⚡ **1-Click GUI Setup Wizard (`Install-Overlay.bat`):** Bilingual wizard with automatic Steam game detection and Desktop shortcut creation.
+
+---
+
+<a id="-русская-история-версий"></a>
+## 🇷🇺 Русская история версий
+
+### 📌 Навигация по версиям (RU)
+* [v1.1.0 (2026-11-15) — Поддержка ETS2 DLC Coaches, непрозрачная торпеда и новые каналы SCS SDK](#110---2026-11-15-ru)
+* [v1.0.0 (2026-11-12) — Первый публичный релиз (Нативный плагин SCS SDK 1.16 и приборный HUD)](#100---2026-11-12-ru)
+
+---
+
+<a id="110---2026-11-15-ru"></a>
+### [1.1.0] - 2026-11-15
+
+> [!IMPORTANT]
+> **Релиз v1.1.0** добавляет полноценную нативную поддержку пассажирских автобусных перевозок из нового **DLC Coaches** для Euro Truck Simulator 2, расширяет набор считываемых каналов телеметрии SCS SDK, улучшает контрастность и читаемость приборной панели в OBS Studio, а также интегрирует настройку DonationAlerts в графический установщик.
+
+#### 🚀 Добавлено
+* **🚌 Euro Truck Simulator 2 — DLC Coaches (Пассажирские перевозки):**
+  * Автоматическое определение рейса автобуса (`bus_job`) с сохранением 100% совместимости с грузовыми заказами в ETS2 и ATS.
+  * Извлечение названий пунктов отправления и назначения через атрибуты остановок SCS SDK (`source_stop.*` ➔ `destination_stop.*`).
+  * Отображение текущего уровня удовлетворённости пассажиров в реальном времени: **`КОМФОРТ: XX%`** в бегущей строке бортового компьютера.
+  * Передача флага `isBusJob` и специализированной информации об остановках в скрипт моста и веб-интерфейс оверлея.
+* **⚡ Новые каналы телеметрии SCS Telemetry SDK 1.16:**
+  * В нативный C++ плагин `scs_direct_telemetry.dll` и скрипт моста `scripts/udp-bridge.ps1` добавлена регистрация и передача 4 новых каналов:
+    * `bus_job.average_satisfaction` (`FLOAT`) — Средний уровень комфорта пассажиров автобуса (шкала 0.0 .. 1.0).
+    * `rest.stop` (`S32`) — Таймер обратного отсчёта времени до обязательного отдыха/сна водителя (в минутах).
+    * `truck.electric.enabled` (`BOOL`) — Статус бортовой электросети и зажигания тягача / автобуса.
+    * `truck.engine.enabled` (`BOOL`) — Статус работы двигателя.
+* **💳 Настройка DonationAlerts в графическом установщике:**
+  * В установщик `Install-Overlay.bat` (`scripts/installer.ps1`) добавлено поле для ввода секретного токена DonationAlerts.
+  * Поле ввода защищено маскированием (звёздочки) с кнопкой **Показать / Скрыть**.
+  * Токен автоматически сохраняется в `channels.donationAlerts.socketToken` генерируемого файла `config.js`.
+
+#### 🔄 Изменено
+* **🎛️ 100% непрозрачный фон приборной панели («торпеды»):**
+  * Фон нижней приборной панели в `assets/css/ets2-desktop.css` сделан **на 100% сплошным и непрозрачным (`alpha = 1`, solid background)**.
+  * Исключено просвечивание текстур дороги, яркой разметки и фар встречных машин сквозь спидометр и навигацию в OBS Studio.
+  * Рамка веб-камеры, блок чата и всплывающие карточки оповещений сохраняют эстетичную прозрачность.
+* **🧹 Очистка от Kick.com (Twitch-Only):**
+  * Полностью удалены устаревшие ссылки и плашки Kick.com из оверлеев `ets2-desktop.html`, `ets2-vertical.html`, CSS-стилей и шаблонов конфигурации.
+  * Блок социальных сетей в правом нижнем углу торпеды аккуратно выровнен под единый канал Twitch.
+* **🛡️ Обновление плагина и защита репозитория:**
+  * Выполнена чистая компиляция Release x64 библиотеки `scs_direct_telemetry.dll` (размер: 210 КБ, SHA256: `6E9B18395E41C99A46FA9643301805F1D340D64A9069250CC6CFEBB038728DF9`).
+  * В `.gitattributes` добавлена строгая защита бинарных файлов (`*.dll`, `*.ttf`, `*.zip`) от искажения окончаний строк при синхронизации через Git.
+
+---
+
+<a id="100---2026-11-12-ru"></a>
+### [1.0.0] - 2026-11-12
+
+> [!NOTE]
+> Первый публичный релиз приборного комплекса ETS2 / ATS Cockpit Telemetry Stream Overlay.
+
+#### 🚀 Базовые возможности
+* ⚡ **Нативный C++ плагин SCS Telemetry SDK 1.16:** Прямое чтение телеметрии через Win32 Shared Memory (`Local\FooZzeeSCSTelemetry`) с частотой 30–60 FPS без сторонних программ-посредников.
+* 🖥️ **Двухрядная приборная панель Desktop (`1920×1080`):** Спидометр, круиз-контроль, КПП, тахометр, педали и руль, индикаторы, 7 датчиков бортового компьютера, бегущая строка экономики и навигация.
 * 📱 **Вертикальная мобильная сцена (`1080×1920`):** Адаптация под безопасные зоны TikTok Live, YouTube Shorts, Reels.
-* ⏱️ **Реальное время в пути (`real-eta-panel`):** Автоматическая конвертация навигационного времени с учётом масштаба карты (`1:19`, `1:3`, `1:10`) в реальные минуты до цели.
-* 💬 **Интерактив Twitch IRC и FIFO-алерты:** Всплывающие карточки оповещений (`donate`, `sub`, `follow`, `raid`) с поддержкой DonationAlerts.
-* ⚡ **1-клик графический установщик (`Install-Overlay.bat`):** Двуязычный визард с автоматическим поиском установленных ETS2 / ATS в Steam и созданием ярлыка на Рабочем столе.
+* ⏱️ **Реальное время в пути (`real-eta-panel`):** Автоматическая конвертация навигационного времени в реальные минуты до цели.
+* 💬 **Интерактив Twitch IRC и FIFO-алерты:** Всплывающие карточки оповещений с поддержкой DonationAlerts.
+* ⚡ **1-клик графический установщик (`Install-Overlay.bat`):** Двуязычный визард с автоматическим поиском установленных ETS2 / ATS в Steam.
 
 ---
 
