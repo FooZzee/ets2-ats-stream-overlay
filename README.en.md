@@ -1,24 +1,30 @@
 # ETS2 / ATS Cockpit Telemetry Stream Overlay
 
-> **Languages:** **English** | [Русский](./README.ru.md) | [Bilingual Combined README](./README.md)
+> **Languages:** **English** | [Русский](./README.ru.md) | [Bilingual Combined README](./README.md) | [Changelog](./CHANGELOG.md)
 
-A sleek, native **SCS Telemetry SDK 1.16** browser overlay for **OBS Studio**, purpose-built for **Euro Truck Simulator 2** and **American Truck Simulator**. Designed as a realistic amber/ice truck cockpit HUD that keeps your windshield, side mirrors, and F2 Route Advisor clear, powered by **Twitch** chat integration and a direct Shared Memory C++ plugin with no external telemetry proxy required.
+A sleek, native **SCS Telemetry SDK 1.16** browser overlay for **OBS Studio**, purpose-built for **Euro Truck Simulator 2** (including **DLC Coaches**) and **American Truck Simulator**. Designed as a realistic amber/ice cockpit HUD that keeps your windshield, side mirrors, and F2 Route Advisor clear, powered by **Twitch** chat integration and a direct Shared Memory C++ plugin with no external telemetry proxy required.
 
 ---
 
 ## 1. Overview & Features
 
 - **Direct Native SCS SDK 1.16 Telemetry (`scs_direct_telemetry.dll`)**
-  - Streams truck gauges, warning lights, cruise control, trailer/cargo data, and job telemetry straight out of ETS2/ATS via Shared Memory (`Local\FooZzeeSCSTelemetry`) and the bundled local HTTP bridge (`http://127.0.0.1:30002/telemetry`).
-- **Desktop 2-Row Cockpit Dashboard (`1920×1080` — `ets2-desktop.html`)**
-  - **Row 1 (Driving & Route):** Speedometer (`KM/H`), Cruise Control (`CC`), Gear indicator, RPM bar, real-time **Throttle / Brake / Steering** inputs, full dashboard warning/light indicator cluster (turn signals, hazard, parking/low/high beams, beacon, wipers, parking brake, retarder/engine brake, diff lock, lift axles, fuel/air/oil/coolant/battery warnings, speed limit sign), active route progress bar, city-to-city route, cargo & trailer tonnage.
-  - **Row 2 (Truck & Economy):** Truck make/model, license plate, odometer, Truck/Trailer/Cargo health badges, **7 live onboard computer sensors** (Fuel, Range, Fuel Avg, Oil/Water temps, Air pressure, AdBlue, Battery voltage), smooth **scrolling job & trip economy ticker** (income, source → destination companies, job type, trip distance, fuel burned, trip average consumption, max speed), dynamic `ETS2` / `ATS` status pill, and Twitch channel display.
+  - Streams truck/coach gauges, warning lights, cruise control, trailer/cargo data, and job telemetry straight out of ETS2/ATS via Shared Memory (`Local\FooZzeeSCSTelemetry`) and the bundled local HTTP bridge (`http://127.0.0.1:30002/telemetry`).
+  - Added new telemetry channels: passenger comfort (`bus_job.average_satisfaction`), rest countdown timer (`rest.stop`), electrical system/ignition (`truck.electric.enabled`), and engine status (`truck.engine.enabled`).
+- **Full Euro Truck Simulator 2 — DLC Coaches Support (Passenger Jobs)**
+  - Native detection for coach passenger trips from the new **DLC Coaches** while retaining 100% compatibility with standard cargo hauling.
+  - Automatic bus route parsing from origin to destination stops (`source_stop` → `destination_stop`).
+  - Real-time passenger satisfaction rating: **`SATISFACTION: XX%`** (`EN`) / **`КОМФОРТ: XX%`** (`RU`) displayed in the onboard computer ticker.
+- **Desktop 2-Row Cockpit Dashboard with 100% Solid Opacity (`1920×1080` — `ets2-desktop.html`)**
+  - **100% Solid Opacity (`alpha = 1`):** Completely opaque dashboard background eliminates transparent see-through distractions against asphalt and bright road markings, ensuring maximum contrast and legibility in OBS Studio. Webcam frame, chat, and alert popups remain transparent.
+  - **Row 1 (Driving & Route):** Speedometer (`KM/H`), Cruise Control (`CC`), Gear indicator, RPM bar, real-time **Throttle / Brake / Steering** inputs, full dashboard warning/light indicator cluster (turn signals, hazard, parking/low/high beams, beacon, wipers, parking brake, retarder/engine brake, diff lock, lift axles, fuel/air/oil/coolant/battery warnings, speed limit sign), active route progress bar, city-to-city route, cargo & trailer tonnage or passenger count.
+  - **Row 2 (Truck & Economy):** Truck/coach make/model, license plate, odometer, Truck/Trailer/Cargo health badges, **7 live onboard computer sensors** (Fuel, Range, Fuel Avg, Oil/Water temps, Air pressure, AdBlue, Battery voltage), smooth **scrolling job & trip economy ticker** (income, source → destination companies, job type, passenger satisfaction, trip distance, fuel burned, trip average consumption, max speed), dynamic `ETS2` / `ATS` status pill, and Twitch channel display.
 - **Vertical Mobile Scene (`1080×1920` — `ets2-vertical.html`)**
   - Safe-zone layout for TikTok Live, YouTube Shorts, and Reels with webcam frame, live telemetry chip strip, onboard computer sensors, alerts, and Twitch chat.
 - **Real Time En Route (`real-eta-panel`)**
   - Top-left HUD badge converting in-game navigation ETA using the active map scale (`1:19` highways / `1:3` cities / `1:10` UK) into **real-world remaining minutes/hours**.
 - **Twitch Chat & FIFO Alert Queue**
-  - Direct Twitch IRC (`wss://irc-ws.chat.twitch.tv`) and optional DonationAlerts support.
+  - Direct Twitch IRC (`wss://irc-ws.chat.twitch.tv`) and DonationAlerts integration.
   - Sequential FIFO alert cards (`donate`, `sub`, `follow`, `raid`) positioned cleanly in the lower-right safe zone above the dashboard (`right: 24px; bottom: 200px`), sliding in from the right and fading smoothly without blocking gameplay.
 - **Instant Bilingual Support (`EN` / `RU`)**
   - Switch language globally in `config.js` (`lang: 'en'` or `'ru'`) or per Browser Source via URL (`?lang=en` / `?lang=ru`).
@@ -42,7 +48,10 @@ A sleek, native **SCS Telemetry SDK 1.16** browser overlay for **OBS Studio**, p
 4. Check **Euro Truck Simulator 2** and/or **American Truck Simulator** to install `scs_direct_telemetry.dll`:
    - The wizard automatically scans Windows Registry (`HKCU:\Software\Valve\Steam`) and Steam `libraryfolders.vdf` across all drives.
    - If browsing manually, you can select the game root folder, `bin\win_x64`, or `bin\win_x64\plugins` — the installer resolves `...\bin\win_x64\plugins` automatically and creates the `plugins` folder if missing.
-5. Fill in your **Streamer Profile** (`Streamer Nickname`, `Twitch Channel`, and optionally `DonationAlerts Token` — masked for stream safety with a `Show` / `Hide` button; copy it from DonationAlerts *Account Settings -> Secret Token* to show live donation alerts above the dashboard).
+5. Fill in your **Streamer Profile**:
+   - `Streamer Nickname`
+   - `Twitch Channel`
+   - `DonationAlerts Token` (optional, password-masked with a `Show` / `Hide` toggle; found in DonationAlerts *Account Settings -> Secret Token* to display live donation alerts).
 6. Keep **`Create Desktop Shortcut ("ETS2-ATS Overlay Bridge")`** checked and click **`Install`**.
 
 ---
@@ -72,19 +81,18 @@ If you prefer manual installation:
 
 ## 5. OBS Studio Setup
 
-1. Launch **`ETS2-ATS Overlay Bridge`** from your Desktop shortcut (or run `start-telemetry.bat`). It exposes live native Shared Memory telemetry at `http://127.0.0.1:30002/telemetry`.
-2. In **OBS Studio**, add a **Browser Source**:
-   - **Desktop Scene:** Local File -> `ets2-desktop.html`
-     - Width: **`1920`** | Height: **`1080`**
-   - **Vertical Scene:** Local File -> `ets2-vertical.html`
-     - Width: **`1080`** | Height: **`1920`**
-3. Align your **Webcam Source** (Video Capture Device) directly inside the desktop overlay frame:
-   - **Aspect Ratio:** `16:9`
-   - **Width:** **`346 px`**
-   - **Height:** **`195 px`**
-   - **Position (`left` / X):** **`24 px`**
-   - **Position (`top` / Y):** **`180 px`**
-   - Place the Webcam Source layer **below** the Browser Source layer so the cockpit corner brackets frame your camera cleanly.
+1. Launch the telemetry bridge via the **`ETS2-ATS Overlay Bridge`** Desktop shortcut (`start-telemetry.bat`).
+2. In OBS Studio, add a new **Browser Source**:
+   - **Desktop Scene:**
+     - Select `ets2-desktop.html`
+     - Width: **`1920`**, Height: **`1080`**
+   - **Vertical Scene:**
+     - Select `ets2-vertical.html`
+     - Width: **`1080`**, Height: **`1920`**
+3. Configure your Webcam Frame (Desktop):
+   - Dimensions: Width **`346 px`**, Height **`195 px`** (`16:9` aspect ratio).
+   - Position: Left **`24 px`**, Top **`180 px`**.
+   - Place your webcam video capture layer **below** the Browser Source in OBS layer hierarchy so HUD brackets neatly frame the webcam feed.
 
 ---
 
@@ -92,15 +100,21 @@ If you prefer manual installation:
 
 | Symptom | Cause & Solution |
 | --- | --- |
-| Overlay shows `--` and `STANDBY // OFFLINE` | Ensure `start-telemetry.bat` (`127.0.0.1:30002`) is running and `scs_direct_telemetry.dll` is inside `bin\win_x64\plugins\`. Check `http://127.0.0.1:30002/health` in your browser. |
-| Game launched, but gauges stay at `--` | Make sure you are running 64-bit ETS2/ATS and accepted the third-party SDK plugin warning dialog on game startup. Also drive into the cab (telemetry enters `connected: true` outside menus). |
-| Bridge fails with port `30002` in use | Another `start-telemetry.bat` window is already running. Close duplicate console windows and keep only one running. |
-| Alerts have no audio | Built-in WebAudio chimes play by default (`synthFallback: true`). For custom sounds, place `follow.mp3`, `sub.mp3`, `donate.mp3`, `raid.mp3` into `./assets/sounds/` and enable audio control in OBS Browser Source if needed. |
-| Twitch chat does not appear | Verify `channels.twitch.enabled: true` and set your lowercase `channelName` in `config.js` without `https://twitch.tv/`. |
+| Overlay shows `--` / `STANDBY` | Verify `start-telemetry.bat` is running (`127.0.0.1:30002`) and `scs_direct_telemetry.dll` is in `...\bin\win_x64\plugins\`. Check bridge status at `http://127.0.0.1:30002/health`. |
+| Game is running but dashboard doesn't update | Launch 64-bit ETS2/ATS and accept the SDK warning on the game's startup screen. Telemetry enters standby on the profile selection screen until a save game loads. |
+| Port `30002` error | Another instance of `start-telemetry.bat` is already running. Close duplicate command prompt windows. |
+| No alert sounds | Built-in WebAudio synthesizer is used by default (`synthFallback: true`). To use custom audio, place `follow.mp3`, `sub.mp3`, `donate.mp3`, `raid.mp3` in `./assets/sounds/`. |
+| Twitch chat doesn't appear | Verify `channels.twitch.enabled: true` in `config.js` and ensure `channelName` contains only your username without `https://twitch.tv/`. |
 
 ---
 
-## Author & Community — FooZzee
+## Changelog
+
+For a full list of additions and changes across versions, see [CHANGELOG.md](./CHANGELOG.md).
+
+---
+
+## Author — FooZzee
 
 - Website: https://foozzee.ru/
 - Twitch: https://www.twitch.tv/foozzee

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Модуль телеметрии кабины ETS2 / ATS (scs_direct_telemetry.dll SCS SDK 1.16 Shared Memory -> HTTP 30002),
  * локализации RU/EN, синхронизации config.js, 2-рядной торпеды и тестового режима (?test=1).
  */
@@ -44,6 +44,10 @@
       freeRoam: 'СВОБОДНЫЙ РЕЙС',
       trailerAttachedEmpty: 'С ПРИЦЕПОМ (ПУСТОЙ)',
       noTrailer: 'БЕЗ ПРИЦЕПА',
+      coachPassengerRoute: 'ПАССАЖИРСКИЙ РЕЙС',
+      coachPassengerTitle: 'Пассажирский рейс DLC Coaches',
+      gpsRouteNextStop: 'МАРШРУТ GPS // СЛЕДУЮЩАЯ ОСТАНОВКА',
+      gpsRouteTitle: 'Навигация по маршруту GPS',
       statusInTransit: 'В РЕЙСЕ // ОНЛАЙН',
       statusFreeRoam: 'СВОБОДНАЯ ЕЗДА // ОНЛАЙН',
       statusPaused: 'ПАУЗА // В МЕНЮ',
@@ -71,7 +75,10 @@
         external_contracts: 'ВНЕШНИЕ КОНТРАКТЫ',
         external_market: 'ВНЕШНИЙ РЫНОК',
         special_transport: 'СПЕЦТРАНСПОРТ',
-        owned_trailer: 'СВОЙ ПРИЦЕП'
+        owned_trailer: 'СВОЙ ПРИЦЕП',
+        bus_job: 'РЕЙСОВЫЙ АВТОБУС',
+        coach: 'РЕЙСОВЫЙ АВТОБУС',
+        dispatch_job: 'ДИСПЕТЧЕРСКИЙ РЕЙС'
       }
     },
     en: {
@@ -106,6 +113,10 @@
       freeRoam: 'FREE ROAM',
       trailerAttachedEmpty: 'TRAILER ATTACHED (EMPTY)',
       noTrailer: 'NO TRAILER',
+      coachPassengerRoute: 'COACH // PASSENGER ROUTE',
+      coachPassengerTitle: 'DLC Coaches passenger route',
+      gpsRouteNextStop: 'GPS ROUTE // NEXT STOP',
+      gpsRouteTitle: 'Active GPS route navigation',
       statusInTransit: 'IN TRANSIT // LIVE',
       statusFreeRoam: 'FREE ROAM // LIVE',
       statusPaused: 'PAUSED // IN MENU',
@@ -133,7 +144,10 @@
         external_contracts: 'EXTERNAL CONTRACTS',
         external_market: 'EXTERNAL MARKET',
         special_transport: 'SPECIAL TRANSPORT',
-        owned_trailer: 'OWNED TRAILER'
+        owned_trailer: 'OWNED TRAILER',
+        bus_job: 'COACH ROUTE',
+        coach: 'COACH ROUTE',
+        dispatch_job: 'DISPATCH JOB'
       }
     }
   };
@@ -349,7 +363,7 @@
       : '';
     const twitchName = config.channels ? pickValidChannelName(config.channels.twitch) : '';
 
-    const rawName = driverNameOverride || cfgDriver || twitchName || 'STREAMER';
+    const rawName = driverNameOverride || cfgDriver || twitchName || 'FOOZZEE';
     const cleanName = String(rawName).trim().toUpperCase();
 
     const driverPill = global.document.getElementById('driver-tag');
@@ -376,7 +390,7 @@
     if (!twitchText) return;
 
     const twitchCfg = config.channels && config.channels.twitch;
-    const twitchName = pickValidChannelName(twitchCfg) || 'STREAMER';
+    const twitchName = pickValidChannelName(twitchCfg) || 'foozzee';
     const showTwitch = !twitchCfg || twitchCfg.enabled !== false;
 
     twitchText.textContent = `twitch.tv/${twitchName.toLowerCase()}`;
@@ -1040,7 +1054,7 @@
     return '';
   }
 
-  function resolveTrailerAndCargoState(data) {
+  function resolveTrailerAndCargoState(data, jobState) {
     const cargoName = extractCargoName(data);
     if (cargoName) {
       const upperCargo = cargoName.toUpperCase();
@@ -1049,6 +1063,22 @@
         hasCargo: true,
         text: upperCargo,
         title: `${t('cargoPrefix')} ${upperCargo}`,
+        statusClass: 'is-ok'
+      };
+    }
+
+    const isCoachOrPassenger = Boolean(
+      (jobState && (jobState.isCoach || (jobState.hasJob && !isTrailerConnected(data)))) ||
+      (data && data.cfg && data.cfg.job && (data.cfg.job.busJob || data.cfg.job.market === 'bus_job')) ||
+      (data && (data.jobMarket === 'bus_job' || data.isBusJob))
+    );
+
+    if (isCoachOrPassenger) {
+      return {
+        connected: true,
+        hasCargo: true,
+        text: t('coachPassengerRoute'),
+        title: t('coachPassengerTitle'),
         statusClass: 'is-ok'
       };
     }
@@ -1218,20 +1248,45 @@
     if (!container || typeof container !== 'object' || isContainerJobInactive(container)) {
       return '';
     }
-    const node = container[kind];
-    const nestedVal = node && typeof node === 'object'
-      ? (node[propName] ?? (propName === 'city' ? node.name : undefined))
-      : (propName === 'city' ? node : undefined);
+    const capProp = propName.charAt(0).toUpperCase() + propName.slice(1);
+    const stopKind = kind === 'source' ? 'source_stop' : 'destination_stop';
+    const stopKindCamel = kind === 'source' ? 'sourceStop' : 'destinationStop';
+
+    const candidates = [
+      container[kind],
+      container[stopKind],
+      container[stopKindCamel],
+      container.bus && container.bus[stopKindCamel],
+      container.bus && container.bus[kind],
+      container.bus_job && (container.bus_job[stopKind] || container.bus_job[stopKindCamel] || container.bus_job[kind])
+    ];
+
+    for (let i = 0; i < candidates.length; i += 1) {
+      const node = candidates[i];
+      if (node && typeof node === 'object') {
+        const val = node[propName] ?? (propName === 'city' ? (node.name || node.city_name) : (node.company || node.station));
+        const picked = pickValidCargoText([val]);
+        if (picked) return picked;
+      } else if (typeof node === 'string' && propName === 'city') {
+        const picked = pickValidCargoText([node]);
+        if (picked) return picked;
+      }
+    }
+
+    const flatPicked = pickValidCargoText([
+      container[`${kind}.${propName}`],
+      container[`${kind}${capProp}`],
+      container[`${stopKind}.${propName}`],
+      container[`${stopKindCamel}${capProp}`],
+      container[`${stopKindCamel}.${propName}`],
+      container[`${stopKind}_${propName}`]
+    ]);
+    if (flatPicked) return flatPicked;
+
     const jobObj = container.job && typeof container.job === 'object' && !isContainerJobInactive(container.job)
       ? container.job
       : null;
-    const capProp = propName.charAt(0).toUpperCase() + propName.slice(1);
-    return pickValidCargoText([
-      nestedVal,
-      container[`${kind}.${propName}`],
-      container[`${kind}${capProp}`],
-      jobObj ? extractEndpointFieldFromContainer(jobObj, kind, propName) : ''
-    ]);
+    return jobObj ? extractEndpointFieldFromContainer(jobObj, kind, propName) : '';
   }
 
   function extractJobStringFromContainer(container, flatKeys, nestedObjKey, nestedPropKey) {
@@ -1291,11 +1346,13 @@
     return clean.replace(/_/g, ' ').toUpperCase();
   }
 
-  function resolveJobAndRouteState(data, gameId) {
+  function resolveJobAndRouteState(data, gameId, navInputs) {
     const defaultTag = (config.ets2 && config.ets2.routeTag) || 'ETS2 // ATS';
     if (!data || typeof data !== 'object') {
       return {
         hasJob: false,
+        isCoach: false,
+        isGpsRoute: false,
         text: '--',
         meta: '--',
         tag: defaultTag,
@@ -1318,6 +1375,7 @@
     let plannedKm = null;
     let income = null;
     let jobMarket = '';
+    let isBusJobFlag = false;
 
     containers.forEach((c) => {
       if (!srcCity) srcCity = extractEndpointFieldFromContainer(c, 'source', 'city');
@@ -1336,54 +1394,108 @@
       if (!jobMarket) {
         jobMarket = extractJobStringFromContainer(c, ['job.market', 'jobMarket', 'market'], 'job', 'market');
       }
+      if (!isBusJobFlag) {
+        if (c.job && (c.job.busJob || c.job.isBusJob)) isBusJobFlag = true;
+        if (c.busJob || c.isBusJob) isBusJobFlag = true;
+      }
     });
 
+    const truckIdProbe = String((data.cfg && data.cfg.truck && data.cfg.truck.id) || (data.truck && data.truck.id) || '').toLowerCase();
+    const truckNameProbe = String((data.cfg && data.cfg.truck && data.cfg.truck.name) || (data.truck && data.truck.name) || data.truckName || '').toLowerCase();
+    const isCoachVehicle = truckIdProbe.includes('touring') || truckIdProbe.includes('coach') || truckIdProbe.includes('bus') ||
+                          truckNameProbe.includes('touring') || truckNameProbe.includes('coach') || truckNameProbe.includes('bus');
+    if (isCoachVehicle) {
+      isBusJobFlag = true;
+    }
+
     const cargoName = extractCargoName(data);
-    const hasJob = Boolean(
+
+    // Сценарий 1: Рейс с заданным пунктом назначения/отправления (груз или автобусный маршрут)
+    const hasJobFromEndpoints = Boolean(
       cargoName ||
       (srcCity && dstCity) ||
+      dstCity ||
+      srcCity ||
       (income !== null && income > 0) ||
       (plannedKm !== null && plannedKm > 0)
     );
 
-    const massText = formatCargoMassTons(massKg);
+    const isCoach = Boolean(
+      hasJobFromEndpoints &&
+      (!cargoName || massKg === 0 || isBusJobFlag || jobMarket === 'bus_job' || jobMarket === 'coach')
+    );
+
+    const apiCfg = (config.ets2 && config.ets2.telemetryApi) || {};
+    const effectiveNavInputs = navInputs || resolveNavInputs(data);
+    const navMeters = resolveNavDistanceMeters(effectiveNavInputs.navDist, apiCfg);
+
+    // Сценарий 2: Маршрут GPS между промежуточными остановками или свободная навигация по GPS
+    const isGpsRoute = !hasJobFromEndpoints && navMeters !== null && navMeters > 50;
+
+    const hasJob = hasJobFromEndpoints || isGpsRoute;
+
+    const massText = (!isCoach && massKg !== null) ? formatCargoMassTons(massKg) : '';
     const suffix = massText ? ` • ${massText}` : '';
     const metaText = plannedKm !== null ? `${formatIntWithSpaces(plannedKm)} ${t('km')}` : t('enRouteMeta');
 
     let routeText = t('freeRoam');
     let routeMeta = t('liveMeta');
-    if (srcCity && dstCity) {
-      routeText = `${srcCity.toUpperCase()} → ${dstCity.toUpperCase()}${suffix}`;
-      routeMeta = metaText;
-    } else if (cargoName || dstCity || srcCity) {
-      const label = dstCity && !srcCity
-        ? `→ ${dstCity.toUpperCase()}`
-        : (cargoName || srcCity).toUpperCase();
-      routeText = `${label}${suffix}`;
-      routeMeta = metaText;
+
+    if (hasJobFromEndpoints) {
+      if (srcCity && dstCity) {
+        routeText = `${srcCity.toUpperCase()} → ${dstCity.toUpperCase()}${suffix}`;
+        routeMeta = metaText;
+      } else if (dstCity && !srcCity) {
+        routeText = `→ ${dstCity.toUpperCase()}${suffix}`;
+        routeMeta = metaText;
+      } else if (srcCity && !dstCity) {
+        routeText = `${srcCity.toUpperCase()} →${suffix}`;
+        routeMeta = metaText;
+      } else if (cargoName) {
+        routeText = `${cargoName.toUpperCase()}${suffix}`;
+        routeMeta = metaText;
+      }
+    } else if (isGpsRoute) {
+      routeText = t('gpsRouteNextStop');
+      routeMeta = formatNavText(effectiveNavInputs.navDist, effectiveNavInputs.navTime, apiCfg);
     }
 
     const currency = gameId === 'ATS' ? '$' : '€';
-    const incomeText = hasJob && income !== null
+    const incomeText = hasJobFromEndpoints && income !== null
       ? `${currency} ${formatIntWithSpaces(income)}`
-      : (hasJob ? '--' : t('freeRoam'));
+      : (hasJobFromEndpoints ? '--' : (isGpsRoute ? '--' : t('freeRoam')));
 
     let companiesText = hasJob ? '--' : t('freeRoam');
-    if (hasJob && (srcCompany || dstCompany)) {
+    if (hasJobFromEndpoints && (srcCompany || dstCompany)) {
       if (srcCompany && dstCompany) {
         companiesText = `${srcCompany.toUpperCase()} → ${dstCompany.toUpperCase()}`;
       } else {
         companiesText = (srcCompany || dstCompany).toUpperCase();
       }
+    } else if (isCoach) {
+      const busSat = parseFiniteTelemetryNumber(
+        data.busSat ?? (data.tel && data.tel.busSat) ?? (data.trip && data.trip.busSat) ?? (data.cfg && data.cfg.bus && data.cfg.bus.satisfaction)
+      );
+      if (busSat !== null && busSat > 0) {
+        const satPct = Math.round(busSat > 1 ? busSat : busSat * 100);
+        const satLabel = lang === 'en' ? 'SATISFACTION' : 'КОМФОРТ';
+        companiesText = `${satLabel}: ${satPct}%`;
+      }
     }
 
     const translatedMarket = translateJobMarket(jobMarket);
-    const jobTypeText = hasJob
-      ? (translatedMarket || '--')
-      : t('freeRoam');
+    let jobTypeText = t('freeRoam');
+    if (hasJobFromEndpoints) {
+      jobTypeText = translatedMarket || (isCoach ? t('coachPassengerRoute') : '--');
+    } else if (isGpsRoute) {
+      jobTypeText = t('gpsRouteNextStop');
+    }
 
     return {
       hasJob,
+      isCoach: isCoach || isCoachVehicle || (isGpsRoute && !isTrailerConnected(data)),
+      isCoachVehicle,
+      isGpsRoute,
       text: routeText,
       meta: routeMeta,
       tag,
@@ -1514,9 +1626,10 @@
     }
     const trip = data.trip && typeof data.trip === 'object' ? data.trip : null;
     const cfg = data.cfg && typeof data.cfg === 'object' ? data.cfg : null;
-    const navDist = data.navDist !== undefined ? data.navDist : (trip ? (trip.navDist ?? trip.distance) : undefined);
-    const navTime = data.navTime !== undefined ? data.navTime : (trip ? (trip.navTime ?? trip.time) : undefined);
-    const rawScale = data.scale ?? (cfg && (cfg.scale ?? cfg['game.scale'])) ?? (trip && trip.scale);
+    const tel = data.tel && typeof data.tel === 'object' ? data.tel : null;
+    const navDist = data.navDist !== undefined ? data.navDist : (trip && trip.navDist !== undefined ? trip.navDist : (tel && tel.navDist !== undefined ? tel.navDist : undefined));
+    const navTime = data.navTime !== undefined ? data.navTime : (trip && trip.navTime !== undefined ? trip.navTime : (tel && tel.navTime !== undefined ? tel.navTime : undefined));
+    const rawScale = data.scale ?? (cfg && (cfg.scale ?? cfg['game.scale'])) ?? (trip && trip.scale) ?? (tel && tel.scale);
     const parsedScale = parseFiniteTelemetryNumber(rawScale);
     return {
       navDist,
@@ -1736,16 +1849,16 @@
     }
     applyRealEtaDisplay(resolveRealEtaState(navInputs, apiCfg));
 
-    const trailerState = resolveTrailerAndCargoState(data);
+    const jobState = resolveJobAndRouteState(data, gameId, navInputs);
+    setRouteDisplay(jobState.text, jobState.meta, jobState.tag);
+
+    const trailerState = resolveTrailerAndCargoState(data, jobState);
     if (cargoChipEl && cargoEl) {
       cargoChipEl.classList.remove('is-ok', 'is-warn', 'is-danger', 'is-detached');
       cargoChipEl.classList.add(trailerState.statusClass);
       cargoChipEl.title = trailerState.title;
       cargoEl.textContent = trailerState.text;
     }
-
-    const jobState = resolveJobAndRouteState(data, gameId);
-    setRouteDisplay(jobState.text, jobState.meta, jobState.tag);
 
     if (routeProgressEl) {
       const navMeters = resolveNavDistanceMeters(navInputs.navDist, apiCfg);
@@ -1875,7 +1988,8 @@
     [
       'sourceCity', 'sourceCompany', 'destinationCity', 'destinationCompany',
       'cargoMassKg', 'plannedDistanceKm', 'income', 'jobMarket', 'scale',
-      'tripDriven', 'tripLiters', 'tripAvg', 'tripMaxSpeed'
+      'tripDriven', 'tripLiters', 'tripAvg', 'tripMaxSpeed',
+      'busSat', 'restStop', 'electric', 'engine', 'sourceStop', 'destinationStop', 'isBusJob'
     ].forEach((key) => {
       if (raw[key] !== undefined && merged[key] === undefined) {
         merged[key] = raw[key];
@@ -2094,7 +2208,7 @@
 
     const driverFromConfig = config.ets2 && config.ets2.driverName;
     if (!driverFromConfig || driverFromConfig === 'DRIVER') {
-      updateDriverLabels('STREAMER');
+      updateDriverLabels('FOOZZEE');
     }
 
     setTrackDisplay('Midnight Highway', 'FM-84', true);

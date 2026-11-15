@@ -354,23 +354,69 @@ function Read-SharedMemoryTelemetry {
     $fuelAmount  = if ($null -ne $telIn.fuel) { [double]$telIn.fuel } else { 0.0 }
     $fuelAvgL100 = if ($null -ne $telIn.fuelAvg) { [Math]::Round([double]$telIn.fuelAvg, 1) } else { 0.0 }
 
-    $hasJob = if ($null -ne $cfgIn -and $null -ne $cfgIn.hasJob) { [bool]$cfgIn.hasJob } else { $false }
-    $srcCity = if ($hasJob -and $null -ne $cfgIn.source) { [string]$cfgIn.source.city } else { '' }
-    $srcComp = if ($hasJob -and $null -ne $cfgIn.source) { [string]$cfgIn.source.company } else { '' }
-    $dstCity = if ($hasJob -and $null -ne $cfgIn.destination) { [string]$cfgIn.destination.city } else { '' }
-    $dstComp = if ($hasJob -and $null -ne $cfgIn.destination) { [string]$cfgIn.destination.company } else { '' }
-    $cargo   = if ($hasJob -and $null -ne $cfgIn.cargo) { [string]$cfgIn.cargo.name } else { '' }
-    $cargoId = if ($hasJob -and $null -ne $cfgIn.cargo) { [string]$cfgIn.cargo.id } else { '' }
-    $cargoMassKg = if ($hasJob -and $null -ne $cfgIn.cargo -and $null -ne $cfgIn.cargo.mass) { [double]$cfgIn.cargo.mass } else { 0.0 }
-    $plannedDistKm = if ($hasJob -and $null -ne $cfgIn.planned_distance -and $null -ne $cfgIn.planned_distance.km) { [int64]$cfgIn.planned_distance.km } else { [int64]0 }
-    $income = if ($hasJob -and $null -ne $cfgIn.income) { [int64]$cfgIn.income } else { [int64]0 }
-    $jobMarket = if ($hasJob -and $null -ne $cfgIn.job) { [string]$cfgIn.job.market } else { '' }
+    $srcCityRaw       = if ($null -ne $cfgIn -and $null -ne $cfgIn.source) { [string]$cfgIn.source.city } else { '' }
+    $srcCompRaw       = if ($null -ne $cfgIn -and $null -ne $cfgIn.source) { [string]$cfgIn.source.company } else { '' }
+    $dstCityRaw       = if ($null -ne $cfgIn -and $null -ne $cfgIn.destination) { [string]$cfgIn.destination.city } else { '' }
+    $dstCompRaw       = if ($null -ne $cfgIn -and $null -ne $cfgIn.destination) { [string]$cfgIn.destination.company } else { '' }
+
+    if ([string]::IsNullOrWhiteSpace($srcCityRaw) -and $null -ne $cfgIn -and $null -ne $cfgIn.bus -and $null -ne $cfgIn.bus.sourceStop) {
+      $srcCityRaw = [string]$cfgIn.bus.sourceStop.city
+      if ([string]::IsNullOrWhiteSpace($srcCompRaw)) { $srcCompRaw = [string]$cfgIn.bus.sourceStop.company }
+    }
+    if ([string]::IsNullOrWhiteSpace($dstCityRaw) -and $null -ne $cfgIn -and $null -ne $cfgIn.bus -and $null -ne $cfgIn.bus.destinationStop) {
+      $dstCityRaw = [string]$cfgIn.bus.destinationStop.city
+      if ([string]::IsNullOrWhiteSpace($dstCompRaw)) { $dstCompRaw = [string]$cfgIn.bus.destinationStop.company }
+    }
+
+    $busSatRaw = if ($null -ne $telIn.busSat) {
+      [Math]::Round([double]$telIn.busSat, 2)
+    } elseif ($null -ne $cfgIn -and $null -ne $cfgIn.bus -and $null -ne $cfgIn.bus.satisfaction) {
+      [Math]::Round([double]$cfgIn.bus.satisfaction, 2)
+    } else {
+      0.0
+    }
+    $restStopRaw = if ($null -ne $telIn.restStop) { [int]$telIn.restStop } else { 0 }
+    $electricRaw = if ($null -ne $telIn.electric) { [bool]$telIn.electric } else { $true }
+    $engineRaw   = if ($null -ne $telIn.engine) { [bool]$telIn.engine } else { $true }
+    $cargoRaw         = if ($null -ne $cfgIn -and $null -ne $cfgIn.cargo) { [string]$cfgIn.cargo.name } else { '' }
+    $cargoIdRaw       = if ($null -ne $cfgIn -and $null -ne $cfgIn.cargo) { [string]$cfgIn.cargo.id } else { '' }
+    $cargoMassKgRaw   = if ($null -ne $cfgIn -and $null -ne $cfgIn.cargo -and $null -ne $cfgIn.cargo.mass) { [double]$cfgIn.cargo.mass } else { 0.0 }
+    $plannedDistKmRaw = if ($null -ne $cfgIn -and $null -ne $cfgIn.planned_distance -and $null -ne $cfgIn.planned_distance.km) { [int64]$cfgIn.planned_distance.km } else { [int64]0 }
+    $incomeRaw        = if ($null -ne $cfgIn -and $null -ne $cfgIn.income) { [int64]$cfgIn.income } else { [int64]0 }
+    $jobMarketRaw     = if ($null -ne $cfgIn -and $null -ne $cfgIn.job) { [string]$cfgIn.job.market } else { '' }
+    $isBusJobRaw      = if ($null -ne $cfgIn -and $null -ne $cfgIn.job -and $null -ne $cfgIn.job.busJob) { [bool]$cfgIn.job.busJob } else { $false }
+
+    $hasJob = if ($null -ne $cfgIn -and $null -ne $cfgIn.hasJob -and [bool]$cfgIn.hasJob) {
+      $true
+    } elseif (-not [string]::IsNullOrWhiteSpace($dstCityRaw) -or -not [string]::IsNullOrWhiteSpace($srcCityRaw) -or -not [string]::IsNullOrWhiteSpace($cargoRaw) -or ($plannedDistKmRaw -gt 0) -or ($incomeRaw -gt 0)) {
+      $true
+    } else {
+      $false
+    }
+
+    $srcCity       = if ($hasJob) { $srcCityRaw } else { '' }
+    $srcComp       = if ($hasJob) { $srcCompRaw } else { '' }
+    $dstCity       = if ($hasJob) { $dstCityRaw } else { '' }
+    $dstComp       = if ($hasJob) { $dstCompRaw } else { '' }
+    $cargo         = if ($hasJob) { $cargoRaw } else { '' }
+    $cargoId       = if ($hasJob) { $cargoIdRaw } else { '' }
+    $cargoMassKg   = if ($hasJob) { $cargoMassKgRaw } else { 0.0 }
+    $plannedDistKm = if ($hasJob) { $plannedDistKmRaw } else { [int64]0 }
+    $income        = if ($hasJob) { $incomeRaw } else { [int64]0 }
+    $jobMarket     = if ($hasJob) { $jobMarketRaw } else { '' }
 
     $truckBrand   = if ($null -ne $cfgIn -and $null -ne $cfgIn.truck) { [string]$cfgIn.truck.brand } else { '' }
     $truckName    = if ($null -ne $cfgIn -and $null -ne $cfgIn.truck) { [string]$cfgIn.truck.name } else { '' }
     $licensePlate = if ($null -ne $cfgIn -and $null -ne $cfgIn.truck -and $null -ne $cfgIn.truck.license) { [string]$cfgIn.truck.license.plate } else { '' }
 
-    $jobKey = "$srcCity|$dstCity|$cargo"
+    $jobKey = if ($hasJob) {
+      "$srcCity|$dstCity|$cargo"
+    } elseif ($null -ne $telIn.navDist -and [double]$telIn.navDist -gt 50.0) {
+      "gps_route"
+    } else {
+      ""
+    }
+
     $tripStats = Update-TripStatistics `
       -JobKey $jobKey `
       -OdometerKm $odometerKm `
@@ -381,10 +427,14 @@ function Read-SharedMemoryTelemetry {
     $tripObj = [ordered]@{
       active            = $hasJob
       hasJob            = $hasJob
+      isBusJob          = $isBusJobRaw
+      busSat            = $busSatRaw
       cargo             = $cargo
       cargoId           = $cargoId
       source            = [ordered]@{ city = $srcCity; company = $srcComp }
       destination       = [ordered]@{ city = $dstCity; company = $dstComp }
+      sourceStop        = [ordered]@{ city = $srcCity; company = $srcComp }
+      destinationStop   = [ordered]@{ city = $dstCity; company = $dstComp }
       cargoMassKg       = $cargoMassKg
       plannedDistanceKm = $plannedDistKm
       income            = $income
@@ -457,6 +507,10 @@ function Read-SharedMemoryTelemetry {
       jobDmg          = [double]$telIn.jobDmg
       trailer         = $telIn.trailer
       trailerAttached = [bool]$telIn.trailerAttached
+      busSat          = $busSatRaw
+      restStop        = $restStopRaw
+      electric        = $electricRaw
+      engine          = $engineRaw
     }
 
     $payload = [ordered]@{}
@@ -481,6 +535,14 @@ function Read-SharedMemoryTelemetry {
     $payload['cargoMassKg']        = $cargoMassKg
     $payload['plannedDistanceKm']  = $plannedDistKm
     $payload['income']             = $income
+    $payload['hasJob']             = $hasJob
+    $payload['isBusJob']           = $isBusJobRaw
+    $payload['busSat']             = $busSatRaw
+    $payload['restStop']           = $restStopRaw
+    $payload['electric']           = $electricRaw
+    $payload['engine']             = $engineRaw
+    $payload['sourceStop']         = $tripObj.sourceStop
+    $payload['destinationStop']    = $tripObj.destinationStop
     $payload['driven']             = $tripStats.driven
     $payload['tripDriven']         = $tripStats.driven
     $payload['liters']             = $tripStats.liters

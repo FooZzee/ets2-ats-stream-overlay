@@ -138,6 +138,20 @@
    5. НИЖНЯЯ 2-РЯДНАЯ ТОРПЕДА (1872 x 168, left: 24px, right: 24px, bottom: 16px)
    ========================================================================== */
 .cockpit-dashboard {
+  /* 100% сплошной непрозрачный фон приборной панели (alpha = 1) */
+  --cockpit-bg: #0e131b;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.014) 0px,
+      rgba(255, 255, 255, 0.014) 1px,
+      transparent 1px,
+      transparent 6px
+    ),
+    #0e131b;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  opacity: 1;
   position: fixed;
   left: var(--desktop-edge-margin);
   right: var(--desktop-edge-margin);
@@ -150,6 +164,20 @@
   row-gap: 5px;
   padding: 6px 12px;
   overflow: hidden;
+}
+
+:root[data-cockpit-theme="ice"] .cockpit-dashboard,
+body[data-cockpit-theme="ice"] .cockpit-dashboard {
+  --cockpit-bg: #0a0f17;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.014) 0px,
+      rgba(255, 255, 255, 0.014) 1px,
+      transparent 1px,
+      transparent 6px
+    ),
+    #0a0f17;
 }
 
 .dash-row {
