@@ -1,11 +1,11 @@
-# 📜 Project Version History (Changelog)
+﻿# 📜 Project Version History (Changelog)
 
 > **ETS2 / ATS Cockpit Telemetry Stream Overlay**  
 > All notable changes are documented in strict adherence to [Keep a Changelog](https://keepachangelog.com/) and [Semantic Versioning 2.0.0](https://semver.org/).
 
-[![Keep a Changelog](https://img.shields.io/badge/Changelog-Keep%20a%20Changelog%201.1.0-orange?style=for-the-badge&logo=git)](https://keepachangelog.com/)
+[![Keep a Changelog](https://img.shields.io/badge/Changelog-Keep%20a%20Changelog%201.1.1-orange?style=for-the-badge&logo=git)](https://keepachangelog.com/)
 [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-blue?style=for-the-badge&logo=semver)](https://semver.org/)
-[![Latest Release](https://img.shields.io/badge/Latest-v1.1.0-green?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.1.0)
+[![Latest Release](https://img.shields.io/badge/Latest-v1.1.1-green?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.1.1)
 [![License](https://img.shields.io/badge/License-MIT-purple?style=for-the-badge)](./LICENSE)
 
 ---
@@ -16,8 +16,42 @@
 
 ## 📌 Version Index
 
+* [v1.1.1 (2026-11-15) — Pip-Boy 3000 Standalone Auto-Update Terminal, Support Button & Interactive OBS Mode](#111---2026-11-15)
 * [v1.1.0 (2026-11-15) — ETS2 DLC Coaches Support, Solid Dashboard & Enhanced SCS Telemetry](#110---2026-11-15)
 * [v1.0.0 (2026-11-12) — Initial Release (Native SCS Telemetry SDK 1.16 & Broadcast HUD)](#100---2026-11-12)
+
+---
+
+## [1.1.1] - 2026-11-15
+
+> [!IMPORTANT]
+> **Release v1.1.1** introduces a standalone GitHub update detector and notification system styled as an authentic Pip-Boy 3000 (Fallout) retro terminal with synthesized typewriter and CRT audio, full bilingual adaptation (EN/RU), an interactive project support button in the GUI installer, and updated OBS Studio integration guidelines.
+
+### 🚀 Added
+
+#### 📟 Standalone Pip-Boy 3000 Auto-Update Terminal
+* **Automated GitHub Release Detection:** Integrated standalone update detector (`assets/js/ets2-updater.js`) that queries the official GitHub API (`releases/latest`), checks semantic versions, and alerts streamers to new updates without interrupting live broadcast operations.
+* **Authentic CRT Phosphor Design:** Retro terminal aesthetics featuring green phosphor bloom (`#00ff66`), horizontal scanlines, glass tube vignetting, and authentic CRT power-on and collapse animations.
+* **Built-in WebAudio Retro Synthesizer:** Real-time procedural audio synthesis simulating vintage typewriter key clatter during text printing and high-voltage capacitor discharge hum upon display shutdown.
+* **Interactive Control Commands:**
+  * **`[ 🚀 UPDATE NOW ]`** — Opens the new GitHub release page in your default browser.
+  * **`[ 💤 NEVERMIND ]`** — Smoothly shuts down the terminal with CRT power-off animation and saves dismissal to session storage so the streamer is never interrupted again during the run.
+* **Intelligent Bilingual Changelog Extraction:** Automatically parses release bodies on GitHub to isolate the language-matching section (English or Russian), stripping out raw Markdown markup.
+* **Click-to-Skip Typewriter:** Clicking anywhere inside the terminal body immediately finishes text typing.
+* **Testing & Diagnostic Modes:** Full support for simulation testing via `?test_update=1` in OBS or browser URLs, as well as the global `window.showPipBoyUpdateModal()` console helper.
+
+#### 🌐 Full Bilingual Architecture (EN / RU)
+* Automatically adapts its interface language according to the option chosen during setup in `Install-Overlay.bat` (`window.OVERLAY_CONFIG.lang`).
+* Supports test query overrides: `?test_update=1&lang=en` and `?test_update=1&lang=ru`.
+
+#### 💚 Custom Glowing Neon Pip-Boy Logo
+* Integrated custom glowing triangle logo (`assets/img/pipboy-logo.png`, 512×512, 157 KB) into the terminal header with a gentle breathing green phosphor glow.
+
+#### 💖 «SUPPORT PROJECT» Button in Installer
+* Added interactive button **«💖 SUPPORT PROJECT»** (in English) / **«💖 ПОДДЕРЖАТЬ ПРОЕКТ»** (in Russian) to the bottom action bar of `Install-Overlay.bat` (`scripts/installer.ps1`), linking directly to the author's DonationAlerts page: `https://www.donationalerts.com/r/foozzee`.
+
+#### 🎥 OBS Studio Interactive Setup Guidelines
+* Updated documentation across all README files: explicitly instructing users to **uncheck "Local file"** and add the overlay strictly via the **"URL"** field (`D:\html\Overlay\ets2-desktop.html`). This bypasses OBS sandbox restrictions and enables full interactivity for HUD buttons, links, and the Pip-Boy terminal.
 
 ---
 
@@ -58,31 +92,31 @@ Integrated 4 new native telemetry channels into the C++ plugin (`scs_direct_tele
 * Eliminates see-through distraction from bright asphalt textures, road lines, and headlights in OBS Studio.
 * Webcam frame, chat box, and alert popups retain their elegant semi-transparent styling.
 
-#### 🧹 Twitch-Only Streamlining
-* Completely removed legacy Kick.com links, badges, and code references from `ets2-desktop.html`, `ets2-vertical.html`, CSS stylesheets, and configuration templates.
-* Neatly aligned the lower-right social badge exclusively for single-channel Twitch streaming.
+#### 🧹 Kick.com Deprecation (Twitch-Only)
+* Fully purged legacy Kick.com links and references from `ets2-desktop.html`, `ets2-vertical.html`, stylesheet rules, and configuration templates.
+* Social media bar in the bottom-right corner aligned cleanly to a single Twitch channel.
 
-#### 🛡️ C++ Native Plugin & Repository Hardening
+#### 🛡️ Plugin Rebuild & Repository Hardening
 * Clean Release x64 compilation of `scs_direct_telemetry.dll` (210 KB, SHA256: `6E9B18395E41C99A46FA9643301805F1D340D64A9069250CC6CFEBB038728DF9`).
-* Strict `.gitattributes` configuration guaranteeing binary file protection (`*.dll`, `*.ttf`, `*.zip`) against Git line-ending modification.
+* Added `.gitattributes` binary filters (`*.dll`, `*.ttf`, `*.zip`) to prevent CRLF corruption during Git checkouts.
 
 ---
 
 ## [1.0.0] - 2026-11-12
 
 > [!NOTE]
-> Initial public release of the ETS2 / ATS Cockpit Telemetry Stream Overlay system.
+> Initial public release of ETS2 / ATS Cockpit Telemetry Stream Overlay.
 
 ### ✨ Initial Features
-* ⚡ **Native SCS SDK 1.16 C++ Plugin:** Direct telemetry acquisition via Win32 Shared Memory (`Local\FooZzeeSCSTelemetry`) at 30–60 FPS with zero external proxy dependencies.
-* 🖥️ **2-Row Desktop Cockpit Dashboard (`1920×1080`):**
-  * Speedometer (`KM/H`), Cruise Control (`CC`), Gear, Tachometer (`RPM`), physical input bars (**THROTTLE / BRAKE / STEER**), full warning light cluster.
-  * 7 analog/digital onboard computer sensors (Fuel, Range, Consumption, Oil/Water Temp, Air, AdBlue, Battery).
-  * Smooth scrolling job economy ticker, route progress bar, and trip statistics.
-* 📱 **Mobile Vertical Layout (`1080×1920`):** Purpose-built safe-zone layout for TikTok Live, YouTube Shorts, and Reels.
-* ⏱️ **Real-World ETA Calculation (`real-eta-panel`):** Automatically factors active map scale (`1:19`, `1:3`, `1:10`) to compute real-world time remaining.
-* 💬 **Twitch IRC Chat & FIFO Alert Queue:** Sequential alert cards (`donate`, `sub`, `follow`, `raid`) with DonationAlerts integration.
-* ⚡ **1-Click GUI Setup Wizard (`Install-Overlay.bat`):** Bilingual wizard with automatic Steam game detection and Desktop shortcut creation.
+* ⚡ **Native SCS Telemetry SDK 1.16 C++ Plugin:** Direct Win32 Shared Memory pipeline (`Local\FooZzeeSCSTelemetry`) operating at 30–60 FPS with zero external proxy software.
+* 🖥️ **2-Row Lower Dashboard ("Torpedo") (`1920×1080`):**
+  * Speedometer (`KM/H`), cruise control, gear indicator, tachometer (`RPM`), physical pedal & steering gauges (**THROTTLE / BRAKE / STEER**), complete cluster warning lights.
+  * 7 analog/digital sensors (Fuel, Range, Economy, Oil/Water Temp, Air Pressure, AdBlue, Battery Voltage).
+  * Smooth scrolling job ticker, trip progress bar, and navigation status.
+* 📱 **Mobile Vertical Layout (`1080×1920`):** Native layout designed for TikTok Live, YouTube Shorts, and Reels safe zones.
+* ⏱️ **Real-World ETA (`real-eta-panel`):** Automatically computes real-world travel time based on map scale (`1:19`, `1:3`, `1:10`).
+* 💬 **Twitch IRC Chat & FIFO Alerts:** Sequential popup alert queue (`donate`, `sub`, `follow`, `raid`) with optional DonationAlerts integration.
+* ⚡ **1-Click GUI Setup Wizard (`Install-Overlay.bat`):** Automated Steam library detection, DLL installation, and Desktop shortcut creation.
 
 ---
 
@@ -93,5 +127,6 @@ Integrated 4 new native telemetry channels into the C++ plugin (`scs_direct_tele
 * **Telegram:** [@foozzeestream](https://t.me/foozzeestream)
 * **VK:** [vk.ru/gtfun](https://vk.ru/gtfun)
 
+[1.1.1]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.0.0

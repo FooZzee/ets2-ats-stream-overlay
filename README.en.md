@@ -1,8 +1,8 @@
-# 🚛 Cockpit Telemetry Stream Overlay for ETS2 & ATS
+﻿# 🚛 Cockpit Telemetry Stream Overlay for ETS2 & ATS
 
 > **Professional broadcast cockpit HUD for OBS Studio powered by native SCS Telemetry SDK 1.16**
 
-[![Release](https://img.shields.io/badge/Release-v1.1.0-orange?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases)
+[![Release](https://img.shields.io/badge/Release-v1.1.1-orange?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20x64-blue?style=for-the-badge&logo=windows)](https://www.microsoft.com/windows)
 [![SCS SDK](https://img.shields.io/badge/SCS%20SDK-v1.16%20Native-yellow?style=for-the-badge)](https://modding.scssoft.com/wiki/Documentation/Tools/Telemetry_server)
 [![DLC Coaches](https://img.shields.io/badge/ETS2-DLC%20Coaches%20Supported-green?style=for-the-badge)](https://scssoft.com/)
@@ -18,7 +18,7 @@
 ## 📌 Table of Contents
 
 1. [Overview & Key Features](#-overview--key-features)
-2. [What's New in v1.1.0](#-whats-new-in-v110)
+2. [What's New in v1.1.1](#-whats-new-in-v111)
 3. [Architecture & Components](#-architecture--components)
 4. [HUD Layout & Elements](#-hud-layout--elements)
 5. [System Requirements](#-system-requirements)
@@ -39,15 +39,25 @@
 * 📱 **Mobile Vertical Layout:** Native `1080×1920` vertical layout optimized for TikTok Live, YouTube Shorts, and Instagram Reels with built-in UI overlay safe zones.
 * ⏱️ **Real-World Navigation ETA (`real-eta-panel`):** Automatically detects the active map scale (`1:19` highways, `1:3` cities, `1:10` UK) to convert in-game navigation time into precise real-world hours and minutes remaining.
 * 💬 **Audience Engagement:** Integrated Twitch IRC chat client and sequential FIFO alert notifications (`donate`, `sub`, `follow`, `raid`) with optional DonationAlerts integration.
-* 🌐 **Instant Bilingual Support:** Seamless English and Russian localization (`EN` / `RU`) across the entire HUD and installer.
+* 🌐 **Instant Bilingual Support:** Seamless English and Russian localization (`EN` / `RU`) across the entire HUD, installer, and update terminal.
 
 ---
 
-## 🚀 What's New in v1.1.0
+## 🚀 What's New in v1.1.1
 
 > [!IMPORTANT]
-> **Release v1.1.0** introduces full native support for bus passenger trips from the new **DLC Coaches** in Euro Truck Simulator 2, alongside new telemetry metrics and an opaque dashboard background.
+> **Release v1.1.1** introduces a standalone Pip-Boy 3000 update notification terminal with WebAudio retro synth effects, full bilingual EN/RU support, an interactive project support button in the GUI installer, and updated OBS Studio integration instructions.
 
+* 📟 **Pip-Boy 3000 Standalone Auto-Update Terminal:**
+  * Autonomous update checking (`assets/js/ets2-updater.js`) against the official GitHub API (`releases/latest`) without disrupting stream operations.
+  * Retro CRT aesthetics: authentic green phosphor glow (`#00ff66`), scanlines, tube glass vignetting, and cathode-ray power-on/off animations.
+  * Built-in WebAudio retro synthesizer: procedural typewriter key clicks during text generation and high-voltage capacitor discharge hum on shutdown.
+  * Interactive control buttons: **`[ 🚀 UPDATE NOW ]`** (opens latest release on GitHub) and **`[ 💤 NEVERMIND ]`** (smooth CRT shutdown with session dismissal).
+  * Smart bilingual changelog extraction: automatically separates English and Russian release notes from GitHub release bodies.
+  * Click anywhere inside the terminal body to skip typewriter printing instantly.
+  * On-demand testing via `?test_update=1` URL query parameter or `window.showPipBoyUpdateModal()`.
+* 💖 **«SUPPORT PROJECT» Button in Installer:**
+  * Interactive button added to `Install-Overlay.bat` (`scripts/installer.ps1`), linking directly to the author's DonationAlerts page: `https://www.donationalerts.com/r/foozzee`.
 * 🚌 **Full Euro Truck Simulator 2 — DLC Coaches Support:**
   * Native recognition of coach passenger trips (`bus_job`) with 100% backwards compatibility for standard freight cargo hauling in ETS2 & ATS.
   * Automatic stop-to-stop route parsing (`source_stop.*` ➔ `destination_stop.*`).
@@ -58,7 +68,7 @@
   * `truck.electric.enabled` (`BOOL`) — onboard electrical system & ignition status.
   * `truck.engine.enabled` (`BOOL`) — engine running state.
 * 🎛️ **100% Solid Opacity Lower Cockpit HUD:**
-  * The dashboard background in `ets2-desktop.html` has been set to 100% solid opacity (`alpha = 1`). Asphalt textures, road markings, and headlights no longer bleed through the speedometer and indicators in OBS Studio.
+  * Dashboard background in `ets2-desktop.html` set to 100% solid opacity (`alpha = 1`). Asphalt textures, road markings, and headlights no longer bleed through the speedometer and indicators in OBS Studio.
 * 💳 **DonationAlerts Wizard Setup:**
   * Added a password-masked DonationAlerts secret token field in the GUI installer (`Install-Overlay.bat`) with a **Show / Hide** toggle.
 
@@ -72,49 +82,18 @@ flowchart LR
     B -->|"Shared Memory\nLocal\\FooZzeeSCSTelemetry"| C["udp-bridge.ps1\n(Local HTTP/JSON Server :30002)"]
     C -->|"JSON Polling (30-60 FPS)\n/telemetry"| D["OBS Studio Browser Source\n(ets2-desktop.html / ets2-vertical.html)"]
     E["Twitch IRC & DonationAlerts"] -->|"WebSockets\n(Alerts & Live Chat)"| D
+    F["GitHub Releases API"] -->|"Periodic Check (Pip-Boy 3000)"| D
 ```
 
 | Component | Responsibility | Technology Stack |
 |---|---|---|
 | `scs_direct_telemetry.dll` | In-process telemetry hook & serialization | C++20, SCS Telemetry SDK 1.16, Win32 Shared Memory |
 | `scripts/udp-bridge.ps1` | Ultra-fast local HTTP bridge server (`:30002`) | PowerShell 5.1+, `HttpListener`, JSON |
-| `scripts/installer.ps1` | 1-click graphical setup wizard | Windows Forms / WPF, Steam Registry Discovery |
-| `ets2-desktop.html` | Broadcast cockpit HUD (`1920×1080`) | HTML5, CSS Grid/Flexbox, Vanilla JS, WebAudio |
-| `ets2-vertical.html` | Mobile broadcast scene (`1080×1920`) | Safe-Zone Responsive Layout, Vanilla JS |
-
----
-
-## 🎛️ HUD Layout & Elements
-
-### Desktop Cockpit HUD (`1920×1080` — `ets2-desktop.html`)
-
-```text
-+-----------------------------------------------------------------------------------+
-| [ real-eta-panel ]                                                                 |
-|   REAL REMAINING TRIP TIME                                                        |
-|                                                                                   |
-| +----------------+                                                                |
-| |  WEBCAM FRAME  |                                                                |
-| |  (346 x 195)   |                                                                |
-| +----------------+                                                                |
-|                                                     +---------------------------+ |
-|                                                     | FIFO ALERTS / CHAT        | |
-|                                                     | (Sub, Donate, Follow)     | |
-|                                                     +---------------------------+ |
-| ================================================================================= |
-| ROW 1: [SPEED] [CRUISE] [GEAR] [RPM] [THROTTLE/BRAKE/STEER] [INDICATORS] [ROUTE]   |
-| ROW 2: [TRUCK/BUS] [ODOMETER] [WEAR] [7 SENSORS] [SMOOTH TICKER] [TWITCH CHANNEL] |
-+-----------------------------------------------------------------------------------+
-```
-
-* **Row 1 (Driving Dynamics & Navigation):**
-  * Speedometer (`KM/H`), Cruise Control (`CC`), Transmission Gear, Tachometer bar (`RPM`), live **Throttle / Brake / Steering** physical input bars.
-  * Comprehensive dashboard light cluster: turn blinkers, hazard, parking/low/high beams, beacon, wipers, parking brake, retarder/engine brake, differential lock, lift axles, critical warnings (fuel, air, oil, coolant, battery), and speed limit sign.
-  * Route progress indicator, origin and destination cities, cargo mass or passenger count.
-* **Row 2 (Onboard Computer & Trip Economy):**
-  * Vehicle make, model, license plate, odometer, Truck/Trailer/Cargo wear status pills.
-  * **7 In-Line Analog/Digital Telemetry Sensors:** Fuel level, dynamic fuel range (km), live consumption (l/100km), oil/water temperature, air brake pressure, AdBlue level, battery voltage.
-  * **Scrolling Economy Ticker:** Job income, cargo companies, job type, passenger comfort rating, trip distance, fuel burned, trip average consumption, maximum speed recorded.
+| `assets/js/ets2-updater.js` | Standalone Pip-Boy 3000 update detector | ES6 JavaScript, WebAudio API, GitHub REST API |
+| `assets/css/ets2-pipboy.css` | Phosphor CRT scanlines, vignette & animations | Pure CSS3, Keyframe Animations, Flexbox |
+| `ets2-desktop.html` | 2-row horizontal cockpit HUD (`1920×1080`) | HTML5, CSS Grid, Canvas, Vanilla JS |
+| `ets2-vertical.html` | Mobile vertical broadcast HUD (`1080×1920`) | HTML5, Mobile UI Safe Zones, CSS3 |
+| `scripts/installer.ps1` | 1-click GUI setup wizard (`Install-Overlay.bat`) | PowerShell WinForms, UTF-8 with BOM |
 
 ---
 
@@ -129,7 +108,7 @@ flowchart LR
 
 ## ⚡ 1-Click GUI Installation
 
-1. Download the latest release archive **`ETS2-ATS-Stream-Overlay-v1.1.0.zip`** from [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
+1. Download the latest release archive **`ETS2-ATS-Stream-Overlay-v1.1.1.zip`** from [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
 2. Extract the archive into any permanent folder (e.g., `C:\ETS2-ATS-Stream-Overlay`).
 3. Run **`Install-Overlay.bat`**:
    * Choose **`English (EN)`** or **`Русский (RU)`** in the top-right corner.
@@ -179,6 +158,7 @@ window.OVERLAY_CONFIG = {
 * `?theme=ice` or `?theme=amber` — toggle cockpit color theme.
 * `?cam=0` — hide webcam frame.
 * `?test=1` — interactive test mode with animated gauges, simulated chat, and alerts.
+* `?test_update=1` — test the Pip-Boy 3000 update terminal modal.
 * `?guides=1` — show HUD alignment guides and safe-zone grid.
 
 ---

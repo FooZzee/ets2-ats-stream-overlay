@@ -1,9 +1,9 @@
-# 🚛 Cockpit Telemetry Stream Overlay for ETS2 & ATS
+﻿# 🚛 Cockpit Telemetry Stream Overlay for ETS2 & ATS
 
 > **Professional broadcast cockpit HUD for OBS Studio powered by native SCS Telemetry SDK 1.16**  
 > **Профессиональный бортовой HUD-оверлей для OBS Studio на базе нативного SCS Telemetry SDK 1.16**
 
-[![Release](https://img.shields.io/badge/Release-v1.1.0-orange?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases)
+[![Release](https://img.shields.io/badge/Release-v1.1.1-orange?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20x64-blue?style=for-the-badge&logo=windows)](https://www.microsoft.com/windows)
 [![SCS SDK](https://img.shields.io/badge/SCS%20SDK-v1.16%20Native-yellow?style=for-the-badge)](https://modding.scssoft.com/wiki/Documentation/Tools/Telemetry_server)
 [![DLC Coaches](https://img.shields.io/badge/ETS2-DLC%20Coaches%20Supported-green?style=for-the-badge)](https://scssoft.com/)
@@ -16,7 +16,7 @@
 
 [![English Documentation](https://img.shields.io/badge/Documentation-English-2563eb?style=flat-square&logo=gitbook&logoColor=white)](#-english-documentation)
 [![Русская документация](https://img.shields.io/badge/Документация-Русский-dc2626?style=flat-square&logo=gitbook&logoColor=white)](#-русская-документация)
-[![Changelog](https://img.shields.io/badge/Changelog-v1.1.0-10b981?style=flat-square&logo=github)](./CHANGELOG.md)
+[![Changelog](https://img.shields.io/badge/Changelog-v1.1.1-10b981?style=flat-square&logo=github)](./CHANGELOG.md)
 
 *Standalone files:* [English (README.en.md)](./README.en.md) • [Русский (README.ru.md)](./README.ru.md)
 
@@ -27,14 +27,16 @@
 
 **ETS2 / ATS Cockpit Telemetry Stream Overlay** is an ultra-low latency, broadcast-grade telemetry HUD designed specifically for live streamers on Twitch, YouTube, and TikTok. Built around realistic amber/ice cockpit ergonomics, it provides comprehensive driving, vehicle, and trip telemetry while keeping the driver's windshield, mirrors, and in-game GPS completely unobstructed.
 
-### ✨ Key Highlights & v1.1.0 Features
+### ✨ Key Highlights & v1.1.1 Features
+* 📟 **Pip-Boy 3000 Auto-Update Terminal:** Autonomous GitHub update checker with authentic green CRT phosphor styling, scanlines, WebAudio procedural typewriter sound effects, CRT shutdown audio, and full EN/RU bilingual support.
+* 💖 **Project Support Integration:** One-click «💖 SUPPORT PROJECT» button in the GUI installer linking directly to DonationAlerts.
 * 🚌 **Full ETS2 DLC Coaches Support:** Native coach passenger job detection (`bus_job`), stop-to-stop routing (`source_stop.*` ➔ `destination_stop.*`), and live passenger satisfaction rating (**`SATISFACTION: XX%`**).
 * ⚡ **Native SCS Telemetry SDK 1.16 (`scs_direct_telemetry.dll`):** Direct Shared Memory pipeline (`Local\FooZzeeSCSTelemetry`) with zero third-party proxy software.
   * Added channels: `bus_job.average_satisfaction`, `rest.stop` (fatigue timer), `truck.electric.enabled` (ignition), `truck.engine.enabled` (engine state).
 * 🎛️ **100% Solid Opacity Lower Cockpit HUD (`1920×1080` — `ets2-desktop.html`):** Opaque dashboard background eliminates road texture bleed-through in OBS Studio while keeping webcam, chat, and alert popups transparent.
 * 📱 **Mobile Vertical Layout (`1080×1920` — `ets2-vertical.html`):** Native layout optimized for TikTok Live, YouTube Shorts, and Reels with UI safe zones.
 * ⏱️ **Real-World ETA (`real-eta-panel`):** Automatically detects active map scale (`1:19` highways, `1:3` cities, `1:10` UK) to compute real-world time remaining.
-* 💬 **Twitch IRC Chat & FIFO Alerts:** Built-in sequential alert queue (`donate`, `sub`, `follow`, `raid`) with optional DonationAlerts integration.
+* 💬 **Twitch IRC Chat & FIFO Alerts:** Built-in sequential alert queue (`donate`, `sub`, `follow`, `raid`) with stream-safe DonationAlerts token configuration.
 * ⚡ **1-Click GUI Wizard (`Install-Overlay.bat`):** Auto-detects Steam libraries, installs the C++ plugin, masks your DonationAlerts token, and creates a Desktop shortcut.
 
 ### 🏛️ Architecture Overview
@@ -44,14 +46,15 @@ flowchart LR
     B -->|"Shared Memory\nLocal\\FooZzeeSCSTelemetry"| C["udp-bridge.ps1\n(Local HTTP/JSON Server :30002)"]
     C -->|"JSON Polling (30-60 FPS)\n/telemetry"| D["OBS Studio Browser Source\n(ets2-desktop.html / ets2-vertical.html)"]
     E["Twitch IRC & DonationAlerts"] -->|"WebSockets\n(Alerts & Live Chat)"| D
+    F["GitHub Releases API"] -->|"Periodic Check (Pip-Boy 3000)"| D
 ```
 
 ### ⚡ Quick Start
-1. Download **`ETS2-ATS-Stream-Overlay-v1.1.0.zip`** from [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
+1. Download **`ETS2-ATS-Stream-Overlay-v1.1.1.zip`** from [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
 2. Extract the archive into any folder (e.g. `C:\ETS2-ATS-Stream-Overlay`).
 3. Run **`Install-Overlay.bat`**, enter your Twitch username and DonationAlerts token, and click **Install**.
 4. Double-click the **`ETS2-ATS Overlay Bridge`** Desktop shortcut before streaming.
-5. In OBS Studio, add a **Browser Source** (1920×1080).
+5. In OBS Studio, add a **Browser Source** (1920×1080):
    * > [!WARNING]
      > **CRITICAL OBS SETTING:** **UNCHECK "Local file" (Локальный файл)!** Add the overlay strictly via the **"URL" (Ссылка)** field (`D:\html\Overlay\ets2-desktop.html`). If "Local file" is checked, OBS sandbox restrictions will **break interactive cockpit controls, Pip-Boy update buttons, and external links**.
    * Use OBS **Interact (Взаимодействовать)** to click buttons on the HUD.
@@ -68,7 +71,9 @@ flowchart LR
 
 **Cockpit Telemetry Stream Overlay** — это высокопроизводительный приборный комплекс для стримеров Euro Truck Simulator 2 и American Truck Simulator. Оверлей разработан с акцентом на реалистичность, отсутствие визуального мусора в лобовом стекле и нулевую задержку передачи телеметрии.
 
-### ✨ Ключевые возможности и релиз v1.1.0
+### ✨ Ключевые возможности и релиз v1.1.1
+* 📟 **Автономный терминал обновлений Pip-Boy 3000:** Встроенный модуль проверки релизов на GitHub в аутентичном стиле зелёного кинескопа Fallout со звуками механической печатной машинки, выключением CRT и полной поддержкой русского и английского языков.
+* 💖 **Поддержка проекта:** Интерактивная кнопка «💖 ПОДДЕРЖАТЬ ПРОЕКТ» в мастере установки со ссылкой на DonationAlerts автора.
 * 🚌 **Полная поддержка ETS2 DLC Coaches:** Нативное распознавание автобусных рейсов (`bus_job`), остановок отправления и назначения (`source_stop.*` ➔ `destination_stop.*`) и вывод показателя комфорта (**`КОМФОРТ: XX%`**).
 * ⚡ **Прямой нативный плагин SCS SDK 1.16 (`scs_direct_telemetry.dll`):** Передача данных через Shared Memory (`Local\FooZzeeSCSTelemetry`) без сторонних программ-посредников.
   * Новые каналы: `bus_job.average_satisfaction`, `rest.stop` (таймер отдыха), `truck.electric.enabled` (зажигание), `truck.engine.enabled` (двигатель).
@@ -79,7 +84,7 @@ flowchart LR
 * ⚡ **1-клик графический установщик (`Install-Overlay.bat`):** Автоматический поиск игр в Steam, установка плагина, защищённое поле токена DonationAlerts и ярлык на Рабочем столе.
 
 ### ⚡ Быстрый старт
-1. Скачайте архив **`ETS2-ATS-Stream-Overlay-v1.1.0.zip`** из раздела [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
+1. Скачайте архив **`ETS2-ATS-Stream-Overlay-v1.1.1.zip`** из раздела [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
 2. Распакуйте архив в удобную папку (например, `C:\ETS2-ATS-Stream-Overlay`).
 3. Запустите **`Install-Overlay.bat`**, введите никнейм Twitch и токен DonationAlerts, затем нажмите **Установить**.
 4. Перед началом стрима запустите ярлык на Рабочем столе: **`ETS2-ATS Overlay Bridge`**.

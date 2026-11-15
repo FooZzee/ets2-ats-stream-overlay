@@ -1,11 +1,11 @@
-# 📜 История версий проекта (Changelog)
+﻿# 📜 История версий проекта (Changelog)
 
 > **ETS2 / ATS Cockpit Telemetry Stream Overlay**  
 > Все значимые изменения документируются в соответствии со стандартами [Keep a Changelog](https://keepachangelog.com/) и [Semantic Versioning 2.0.0](https://semver.org/).
 
-[![Keep a Changelog](https://img.shields.io/badge/Changelog-Keep%20a%20Changelog%201.1.0-orange?style=for-the-badge&logo=git)](https://keepachangelog.com/)
+[![Keep a Changelog](https://img.shields.io/badge/Changelog-Keep%20a%20Changelog%201.1.1-orange?style=for-the-badge&logo=git)](https://keepachangelog.com/)
 [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-blue?style=for-the-badge&logo=semver)](https://semver.org/)
-[![Latest Release](https://img.shields.io/badge/Релиз-v1.1.0-green?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.1.0)
+[![Latest Release](https://img.shields.io/badge/Релиз-v1.1.1-green?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.1.1)
 [![License](https://img.shields.io/badge/Лицензия-MIT-purple?style=for-the-badge)](./LICENSE)
 
 ---
@@ -16,8 +16,42 @@
 
 ## 📌 Навигация по версиям
 
+* [v1.1.1 (2026-11-15) — Автономная проверка обновлений Pip-Boy 3000, кнопка поддержки и интерактивный OBS](#111---2026-11-15)
 * [v1.1.0 (2026-11-15) — Поддержка ETS2 DLC Coaches, непрозрачная торпеда и новые каналы SCS SDK](#110---2026-11-15)
 * [v1.0.0 (2026-11-12) — Первый публичный релиз (Нативный плагин SCS SDK 1.16 и приборный HUD)](#100---2026-11-12)
+
+---
+
+## [1.1.1] - 2026-11-15
+
+> [!IMPORTANT]
+> **Релиз v1.1.1** добавляет встроенную автономную систему проверки обновлений с GitHub в стилистике терминала Pip-Boy 3000 (Fallout) с синтезом звуков CRT и печатной машинки, полную двуязычную адаптацию, кнопку поддержки автора в графическом установщике и обновлённые инструкции интеграции в OBS Studio.
+
+### 🚀 Добавлено (Added)
+
+#### 📟 Автономный терминал обновлений в стиле Pip-Boy 3000
+* **Автоматическое обнаружение релизов:** Модуль (`assets/js/ets2-updater.js`) обращается к GitHub API (`releases/latest`), сравнивает семантические версии и предупреждает о появлении нового обновления без блокировки основного стрима.
+* **Аутентичный ретро-дизайн кинескопа (CRT):** Зелёный люминофорный интерфейс (`#00ff66`), горизонтальные скан-линии (scanlines), виньетирование стеклянной колбы монитора и анимация включения / схлопывания луча CRT.
+* **Встроенный WebAudio ретро-синтезатор:** Процедурная генерация звука щелчков клавиш механической печатной машинки при выводе текста и высоковольтного спадающего звука выключения кинескопа.
+* **Интерактивные кнопки управления:**
+  * **`[ 🚀 ОБНОВИТЬ ]`** — моментально открывает страницу нового релиза на GitHub в браузере по умолчанию.
+  * **`[ 💤 ДА НУ ЕГО НАФИГ ]`** — красиво выключает терминал, сохраняя отклоненную версию в хранилище сессии, чтобы не отвлекать стримера во время рейса.
+* **Умный двуязычный парсинг описания релиза:** Модуль автоматически распознаёт и извлекает из тела релиза GitHub описание на языке пользователя (русском или английском), аккуратно очищая Markdown-разметку.
+* **Интерактивное ускорение:** Клик в любую область текста терминала мгновенно завершает посимвольную печать («Skip Typewriter»).
+* **Режим отладки и тестирования:** Поддержка проверки терминала через параметр `?test_update=1` в URL источника OBS или браузере, а также глобальный вызов `window.showPipBoyUpdateModal()`.
+
+#### 🌐 Полная двуязычность Pip-Boy терминала (RU / EN)
+* Автоматическая привязка к языку, выбранному в графическом установщике `Install-Overlay.bat` (`window.OVERLAY_CONFIG.lang`).
+* Поддержка принудительного переключения языка в тестовом режиме (`?test_update=1&lang=ru` и `?test_update=1&lang=en`).
+
+#### 💚 Фирменный неоновый логотип Pip-Boy
+* В шапку окна Pip-Boy интегрирован оптимизированный неоновый логотип (`assets/img/pipboy-logo.png`, 512×512, 157 КБ) с пульсирующим зелёным люминофорным свечением.
+
+#### 💖 Кнопка «ПОДДЕРЖАТЬ ПРОЕКТ» в установщике
+* В нижнюю панель визарда `Install-Overlay.bat` (`scripts/installer.ps1`) добавлена кнопка **«💖 ПОДДЕРЖАТЬ ПРОЕКТ»** (в русской локализации) и **«💖 SUPPORT PROJECT»** (в английской локализации), открывающая страницу DonationAlerts автора: `https://www.donationalerts.com/r/foozzee`.
+
+#### 🎥 Обновление руководства по OBS Studio
+* В документацию добавлено чёткое указание снимать галочку **«Локальный файл»** в свойствах Browser Source и добавлять оверлей через строку **«Ссылка» (URL)**. Это гарантирует полную работоспособность интерактивных кнопок приборной панели, окна Pip-Boy и ссылок.
 
 ---
 
@@ -93,5 +127,6 @@
 * **Telegram:** [@foozzeestream](https://t.me/foozzeestream)
 * **VK:** [vk.ru/gtfun](https://vk.ru/gtfun)
 
+[1.1.1]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.0.0
