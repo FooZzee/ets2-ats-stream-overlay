@@ -1,5 +1,5 @@
 /**
- * Модуль телеметрии кабины ETS2 / ATS (scs_direct_telemetry.dll SCS SDK 1.16 Shared Memory -> HTTP 30002),
+ * Модуль телеметрии кабины ETS2 / ATS (overlayobs_foozzee_telemetry.dll SCS SDK 1.16 Shared Memory -> HTTP 30002),
  * локализации RU/EN, синхронизации config.js, 2-рядной торпеды и тестового режима (?test=1).
  */
 (function initETS2Telemetry(global) {
@@ -63,6 +63,8 @@
       cargoPrefix: 'ГРУЗ:',
       truckStandby: 'ТЯГАЧ // ОЖИДАНИЕ',
       freeRoam: 'СВОБОДНЫЙ РЕЙС',
+      freightJob: 'ГРУЗОВОЙ РЕЙС',
+      freightJobTitle: 'Грузовой рейс',
       trailerAttachedEmpty: 'С ПРИЦЕПОМ (ПУСТОЙ)',
       noTrailer: 'БЕЗ ПРИЦЕПА',
       coachPassengerRoute: 'ПАССАЖИРСКИЙ РЕЙС',
@@ -154,6 +156,8 @@
       cargoPrefix: 'CARGO:',
       truckStandby: 'TRUCK // STANDBY',
       freeRoam: 'FREE ROAM',
+      freightJob: 'FREIGHT',
+      freightJobTitle: 'Freight cargo trip',
       trailerAttachedEmpty: 'TRAILER ATTACHED (EMPTY)',
       noTrailer: 'NO TRAILER',
       coachPassengerRoute: 'PASSENGERS',
@@ -1843,19 +1847,23 @@
 
   function resolveTrailerAndCargoState(data, jobState) {
     const cargoName = extractCargoName(data);
+    const cargoLower = (cargoName || '').toLowerCase();
+    const isCargoPassengers = cargoLower.includes('пассажир') || cargoLower.includes('passenger');
     const massKg = jobState && jobState.massKg;
     const massText = (massKg !== null && massKg !== undefined && Number.isFinite(massKg) && massKg > 0)
       ? formatCargoMassTons(massKg)
       : '';
 
-    const isCoachOrPassenger = Boolean(
-      (jobState && (jobState.isCoach || (jobState.hasJob && !isTrailerConnected(data)))) ||
-      (data && data.cfg && data.cfg.job && (data.cfg.job.busJob || data.cfg.job.market === 'bus_job')) ||
-      (data && (data.jobMarket === 'bus_job' || data.isBusJob)) ||
-      (cargoName && (cargoName.toLowerCase().includes('пассажир') || cargoName.toLowerCase().includes('passenger')))
-    );
+    // Эталонная проверка автобусного рейса (DLC Coaches / bus_job):
+    // При наличии реального груза с массой (не пассажиры) - это всегда грузовой рейс!
+    const isBusJob = Boolean(
+      (jobState && jobState.isBusJob) ||
+      (data && (data.isBusJob || data.busJob || (data.trip && (data.trip.isBusJob || data.trip.busJob || data.trip.marketType === 'bus_job')))) ||
+      (data && data.cfg && data.cfg.job && (data.cfg.job.busJob || data.cfg.job.isBusJob || data.cfg.job.market === 'bus_job')) ||
+      isCargoPassengers
+    ) && (!cargoName || isCargoPassengers || (massKg === 0 && !cargoName));
 
-    if (isCoachOrPassenger) {
+    if (isBusJob) {
       const busSat = parseFiniteTelemetryNumber(
         data.busSat ?? (data.tel && data.tel.busSat) ?? (data.trip && data.trip.busSat) ?? (data.cfg && data.cfg.bus && data.cfg.bus.satisfaction)
       );
@@ -2244,14 +2252,6 @@
       }
     });
 
-    const truckIdProbe = String((data.cfg && data.cfg.truck && data.cfg.truck.id) || (data.truck && data.truck.id) || '').toLowerCase();
-    const truckNameProbe = String((data.cfg && data.cfg.truck && data.cfg.truck.name) || (data.truck && data.truck.name) || data.truckName || '').toLowerCase();
-    const isCoachVehicle = truckIdProbe.includes('touring') || truckIdProbe.includes('coach') || truckIdProbe.includes('bus') ||
-                          truckNameProbe.includes('touring') || truckNameProbe.includes('coach') || truckNameProbe.includes('bus');
-    if (isCoachVehicle) {
-      isBusJobFlag = true;
-    }
-
     // 100% раздельная локализация и очистка названий городов и остановок (RU / EN)
     srcCity = localizePlaceName(srcCity, srcCityId, lang);
     dstCity = localizePlaceName(dstCity, dstCityId, lang);
@@ -2262,6 +2262,8 @@
     const effectiveDst = dstCity || dstCompany;
 
     const cargoName = extractCargoName(data);
+    const cargoLower = (cargoName || '').toLowerCase();
+    const isCargoPassengers = cargoLower.includes('пассажир') || cargoLower.includes('passenger');
 
     // Сценарий 1: Рейс с заданным пунктом назначения/отправления (груз или автобусный маршрут)
     const hasJobFromEndpoints = Boolean(
@@ -2273,10 +2275,24 @@
       (plannedKm !== null && plannedKm > 0)
     );
 
-    const isCoach = Boolean(
-      hasJobFromEndpoints &&
-      (!cargoName || massKg === 0 || isBusJobFlag || jobMarket === 'bus_job' || jobMarket === 'coach')
+    // Эталонная дифференциация типа рейса (SCS Telemetry SDK 1.16 / rtrucksim_telemetry):
+    // При наличии реального груза (не пассажиры) с ненулевой массой — это всегда ГРУЗОВОЙ рейс,
+    // даже если тягач из модов построен на автобусном шасси!
+    let isBusJob = Boolean(
+      (data.cfg && data.cfg.isBusJob) ||
+      (data.cfg && data.cfg.job && (data.cfg.job.busJob || data.cfg.job.isBusJob || data.cfg.job.market === 'bus_job')) ||
+      data.isBusJob ||
+      data.busJob ||
+      (data.trip && (data.trip.isBusJob || data.trip.busJob || data.trip.marketType === 'bus_job')) ||
+      (data.job && (data.job.busJob || data.job.isBusJob || data.job.jobType === 'bus_job')) ||
+      jobMarket === 'bus_job' ||
+      isBusJobFlag ||
+      isCargoPassengers
     );
+
+    if (cargoName && !isCargoPassengers && (massKg === null || massKg > 0)) {
+      isBusJob = false;
+    }
 
     const apiCfg = (config.ets2 && config.ets2.telemetryApi) || {};
     const effectiveNavInputs = navInputs || resolveNavInputs(data);
@@ -2329,7 +2345,7 @@
       const compRoute = `${srcCompany.toUpperCase()} → ${dstCompany.toUpperCase()}`;
       if (compRoute !== routeText) {
         companiesText = compRoute;
-      } else if (isCoach) {
+      } else if (isBusJob) {
         const busSat = parseFiniteTelemetryNumber(
           data.busSat ?? (data.tel && data.tel.busSat) ?? (data.trip && data.trip.busSat) ?? (data.cfg && data.cfg.bus && data.cfg.bus.satisfaction)
         );
@@ -2345,7 +2361,7 @@
     } else if (srcCompany || dstCompany) {
       const singleComp = (srcCompany || dstCompany).toUpperCase();
       companiesText = singleComp !== routeText ? singleComp : '--';
-    } else if (isCoach) {
+    } else if (isBusJob) {
       const busSat = parseFiniteTelemetryNumber(
         data.busSat ?? (data.tel && data.tel.busSat) ?? (data.trip && data.trip.busSat) ?? (data.cfg && data.cfg.bus && data.cfg.bus.satisfaction)
       );
@@ -2358,19 +2374,27 @@
     const translatedMarket = translateJobMarket(jobMarket);
     let jobTypeText = t('freeRoam');
     if (hasJobFromEndpoints) {
-      jobTypeText = translatedMarket || (isCoach ? t('coachPassengerRoute') : '--');
+      if (isBusJob) {
+        jobTypeText = t('coachPassengerRoute');
+      } else {
+        jobTypeText = translatedMarket || t('freightJob');
+      }
     } else if (isGpsRoute) {
       jobTypeText = t('gpsRouteNextStop');
     }
 
+    const routeTag = hasJobFromEndpoints
+      ? (isBusJob ? t('coachPassengerRoute') : (tag || defaultTag))
+      : (isGpsRoute ? t('gpsRouteNextStop') : (tag || defaultTag));
+
     return {
       hasJob,
-      isCoach: isCoach || isCoachVehicle || (isGpsRoute && !isTrailerConnected(data)),
-      isCoachVehicle,
+      isBusJob,
+      isCoach: isBusJob,
       isGpsRoute,
       text: routeText,
       meta: routeMeta,
-      tag,
+      tag: routeTag,
       massKg,
       plannedKm,
       incomeText,

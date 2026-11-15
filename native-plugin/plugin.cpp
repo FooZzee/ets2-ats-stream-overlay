@@ -307,15 +307,16 @@ std::string BuildTelemetryJson() {
   j += "}";
   j += ",\"sourceCityId\":"; AppendJsonString(j, g_state.hasJob ? g_state.sourceCityId : "");
   j += ",\"destinationCityId\":"; AppendJsonString(j, g_state.hasJob ? g_state.destinationCityId : "");
-  j += ",\"bus\":{\"satisfaction\":"; AppendFloat(j, g_state.busSat, 2);
-  j += ",\"sourceStop\":{\"city\":"; AppendJsonString(j, g_state.hasJob ? (g_state.sourceStopCity.empty() ? g_state.sourceCity : g_state.sourceStopCity) : "");
-  j += ",\"cityId\":"; AppendJsonString(j, g_state.hasJob ? g_state.sourceCityId : "");
-  j += ",\"company\":"; AppendJsonString(j, g_state.hasJob ? (g_state.sourceStopName.empty() ? g_state.sourceCompany : g_state.sourceStopName) : "");
-  j += ",\"id\":"; AppendJsonString(j, g_state.hasJob ? g_state.sourceStopId : "");
-  j += "},\"destinationStop\":{\"city\":"; AppendJsonString(j, g_state.hasJob ? (g_state.destinationStopCity.empty() ? g_state.destinationCity : g_state.destinationStopCity) : "");
-  j += ",\"cityId\":"; AppendJsonString(j, g_state.hasJob ? g_state.destinationCityId : "");
-  j += ",\"company\":"; AppendJsonString(j, g_state.hasJob ? (g_state.destinationStopName.empty() ? g_state.destinationCompany : g_state.destinationStopName) : "");
-  j += ",\"id\":"; AppendJsonString(j, g_state.hasJob ? g_state.destinationStopId : "");
+  j += ",\"isBusJob\":"; j += (g_state.isBusJob ? "true" : "false");
+  j += ",\"bus\":{\"satisfaction\":"; AppendFloat(j, g_state.isBusJob ? g_state.busSat : 0.0f, 2);
+  j += ",\"sourceStop\":{\"city\":"; AppendJsonString(j, g_state.isBusJob ? g_state.sourceStopCity : "");
+  j += ",\"cityId\":"; AppendJsonString(j, g_state.isBusJob ? g_state.sourceStopId : "");
+  j += ",\"company\":"; AppendJsonString(j, g_state.isBusJob ? g_state.sourceStopName : "");
+  j += ",\"id\":"; AppendJsonString(j, g_state.isBusJob ? g_state.sourceStopId : "");
+  j += "},\"destinationStop\":{\"city\":"; AppendJsonString(j, g_state.isBusJob ? g_state.destinationStopCity : "");
+  j += ",\"cityId\":"; AppendJsonString(j, g_state.isBusJob ? g_state.destinationStopId : "");
+  j += ",\"company\":"; AppendJsonString(j, g_state.isBusJob ? g_state.destinationStopName : "");
+  j += ",\"id\":"; AppendJsonString(j, g_state.isBusJob ? g_state.destinationStopId : "");
   j += "}}";
   j += ",\"cargo\":{\"id\":"; AppendJsonString(j, g_state.hasJob ? g_state.cargoId : "");
   j += ",\"name\":"; AppendJsonString(j, g_state.hasJob ? g_state.cargo : "");
@@ -327,6 +328,9 @@ std::string BuildTelemetryJson() {
   j += ",\"cargoLoaded\":"; j += (g_state.cargoLoaded ? "true" : "false");
   j += ",\"specialJob\":"; j += (g_state.specialJob ? "true" : "false");
   j += ",\"busJob\":"; j += (g_state.isBusJob ? "true" : "false");
+  j += ",\"isBusJob\":"; j += (g_state.isBusJob ? "true" : "false");
+  j += ",\"marketType\":"; AppendJsonString(j, g_state.isBusJob ? "bus_job" : (g_state.jobMarket.empty() ? "freight" : g_state.jobMarket));
+  j += ",\"jobType\":"; AppendJsonString(j, !g_state.hasJob ? "free_roam" : (g_state.isBusJob ? "bus_job" : "freight"));
   j += "}";
   j += ",\"trailer\":{\"attached\":"; j += (trailerConnected ? "true" : "false");
   j += ",\"configured\":"; j += (g_state.hasTrailerConfig ? "true" : "false");
@@ -461,9 +465,21 @@ void CleanupSharedMemory() {
 }
 
 bool InitSharedMemory() {
+  SECURITY_DESCRIPTOR sd;
+  SECURITY_ATTRIBUTES sa;
+  sa.nLength = sizeof(sa);
+  sa.bInheritHandle = FALSE;
+  sa.lpSecurityDescriptor = nullptr;
+
+  if (InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION)) {
+    if (SetSecurityDescriptorDacl(&sd, TRUE, nullptr, FALSE)) {
+      sa.lpSecurityDescriptor = &sd;
+    }
+  }
+
   g_mapHandle = CreateFileMappingA(
     INVALID_HANDLE_VALUE,
-    nullptr,
+    sa.lpSecurityDescriptor ? &sa : nullptr,
     PAGE_READWRITE,
     0,
     kSharedMemSize,
@@ -621,60 +637,8 @@ inline bool TryGetAttrU64(const scs_named_value_t* attr, uint64_t& out) {
   return false;
 }
 
-void DumpEventAttributes(const char* eventType, const char* id, const scs_named_value_t* attributes) {
-  FILE* f = std::fopen("D:\\html\\Overlay\\scs_sdk_dump.log", "a");
-  if (!f) return;
-  SYSTEMTIME st;
-  GetLocalTime(&st);
-  std::fprintf(f, "[%02d:%02d:%02d.%03d] [%s] ID='%s'\n",
-               st.wHour, st.wMinute, st.wSecond, st.wMilliseconds,
-               eventType, id ? id : "<null>");
-  if (attributes) {
-    for (const scs_named_value_t* attr = attributes; attr->name != nullptr; ++attr) {
-      std::fprintf(f, "  attr: '%s' (type=%u) -> ", attr->name, attr->value.type);
-      switch (attr->value.type) {
-        case SCS_VALUE_TYPE_bool:
-          std::fprintf(f, "%s (bool)\n", attr->value.value_bool.value ? "true" : "false");
-          break;
-        case SCS_VALUE_TYPE_s32:
-          std::fprintf(f, "%d (s32)\n", attr->value.value_s32.value);
-          break;
-        case SCS_VALUE_TYPE_u32:
-          std::fprintf(f, "%u (u32)\n", attr->value.value_u32.value);
-          break;
-        case SCS_VALUE_TYPE_u64:
-          std::fprintf(f, "%llu (u64)\n", static_cast<unsigned long long>(attr->value.value_u64.value));
-          break;
-        case SCS_VALUE_TYPE_s64:
-          std::fprintf(f, "%lld (s64)\n", static_cast<long long>(attr->value.value_s64.value));
-          break;
-        case SCS_VALUE_TYPE_float:
-          std::fprintf(f, "%f (float)\n", attr->value.value_float.value);
-          break;
-        case SCS_VALUE_TYPE_double:
-          std::fprintf(f, "%lf (double)\n", attr->value.value_double.value);
-          break;
-        case SCS_VALUE_TYPE_string:
-          std::fprintf(f, "\"%s\" (string)\n", attr->value.value_string.value ? attr->value.value_string.value : "<null>");
-          break;
-        case SCS_VALUE_TYPE_fvector:
-          std::fprintf(f, "(%f, %f, %f) (fvector)\n", attr->value.value_fvector.x, attr->value.value_fvector.y, attr->value.value_fvector.z);
-          break;
-        case SCS_VALUE_TYPE_dvector:
-          std::fprintf(f, "(%lf, %lf, %lf) (dvector)\n", attr->value.value_dvector.x, attr->value.value_dvector.y, attr->value.value_dvector.z);
-          break;
-        case SCS_VALUE_TYPE_euler:
-          std::fprintf(f, "h=%f, p=%f, r=%f (euler)\n", attr->value.value_euler.heading, attr->value.value_euler.pitch, attr->value.value_euler.roll);
-          break;
-        default:
-          std::fprintf(f, "<other type>\n");
-          break;
-      }
-    }
-  }
-  std::fprintf(f, "\n");
-  std::fflush(f);
-  std::fclose(f);
+void DumpEventAttributes(const char*, const char*, const scs_named_value_t*) {
+  // Debug disk dump disabled in production
 }
 
 SCSAPI_VOID OnGameplayEvent(const scs_event_t, const void* const event_info, const scs_context_t) {
@@ -896,29 +860,14 @@ SCSAPI_VOID OnConfigurationEvent(const scs_event_t, const void* const event_info
     if (!IsValidPlaceName(g_state.sourceStopName)) g_state.sourceStopName.clear();
     if (!IsValidPlaceName(g_state.destinationStopName)) g_state.destinationStopName.clear();
 
-    // Интеллектуальный фоллбек для городов из названий остановок / станций
-    if (g_state.sourceCity.empty()) {
-      if (!g_state.sourceStopCity.empty()) g_state.sourceCity = g_state.sourceStopCity;
-      else if (!g_state.sourceStopName.empty()) g_state.sourceCity = g_state.sourceStopName;
-      else if (!g_state.sourceCompany.empty()) g_state.sourceCity = g_state.sourceCompany;
-    }
-    if (g_state.destinationCity.empty()) {
-      if (!g_state.destinationStopCity.empty()) g_state.destinationCity = g_state.destinationStopCity;
-      else if (!g_state.destinationStopName.empty()) g_state.destinationCity = g_state.destinationStopName;
-      else if (!g_state.destinationCompany.empty()) g_state.destinationCity = g_state.destinationCompany;
-    }
+    // Эталонная дифференциация типов рейсов (SCS SDK 1.16 / rtrucksim_telemetry):
+    const bool isExplicitBusConfig = isBusConfig || (g_state.jobMarket == "bus_job") || (g_state.cargoId == "passengers");
+    const bool hasRealCargo = (!g_state.cargo.empty() && _stricmp(g_state.cargo.c_str(), "passengers") != 0 && _stricmp(g_state.cargo.c_str(), "пассажиры") != 0) ||
+                              (!g_state.cargoId.empty() && g_state.cargoId != "passengers") ||
+                              (g_state.cargoMassKg > 0.0f && g_state.cargoId != "passengers");
 
-    // Фоллбек для идентификаторов городов и остановок (cityId)
-    if (g_state.sourceCityId.empty()) {
-      if (!g_state.sourceStopId.empty()) g_state.sourceCityId = g_state.sourceStopId;
-      else if (!g_state.sourceCompanyId.empty()) g_state.sourceCityId = g_state.sourceCompanyId;
-    }
-    if (g_state.destinationCityId.empty()) {
-      if (!g_state.destinationStopId.empty()) g_state.destinationCityId = g_state.destinationStopId;
-      else if (!g_state.destinationCompanyId.empty()) g_state.destinationCityId = g_state.destinationCompanyId;
-    }
-
-    if (isBusConfig) {
+    if (isExplicitBusConfig && !hasRealCargo) {
+      g_state.isBusJob = true;
       if (g_state.jobMarket.empty()) {
         g_state.jobMarket = "bus_job";
       }
@@ -928,6 +877,35 @@ SCSAPI_VOID OnConfigurationEvent(const scs_event_t, const void* const event_info
       if (g_state.cargoId.empty()) {
         g_state.cargoId = "passengers";
       }
+
+      // Для автобусного рейса: если города отправления/назначения пусты, фоллбечим на остановки
+      if (g_state.sourceCity.empty()) {
+        if (!g_state.sourceStopCity.empty()) g_state.sourceCity = g_state.sourceStopCity;
+        else if (!g_state.sourceStopName.empty()) g_state.sourceCity = g_state.sourceStopName;
+        else if (!g_state.sourceCompany.empty()) g_state.sourceCity = g_state.sourceCompany;
+      }
+      if (g_state.destinationCity.empty()) {
+        if (!g_state.destinationStopCity.empty()) g_state.destinationCity = g_state.destinationStopCity;
+        else if (!g_state.destinationStopName.empty()) g_state.destinationCity = g_state.destinationStopName;
+        else if (!g_state.destinationCompany.empty()) g_state.destinationCity = g_state.destinationCompany;
+      }
+      if (g_state.sourceCityId.empty()) {
+        if (!g_state.sourceStopId.empty()) g_state.sourceCityId = g_state.sourceStopId;
+        else if (!g_state.sourceCompanyId.empty()) g_state.sourceCityId = g_state.sourceCompanyId;
+      }
+      if (g_state.destinationCityId.empty()) {
+        if (!g_state.destinationStopId.empty()) g_state.destinationCityId = g_state.destinationStopId;
+        else if (!g_state.destinationCompanyId.empty()) g_state.destinationCityId = g_state.destinationCompanyId;
+      }
+    } else {
+      // Обычный грузовой рейс (или порожний): гарантированно сбрасываем поля автобусных остановок
+      g_state.isBusJob = false;
+      g_state.sourceStopCity.clear();
+      g_state.sourceStopName.clear();
+      g_state.sourceStopId.clear();
+      g_state.destinationStopCity.clear();
+      g_state.destinationStopName.clear();
+      g_state.destinationStopId.clear();
     }
 
     const bool hasAnyJob = !g_state.cargoId.empty() || !g_state.cargo.empty() ||
@@ -935,7 +913,7 @@ SCSAPI_VOID OnConfigurationEvent(const scs_event_t, const void* const event_info
                            !g_state.destinationStopCity.empty() || !g_state.sourceStopCity.empty() ||
                            !g_state.destinationCompany.empty() || !g_state.sourceCompany.empty() ||
                            g_state.plannedDistanceKm > 0 || g_state.income > 0 ||
-                           (isBusConfig && (!g_state.sourceCity.empty() || !g_state.destinationCity.empty() || !g_state.sourceCompany.empty() || !g_state.destinationCompany.empty()));
+                           (g_state.isBusJob && (!g_state.sourceCity.empty() || !g_state.destinationCity.empty() || !g_state.sourceCompany.empty() || !g_state.destinationCompany.empty()));
     if (hasAnyJob) {
       g_state.hasJob = true;
     } else {
@@ -987,7 +965,7 @@ SCSAPI_RESULT scs_telemetry_init(const scs_u32_t version, const scs_telemetry_in
 
   if (!InitSharedMemory()) {
     if (g_gameLog) {
-      g_gameLog(SCS_LOG_TYPE_error, "[scs_direct_telemetry] Failed to create Shared Memory (Local\\FooZzeeSCSTelemetry).");
+      g_gameLog(SCS_LOG_TYPE_error, "[overlayobs_foozzee_telemetry] Failed to create Shared Memory (Local\\FooZzeeSCSTelemetry).");
     }
     return SCS_RESULT_generic_error;
   }
@@ -998,18 +976,6 @@ SCSAPI_RESULT scs_telemetry_init(const scs_u32_t version, const scs_telemetry_in
   initParams->register_for_event(SCS_TELEMETRY_EVENT_started,       OnPauseOrStartEvent,  nullptr);
   initParams->register_for_event(SCS_TELEMETRY_EVENT_configuration, OnConfigurationEvent, nullptr);
   initParams->register_for_event(SCS_TELEMETRY_EVENT_gameplay,      OnGameplayEvent,      nullptr);
-
-  FILE* df = std::fopen("D:\\html\\Overlay\\scs_sdk_dump.log", "a");
-  if (df) {
-    SYSTEMTIME st;
-    GetLocalTime(&st);
-    std::fprintf(df, "\n============================================================\n");
-    std::fprintf(df, "[%02d:%02d:%02d.%03d] [INIT] scs_direct_telemetry started (gameId=%u)\n",
-                 st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, g_state.gameId);
-    std::fprintf(df, "============================================================\n");
-    std::fflush(df);
-    std::fclose(df);
-  }
 
   // Movement & controls
   RegisterFloat(initParams, SCS_TELEMETRY_TRUCK_CHANNEL_speed,                  &g_state.speedMs);
@@ -1090,7 +1056,7 @@ SCSAPI_RESULT scs_telemetry_init(const scs_u32_t version, const scs_telemetry_in
   WriteSharedMemorySnapshot(true, true);
 
   if (g_gameLog) {
-    g_gameLog(SCS_LOG_TYPE_message, "[scs_direct_telemetry] Initialized JSON Shared Memory (Local\\FooZzeeSCSTelemetry).");
+    g_gameLog(SCS_LOG_TYPE_message, "[overlayobs_foozzee_telemetry] Initialized JSON Shared Memory (Local\\FooZzeeSCSTelemetry).");
   }
   return SCS_RESULT_ok;
 }
@@ -1098,6 +1064,6 @@ SCSAPI_RESULT scs_telemetry_init(const scs_u32_t version, const scs_telemetry_in
 SCSAPI_VOID scs_telemetry_shutdown(void) {
   CleanupSharedMemory();
   if (g_gameLog) {
-    g_gameLog(SCS_LOG_TYPE_message, "[scs_direct_telemetry] Shutdown completed.");
+    g_gameLog(SCS_LOG_TYPE_message, "[overlayobs_foozzee_telemetry] Shutdown completed.");
   }
 }

@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-  Локальная сборка x64 C++ плагина scs_direct_telemetry.dll (SCS SDK 1.16)
+  Локальная сборка x64 C++ плагина overlayobs_foozzee_telemetry.dll (SCS SDK 1.16)
   и автоматическая установка в папки Euro Truck Simulator 2 и American Truck Simulator.
 #>
 $ErrorActionPreference = 'Stop'
@@ -10,10 +10,11 @@ $projectRoot = Split-Path -Parent $PSScriptRoot
 $nativeDir   = Join-Path $projectRoot 'native-plugin'
 $buildDir    = Join-Path $nativeDir 'build'
 $redistDir   = Join-Path $projectRoot 'redist'
-$redistDll   = Join-Path $redistDir 'scs_direct_telemetry.dll'
+$pluginName  = 'overlayobs_foozzee_telemetry'
+$redistDll   = Join-Path $redistDir "$pluginName.dll"
 
 Write-Host "=================================================================" -ForegroundColor DarkGray
-Write-Host "  Сборка и установка плагина scs_direct_telemetry.dll (x64)" -ForegroundColor Yellow
+Write-Host "  Сборка и установка плагина $pluginName.dll (x64)" -ForegroundColor Yellow
 Write-Host "=================================================================" -ForegroundColor DarkGray
 
 if (-not (Test-Path (Join-Path $nativeDir 'CMakeLists.txt'))) {
@@ -77,7 +78,7 @@ if (-not (Test-Path $buildDir)) {
   [void](New-Item -ItemType Directory -Path $buildDir -Force)
 }
 
-Write-Host "`n[1/3] Конфигурация и сборка scs_direct_telemetry.dll (Release x64)..." -ForegroundColor Yellow
+Write-Host "`n[1/3] Конфигурация и сборка $pluginName.dll (Release x64)..." -ForegroundColor Yellow
 $cmdArgs = "/d /s /c `"call `"$vcvars64`" >nul && `"$cmakeExe`" -S `"$nativeDir`" -B `"$buildDir`" -A x64 && `"$cmakeExe`" --build `"$buildDir`" --config Release`""
 $psi = [System.Diagnostics.ProcessStartInfo]::new('cmd.exe', $cmdArgs)
 $psi.WorkingDirectory = $projectRoot
@@ -90,12 +91,12 @@ if ($proc.ExitCode -ne 0) {
 }
 
 $builtDllCandidates = @(
-  (Join-Path $buildDir 'Release\scs_direct_telemetry.dll'),
-  (Join-Path $buildDir 'scs_direct_telemetry.dll')
+  (Join-Path $buildDir "Release\$pluginName.dll"),
+  (Join-Path $buildDir "$pluginName.dll")
 )
 $builtDll = $builtDllCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
 if (-not $builtDll) {
-  Write-Host "[ОШИБКА] Сборка завершилась, но scs_direct_telemetry.dll не найден в $buildDir." -ForegroundColor Red
+  Write-Host "[ОШИБКА] Сборка завершилась, но $pluginName.dll не найден в $buildDir." -ForegroundColor Red
   exit 1
 }
 
@@ -103,7 +104,16 @@ if (-not (Test-Path $redistDir)) {
   [void](New-Item -ItemType Directory -Path $redistDir -Force)
 }
 Copy-Item -Path $builtDll -Destination $redistDll -Force
-Write-Host "[2/3] [OK] DLL сохранена в .\redist\scs_direct_telemetry.dll" -ForegroundColor Green
+Write-Host "[2/3] [OK] DLL сохранена в .\redist\$pluginName.dll" -ForegroundColor Green
+
+# Очистка устаревшего scs_direct_telemetry.dll в redist
+$oldRedistDll = Join-Path $redistDir 'scs_direct_telemetry.dll'
+if (Test-Path -LiteralPath $oldRedistDll) {
+  try {
+    Remove-Item -LiteralPath $oldRedistDll -Force -ErrorAction SilentlyContinue
+    Write-Host "  [Очистка] Удален устаревший redist\scs_direct_telemetry.dll" -ForegroundColor DarkGray
+  } catch {}
+}
 
 # 3. Автопоиск ETS2 / ATS через реестр Steam и libraryfolders.vdf
 Write-Host "`n[3/3] Поиск установленных ETS2 и ATS в библиотеках Steam..." -ForegroundColor Yellow
@@ -185,18 +195,18 @@ foreach ($lib in $libraryRoots) {
       [void](New-Item -ItemType Directory -Path $pluginsDir -Force)
     }
 
-    $oldRtruckDll = Join-Path $pluginsDir 'rtrucksim_telemetry.dll'
-    if (Test-Path $oldRtruckDll) {
+    # Удаление устаревшего scs_direct_telemetry.dll из папки игры
+    $oldGameDll = Join-Path $pluginsDir 'scs_direct_telemetry.dll'
+    if (Test-Path -LiteralPath $oldGameDll) {
       try {
-        $bakPath = Join-Path $pluginsDir 'rtrucksim_telemetry.dll.bak'
-        Move-Item -Path $oldRtruckDll -Destination $bakPath -Force -ErrorAction Stop
-        Write-Host "  [$($game.Code)] Старый rtrucksim_telemetry.dll переименован в rtrucksim_telemetry.dll.bak" -ForegroundColor DarkYellow
+        Remove-Item -LiteralPath $oldGameDll -Force -ErrorAction Stop
+        Write-Host "  [$($game.Code)] Удален устаревший плагин: $oldGameDll" -ForegroundColor DarkGray
       } catch {
-        Write-Host "  [$($game.Code)] [ПРЕДУПРЕЖДЕНИЕ] Не удалось переименовать старый плагин: $($_.Exception.Message)" -ForegroundColor DarkGray
+        Write-Host "  [$($game.Code)] [ПРЕДУПРЕЖДЕНИЕ] Не удалось удалить устаревший $oldGameDll (закройте игру, если она запущена): $($_.Exception.Message)" -ForegroundColor DarkYellow
       }
     }
 
-    $dstDll = Join-Path $pluginsDir 'scs_direct_telemetry.dll'
+    $dstDll = Join-Path $pluginsDir "$pluginName.dll"
     try {
       Copy-Item -Path $redistDll -Destination $dstDll -Force
       Write-Host "  [$($game.Code)] Установлено: $dstDll" -ForegroundColor Green

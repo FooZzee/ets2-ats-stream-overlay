@@ -1,7 +1,7 @@
 ﻿<#
 .SYNOPSIS
   Local HTTP telemetry bridge for ETS2 / ATS (SCS Telemetry SDK 1.16 Shared Memory).
-  - Reads Shared Memory (Local\FooZzeeSCSTelemetry) from scs_direct_telemetry.dll -> HTTP http://127.0.0.1:30002/telemetry
+  - Reads Shared Memory (Local\FooZzeeSCSTelemetry) from overlayobs_foozzee_telemetry.dll -> HTTP http://127.0.0.1:30002/telemetry
   - Pure native SCS SDK 1.16 bridge (no third-party proxy apps required)
 #>
 param(
@@ -22,7 +22,8 @@ function Resolve-BridgeLanguage {
     return $RequestedLang
   }
 
-  $configPath = Join-Path (Split-Path -Parent $PSScriptRoot) 'config.js'
+  $baseDir = if ($PSScriptRoot) { Split-Path -Parent $PSScriptRoot } else { (Get-Location).Path }
+  $configPath = Join-Path $baseDir 'config.js'
   if (Test-Path -LiteralPath $configPath) {
     try {
       $cfgRaw = Get-Content -LiteralPath $configPath -Raw -Encoding UTF8
@@ -376,30 +377,69 @@ function Read-SharedMemoryTelemetry {
     $fuelAmount  = if ($null -ne $telIn.fuel) { [double]$telIn.fuel } else { 0.0 }
     $fuelAvgL100 = if ($null -ne $telIn.fuelAvg) { [Math]::Round([double]$telIn.fuelAvg, 1) } else { 0.0 }
 
-    $srcCityRaw       = Clean-PlaceName (if ($null -ne $cfgIn -and $null -ne $cfgIn.source) { [string]$cfgIn.source.city } else { '' })
-    $srcCompRaw       = Clean-PlaceName (if ($null -ne $cfgIn -and $null -ne $cfgIn.source) { [string]$cfgIn.source.company } else { '' })
-    $dstCityRaw       = Clean-PlaceName (if ($null -ne $cfgIn -and $null -ne $cfgIn.destination) { [string]$cfgIn.destination.city } else { '' })
-    $dstCompRaw       = Clean-PlaceName (if ($null -ne $cfgIn -and $null -ne $cfgIn.destination) { [string]$cfgIn.destination.company } else { '' })
+    $rawSrcCity       = if ($null -ne $cfgIn -and $null -ne $cfgIn.source) { [string]$cfgIn.source.city } else { '' }
+    $rawSrcComp       = if ($null -ne $cfgIn -and $null -ne $cfgIn.source) { [string]$cfgIn.source.company } else { '' }
+    $rawDstCity       = if ($null -ne $cfgIn -and $null -ne $cfgIn.destination) { [string]$cfgIn.destination.city } else { '' }
+    $rawDstComp       = if ($null -ne $cfgIn -and $null -ne $cfgIn.destination) { [string]$cfgIn.destination.company } else { '' }
+
+    $srcCityRaw       = Clean-PlaceName -raw $rawSrcCity
+    $srcCompRaw       = Clean-PlaceName -raw $rawSrcComp
+    $dstCityRaw       = Clean-PlaceName -raw $rawDstCity
+    $dstCompRaw       = Clean-PlaceName -raw $rawDstComp
 
     $srcCityIdRaw     = if ($null -ne $cfgIn -and $null -ne $cfgIn.source -and -not [string]::IsNullOrWhiteSpace($cfgIn.source.cityId)) { [string]$cfgIn.source.cityId } elseif ($null -ne $cfgIn -and -not [string]::IsNullOrWhiteSpace($cfgIn.sourceCityId)) { [string]$cfgIn.sourceCityId } elseif ($null -ne $cfgIn -and $null -ne $cfgIn.source -and -not [string]::IsNullOrWhiteSpace($cfgIn.source.id)) { [string]$cfgIn.source.id } else { '' }
     $srcCompIdRaw     = if ($null -ne $cfgIn -and $null -ne $cfgIn.source -and -not [string]::IsNullOrWhiteSpace($cfgIn.source.companyId)) { [string]$cfgIn.source.companyId } else { '' }
     $dstCityIdRaw     = if ($null -ne $cfgIn -and $null -ne $cfgIn.destination -and -not [string]::IsNullOrWhiteSpace($cfgIn.destination.cityId)) { [string]$cfgIn.destination.cityId } elseif ($null -ne $cfgIn -and -not [string]::IsNullOrWhiteSpace($cfgIn.destinationCityId)) { [string]$cfgIn.destinationCityId } elseif ($null -ne $cfgIn -and $null -ne $cfgIn.destination -and -not [string]::IsNullOrWhiteSpace($cfgIn.destination.id)) { [string]$cfgIn.destination.id } else { '' }
     $dstCompIdRaw     = if ($null -ne $cfgIn -and $null -ne $cfgIn.destination -and -not [string]::IsNullOrWhiteSpace($cfgIn.destination.companyId)) { [string]$cfgIn.destination.companyId } else { '' }
 
-    if ([string]::IsNullOrWhiteSpace($srcCityRaw) -and $null -ne $cfgIn -and $null -ne $cfgIn.bus -and $null -ne $cfgIn.bus.sourceStop) {
-      $srcCityRaw = Clean-PlaceName ([string]$cfgIn.bus.sourceStop.city)
-      if ([string]::IsNullOrWhiteSpace($srcCompRaw)) { $srcCompRaw = Clean-PlaceName ([string]$cfgIn.bus.sourceStop.company) }
-    }
-    if ([string]::IsNullOrWhiteSpace($dstCityRaw) -and $null -ne $cfgIn -and $null -ne $cfgIn.bus -and $null -ne $cfgIn.bus.destinationStop) {
-      $dstCityRaw = Clean-PlaceName ([string]$cfgIn.bus.destinationStop.city)
-      if ([string]::IsNullOrWhiteSpace($dstCompRaw)) { $dstCompRaw = Clean-PlaceName ([string]$cfgIn.bus.destinationStop.company) }
+    $cargoRaw         = if ($null -ne $cfgIn -and $null -ne $cfgIn.cargo) { [string]$cfgIn.cargo.name } else { '' }
+    $cargoIdRaw       = if ($null -ne $cfgIn -and $null -ne $cfgIn.cargo) { [string]$cfgIn.cargo.id } else { '' }
+    $cargoMassKgRaw   = if ($null -ne $cfgIn -and $null -ne $cfgIn.cargo -and $null -ne $cfgIn.cargo.mass) { [double]$cfgIn.cargo.mass } else { 0.0 }
+    $plannedDistKmRaw = if ($null -ne $cfgIn -and $null -ne $cfgIn.planned_distance -and $null -ne $cfgIn.planned_distance.km) { [int64]$cfgIn.planned_distance.km } else { [int64]0 }
+    $incomeRaw        = if ($null -ne $cfgIn -and $null -ne $cfgIn.income) { [int64]$cfgIn.income } else { [int64]0 }
+    $jobMarketRaw     = if ($null -ne $cfgIn -and $null -ne $cfgIn.job) { [string]$cfgIn.job.market } else { '' }
+
+    # Эталонная дифференциация типов рейсов (SCS SDK 1.16 / rtrucksim_telemetry):
+    # Если перевозится реальный груз (не пассажиры) с ненулевой массой — это ГРУЗОВОЙ рейс,
+    # даже если шасси тягача из модов названо 'bus' / 'coach'!
+    $isCargoPassengers = ($cargoIdRaw -eq 'passengers' -or $cargoRaw -like '*passengers*' -or $cargoRaw -like '*пассажир*')
+    $hasRealCargo      = (-not [string]::IsNullOrWhiteSpace($cargoRaw) -and -not $isCargoPassengers) -or ($cargoMassKgRaw -gt 0 -and -not $isCargoPassengers)
+
+    $isBusJobRaw = $false
+    if (-not $hasRealCargo) {
+      if ($null -ne $cfgIn -and $null -ne $cfgIn.isBusJob -and [bool]$cfgIn.isBusJob) {
+        $isBusJobRaw = $true
+      } elseif ($null -ne $cfgIn -and $null -ne $cfgIn.job -and ($null -ne $cfgIn.job.busJob -and [bool]$cfgIn.job.busJob -or [string]$cfgIn.job.market -eq 'bus_job')) {
+        $isBusJobRaw = $true
+      } elseif ($isCargoPassengers) {
+        $isBusJobRaw = $true
+      }
     }
 
-    if ([string]::IsNullOrWhiteSpace($srcCityIdRaw) -and $null -ne $cfgIn -and $null -ne $cfgIn.bus -and $null -ne $cfgIn.bus.sourceStop) {
-      $srcCityIdRaw = if (-not [string]::IsNullOrWhiteSpace($cfgIn.bus.sourceStop.cityId)) { [string]$cfgIn.bus.sourceStop.cityId } else { [string]$cfgIn.bus.sourceStop.id }
-    }
-    if ([string]::IsNullOrWhiteSpace($dstCityIdRaw) -and $null -ne $cfgIn -and $null -ne $cfgIn.bus -and $null -ne $cfgIn.bus.destinationStop) {
-      $dstCityIdRaw = if (-not [string]::IsNullOrWhiteSpace($cfgIn.bus.destinationStop.cityId)) { [string]$cfgIn.bus.destinationStop.cityId } else { [string]$cfgIn.bus.destinationStop.id }
+    # Для автобусных рейсов при необходимости фоллбечим города отправления/назначения на остановки
+    if ($isBusJobRaw) {
+      if ([string]::IsNullOrWhiteSpace($srcCityRaw) -and $null -ne $cfgIn -and $null -ne $cfgIn.bus -and $null -ne $cfgIn.bus.sourceStop) {
+        $busSrcCity = [string]$cfgIn.bus.sourceStop.city
+        $srcCityRaw = Clean-PlaceName -raw $busSrcCity
+        if ([string]::IsNullOrWhiteSpace($srcCompRaw)) {
+          $busSrcComp = [string]$cfgIn.bus.sourceStop.company
+          $srcCompRaw = Clean-PlaceName -raw $busSrcComp
+        }
+      }
+      if ([string]::IsNullOrWhiteSpace($dstCityRaw) -and $null -ne $cfgIn -and $null -ne $cfgIn.bus -and $null -ne $cfgIn.bus.destinationStop) {
+        $busDstCity = [string]$cfgIn.bus.destinationStop.city
+        $dstCityRaw = Clean-PlaceName -raw $busDstCity
+        if ([string]::IsNullOrWhiteSpace($dstCompRaw)) {
+          $busDstComp = [string]$cfgIn.bus.destinationStop.company
+          $dstCompRaw = Clean-PlaceName -raw $busDstComp
+        }
+      }
+      if ([string]::IsNullOrWhiteSpace($srcCityIdRaw) -and $null -ne $cfgIn -and $null -ne $cfgIn.bus -and $null -ne $cfgIn.bus.sourceStop) {
+        $srcCityIdRaw = if (-not [string]::IsNullOrWhiteSpace($cfgIn.bus.sourceStop.cityId)) { [string]$cfgIn.bus.sourceStop.cityId } else { [string]$cfgIn.bus.sourceStop.id }
+      }
+      if ([string]::IsNullOrWhiteSpace($dstCityIdRaw) -and $null -ne $cfgIn -and $null -ne $cfgIn.bus -and $null -ne $cfgIn.bus.destinationStop) {
+        $dstCityIdRaw = if (-not [string]::IsNullOrWhiteSpace($cfgIn.bus.destinationStop.cityId)) { [string]$cfgIn.bus.destinationStop.cityId } else { [string]$cfgIn.bus.destinationStop.id }
+      }
     }
 
     if ([string]::IsNullOrWhiteSpace($srcCityRaw) -and -not [string]::IsNullOrWhiteSpace($srcCompRaw)) {
@@ -409,23 +449,20 @@ function Read-SharedMemoryTelemetry {
       $dstCityRaw = $dstCompRaw
     }
 
-    $busSatRaw = if ($null -ne $telIn.busSat) {
-      [Math]::Round([double]$telIn.busSat, 2)
-    } elseif ($null -ne $cfgIn -and $null -ne $cfgIn.bus -and $null -ne $cfgIn.bus.satisfaction) {
-      [Math]::Round([double]$cfgIn.bus.satisfaction, 2)
+    $busSatRaw = if ($isBusJobRaw) {
+      if ($null -ne $telIn.busSat) {
+        [Math]::Round([double]$telIn.busSat, 2)
+      } elseif ($null -ne $cfgIn -and $null -ne $cfgIn.bus -and $null -ne $cfgIn.bus.satisfaction) {
+        [Math]::Round([double]$cfgIn.bus.satisfaction, 2)
+      } else {
+        0.0
+      }
     } else {
       0.0
     }
     $restStopRaw = if ($null -ne $telIn.restStop) { [int]$telIn.restStop } else { 0 }
     $electricRaw = if ($null -ne $telIn.electric) { [bool]$telIn.electric } else { $true }
     $engineRaw   = if ($null -ne $telIn.engine) { [bool]$telIn.engine } else { $true }
-    $cargoRaw         = if ($null -ne $cfgIn -and $null -ne $cfgIn.cargo) { [string]$cfgIn.cargo.name } else { '' }
-    $cargoIdRaw       = if ($null -ne $cfgIn -and $null -ne $cfgIn.cargo) { [string]$cfgIn.cargo.id } else { '' }
-    $cargoMassKgRaw   = if ($null -ne $cfgIn -and $null -ne $cfgIn.cargo -and $null -ne $cfgIn.cargo.mass) { [double]$cfgIn.cargo.mass } else { 0.0 }
-    $plannedDistKmRaw = if ($null -ne $cfgIn -and $null -ne $cfgIn.planned_distance -and $null -ne $cfgIn.planned_distance.km) { [int64]$cfgIn.planned_distance.km } else { [int64]0 }
-    $incomeRaw        = if ($null -ne $cfgIn -and $null -ne $cfgIn.income) { [int64]$cfgIn.income } else { [int64]0 }
-    $jobMarketRaw     = if ($null -ne $cfgIn -and $null -ne $cfgIn.job) { [string]$cfgIn.job.market } else { '' }
-    $isBusJobRaw      = if ($null -ne $cfgIn -and $null -ne $cfgIn.job -and $null -ne $cfgIn.job.busJob) { [bool]$cfgIn.job.busJob } else { $false }
 
     $hasJob = if ($null -ne $cfgIn -and $null -ne $cfgIn.hasJob -and [bool]$cfgIn.hasJob) {
       $true
@@ -469,17 +506,37 @@ function Read-SharedMemoryTelemetry {
       -FuelAvgL100 $fuelAvgL100 `
       -SpeedKmh $speedKmh
 
+    $sourceStopObj = if ($isBusJobRaw -and $hasJob) {
+      $stopCity = if ($null -ne $cfgIn.bus -and $null -ne $cfgIn.bus.sourceStop -and -not [string]::IsNullOrWhiteSpace($cfgIn.bus.sourceStop.city)) { Clean-PlaceName ([string]$cfgIn.bus.sourceStop.city) } else { $srcCity }
+      $stopComp = if ($null -ne $cfgIn.bus -and $null -ne $cfgIn.bus.sourceStop -and -not [string]::IsNullOrWhiteSpace($cfgIn.bus.sourceStop.company)) { Clean-PlaceName ([string]$cfgIn.bus.sourceStop.company) } else { $srcComp }
+      $stopId   = if ($null -ne $cfgIn.bus -and $null -ne $cfgIn.bus.sourceStop -and -not [string]::IsNullOrWhiteSpace($cfgIn.bus.sourceStop.id)) { [string]$cfgIn.bus.sourceStop.id } else { $srcCityId }
+      [ordered]@{ city = $stopCity; cityId = $stopId; company = $stopComp; companyId = $srcCompId; id = $stopId }
+    } else {
+      $null
+    }
+    $destinationStopObj = if ($isBusJobRaw -and $hasJob) {
+      $dstStopCity = if ($null -ne $cfgIn.bus -and $null -ne $cfgIn.bus.destinationStop -and -not [string]::IsNullOrWhiteSpace($cfgIn.bus.destinationStop.city)) { Clean-PlaceName ([string]$cfgIn.bus.destinationStop.city) } else { $dstCity }
+      $dstStopComp = if ($null -ne $cfgIn.bus -and $null -ne $cfgIn.bus.destinationStop -and -not [string]::IsNullOrWhiteSpace($cfgIn.bus.destinationStop.company)) { Clean-PlaceName ([string]$cfgIn.bus.destinationStop.company) } else { $dstComp }
+      $dstStopId   = if ($null -ne $cfgIn.bus -and $null -ne $cfgIn.bus.destinationStop -and -not [string]::IsNullOrWhiteSpace($cfgIn.bus.destinationStop.id)) { [string]$cfgIn.bus.destinationStop.id } else { $dstCityId }
+      [ordered]@{ city = $dstStopCity; cityId = $dstStopId; company = $dstStopComp; companyId = $dstCompId; id = $dstStopId }
+    } else {
+      $null
+    }
+
     $tripObj = [ordered]@{
       active                = $hasJob
       hasJob                = $hasJob
       isBusJob              = $isBusJobRaw
-      busSat                = $busSatRaw
+      busJob                = $isBusJobRaw
+      jobType               = if (-not $hasJob) { 'free_roam' } elseif ($isBusJobRaw) { 'bus_job' } else { 'freight' }
+      marketType            = if ($isBusJobRaw) { 'bus_job' } elseif (-not [string]::IsNullOrWhiteSpace($jobMarket)) { $jobMarket } else { 'freight' }
+      busSat                = if ($isBusJobRaw) { $busSatRaw } else { 0.0 }
       cargo                 = $cargo
       cargoId               = $cargoId
       source                = [ordered]@{ city = $srcCity; cityId = $srcCityId; company = $srcComp; companyId = $srcCompId; id = $srcCityId }
       destination           = [ordered]@{ city = $dstCity; cityId = $dstCityId; company = $dstComp; companyId = $dstCompId; id = $dstCityId }
-      sourceStop            = [ordered]@{ city = $srcCity; cityId = $srcCityId; company = $srcComp; companyId = $srcCompId; id = $srcCityId }
-      destinationStop       = [ordered]@{ city = $dstCity; cityId = $dstCityId; company = $dstComp; companyId = $dstCompId; id = $dstCityId }
+      sourceStop            = $sourceStopObj
+      destinationStop       = $destinationStopObj
       sourceCityId          = $srcCityId
       sourceCompanyId       = $srcCompId
       destinationCityId     = $dstCityId
@@ -590,7 +647,10 @@ function Read-SharedMemoryTelemetry {
     $payload['income']             = $income
     $payload['hasJob']             = $hasJob
     $payload['isBusJob']           = $isBusJobRaw
-    $payload['busSat']             = $busSatRaw
+    $payload['busJob']             = $isBusJobRaw
+    $payload['jobType']            = if (-not $hasJob) { 'free_roam' } elseif ($isBusJobRaw) { 'bus_job' } else { 'freight' }
+    $payload['marketType']         = if ($isBusJobRaw) { 'bus_job' } elseif (-not [string]::IsNullOrWhiteSpace($jobMarket)) { $jobMarket } else { 'freight' }
+    $payload['busSat']             = if ($isBusJobRaw) { $busSatRaw } else { 0.0 }
     $payload['restStop']           = $restStopRaw
     $payload['electric']           = $electricRaw
     $payload['engine']             = $engineRaw
@@ -615,6 +675,7 @@ function Read-SharedMemoryTelemetry {
     }
   } catch {
     $script:TripTracker.Initialized = $false
+    $script:LastTelemetryError = $_.Exception.ToString()
     return @{
       Status = 'offline'
       AgeMs  = [long]-1
@@ -704,7 +765,8 @@ try {
         } elseif ($path -eq '/health') {
           $shmNameJson = ConvertTo-Json -InputObject $SharedMemoryName -Compress
           $telStateJson = ConvertTo-Json -InputObject $lastTelemetryStatus -Compress
-          $healthJson = "{`"status`":`"ok`",`"httpPort`":$HttpPort,`"upstreamMode`":`"shared_memory`",`"sharedMemoryName`":$shmNameJson,`"telemetryState`":$telStateJson,`"telemetryResponses`":$telemetryReqCount}"
+          $lastErrJson = if ($script:LastTelemetryError) { ConvertTo-Json -InputObject $script:LastTelemetryError -Compress } else { '""' }
+          $healthJson = "{`"status`":`"ok`",`"httpPort`":$HttpPort,`"upstreamMode`":`"shared_memory`",`"sharedMemoryName`":$shmNameJson,`"telemetryState`":$telStateJson,`"telemetryResponses`":$telemetryReqCount,`"lastError`":$lastErrJson}"
           Send-HttpResponse -Stream $stream -StatusCode 200 -StatusText 'OK' -Body $healthJson -AgeMs -1 -Encoding $utf8NoBom
         } else {
           Send-HttpResponse -Stream $stream -StatusCode 404 -StatusText 'Not Found' -Body '{"error":"not_found"}' -AgeMs -1 -Encoding $utf8NoBom

@@ -5,7 +5,7 @@
 
 [![Keep a Changelog](https://img.shields.io/badge/Changelog-Keep%20a%20Changelog%201.1.1-orange?style=for-the-badge&logo=git)](https://keepachangelog.com/)
 [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-blue?style=for-the-badge&logo=semver)](https://semver.org/)
-[![Latest Release](https://img.shields.io/badge/Latest-v1.1.2-green?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.1.2)
+[![Latest Release](https://img.shields.io/badge/Latest-v1.1.3-green?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.1.3)
 [![License](https://img.shields.io/badge/License-MIT-purple?style=for-the-badge)](./LICENSE)
 
 ---
@@ -16,9 +16,44 @@
 
 ## 📌 Version Index
 
+* [v1.1.3 (2026-11-15) — Telemetry Stability, Native Plugin Renaming & 100% Bilingual HUD](#113---2026-11-15)
 * [v1.1.2 (2026-11-15) — Pip-Boy 3000 Standalone Auto-Update Terminal, 100% Bilingual Localization & DLC Coaches](#112---2026-11-15)
 * [v1.1.0 (2026-11-15) — ETS2 DLC Coaches Support, Solid Dashboard & Enhanced SCS Telemetry](#110---2026-11-15)
 * [v1.0.0 (2026-11-12) — Initial Release (Native SCS Telemetry SDK 1.16 & Broadcast HUD)](#100---2026-11-12)
+
+---
+
+## [1.1.3] - 2026-11-15
+
+> [!IMPORTANT]
+> **Release v1.1.3** delivers critical telemetry bridge stability, renames the native SCS SDK plugin to `overlayobs_foozzee_telemetry.dll` with elevated `NULL DACL` shared memory security descriptors, moves active cargo and DLC Coaches passenger trips directly into the primary dashboard HUD module, and guarantees 100% strict bilingual separation between English and Russian modes.
+
+### 🚀 Added
+
+#### 🗺️ Primary HUD Route & Trip Integration
+* **Primary Dashboard Route Module:**
+  * Active cargo name and tonnage or passenger coach route now render directly inside the primary dashboard module (`#route-value` and `#lt-cargo`).
+  * Live passenger comfort satisfaction rating (**`SATISFACTION: XX%`**) for ETS2 DLC Coaches displayed in the central cluster.
+* **100% Strict Bilingual Separation (EN / RU):**
+  * Complete linguistic purity: zero Cyrillic tokens leak into English mode, and zero raw Latin tokens leak into Russian mode regardless of game client language.
+  * Comprehensive `CITIES_DB` dictionary with reverse lookup and phonetic transliteration fallback for mod maps and rare DLC cities.
+
+### 🛠 Fixed & Improved
+
+#### ⚡ Telemetry Bridge & Native Plugin Stability
+* **Accurate Job Type Differentiation (Freight vs Coach):**
+  * Fixed job classification across `overlayobs_foozzee_telemetry.dll`, `scripts/udp-bridge.ps1`, and `assets/js/ets2-telemetry.js`.
+  * Standard freight deliveries (including trailerless chassis and mod vehicles) are guaranteed to display cargo name, tonnage, and freight status rather than falsely triggering passenger coach mode.
+  * Bus stops and comfort ratings are now strictly isolated to authentic `DLC Coaches` tours (`bus_job`).
+* **Telemetry Bridge Parsing Fix (`scripts/udp-bridge.ps1`):**
+  * Resolved a PowerShell syntax evaluation error (`CommandNotFoundException`) inside `Clean-PlaceName` that previously triggered false `offline` telemetry states.
+* **Shared Memory Security Architecture (`Local\FooZzeeSCSTelemetry`):**
+  * Configured an explicit Win32 `SECURITY_DESCRIPTOR` with `NULL DACL` in `native-plugin/plugin.cpp`, preventing `ERROR_ACCESS_DENIED` (Win32 Error 5) when ETS2 or Steam runs with elevated Administrator privileges.
+* **Native Plugin Renaming & Hardening:**
+  * Renamed the native telemetry plugin to `overlayobs_foozzee_telemetry.dll` across source code, build scripts, installers, and runtime scripts to avoid file naming collisions with other tools.
+  * Disabled legacy file-based debug logging (`scs_sdk_dump.log`) to eliminate disk I/O overhead.
+* **Automated Legacy File Cleanup:**
+  * Updated `scripts/installer.ps1` and `build-and-install-plugin.bat` to automatically remove obsolete `scs_direct_telemetry.dll` from game directories while preserving third-party plugins.
 
 ---
 
@@ -67,7 +102,7 @@
 * **Bus Stop Prefix & Suffix Sanitation (DLC Coaches):**
   * Automatically strips internal stop tags (`stop.`, `_bus_station`, `_terminal`, indices like `.01` or `_01`) leaving pure city and station names.
 * **SCS SDK Native Plugin & UDP Bridge ID Pipeline:**
-  * `scs_direct_telemetry.dll` and `scripts/udp-bridge.ps1` now extract and stream `cityId` / `companyId` tokens alongside localized UTF-8 names, ensuring flawless city resolution regardless of the game client's language.
+  * `overlayobs_foozzee_telemetry.dll` and `scripts/udp-bridge.ps1` now extract and stream `cityId` / `companyId` tokens alongside localized UTF-8 names, ensuring flawless city resolution regardless of the game client's language.
 
 ---
 
@@ -85,7 +120,7 @@
 * **Specialized Telemetry Payload:** Added `isBusJob` state flag and dedicated bus stop endpoint data in the bridge server and web overlay.
 
 #### ⚡ New SCS Telemetry SDK 1.16 Channels
-Integrated 4 new native telemetry channels into the C++ plugin (`scs_direct_telemetry.dll`) and bridge script (`scripts/udp-bridge.ps1`):
+Integrated 4 new native telemetry channels into the C++ plugin (`overlayobs_foozzee_telemetry.dll`) and bridge script (`scripts/udp-bridge.ps1`):
 
 | SDK Telemetry Channel | Data Type | Description |
 |---|---|---|
@@ -113,7 +148,7 @@ Integrated 4 new native telemetry channels into the C++ plugin (`scs_direct_tele
 * Social media bar in the bottom-right corner aligned cleanly to a single Twitch channel.
 
 #### 🛡️ Plugin Rebuild & Repository Hardening
-* Clean Release x64 compilation of `scs_direct_telemetry.dll` (210 KB, SHA256: `6E9B18395E41C99A46FA9643301805F1D340D64A9069250CC6CFEBB038728DF9`).
+* Clean Release x64 compilation of `overlayobs_foozzee_telemetry.dll` (210 KB, SHA256: `6E9B18395E41C99A46FA9643301805F1D340D64A9069250CC6CFEBB038728DF9`).
 * Added `.gitattributes` binary filters (`*.dll`, `*.ttf`, `*.zip`) to prevent CRLF corruption during Git checkouts.
 
 ---
@@ -143,6 +178,7 @@ Integrated 4 new native telemetry channels into the C++ plugin (`scs_direct_tele
 * **Telegram:** [@foozzeestream](https://t.me/foozzeestream)
 * **VK:** [vk.ru/gtfun](https://vk.ru/gtfun)
 
+[1.1.3]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.0...v1.1.2
 [1.1.0]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.0.0

@@ -15,7 +15,7 @@ Add-Type -AssemblyName System.Drawing
 
 $ScriptRoot = $PSScriptRoot
 $SourceRoot = Split-Path -Parent $ScriptRoot
-$RedistDll  = Join-Path $SourceRoot 'redist\scs_direct_telemetry.dll'
+$RedistDll  = Join-Path $SourceRoot 'redist\overlayobs_foozzee_telemetry.dll'
 
 $DefaultLang = if ([System.Globalization.CultureInfo]::CurrentUICulture.TwoLetterISOLanguageName -eq 'ru') { 'ru' } else { 'en' }
 
@@ -28,12 +28,12 @@ $Strings = @{
     LangBtnRu        = 'Русский (RU)'
     GrpInstallDir    = '1. Overlay Installation Folder'
     BrowseBtn        = 'Browse...'
-    GrpPlugins       = '2. Telemetry Plugin Installation (scs_direct_telemetry.dll)'
+    GrpPlugins       = '2. Telemetry Plugin Installation (overlayobs_foozzee_telemetry.dll)'
     ChkEts2          = 'Install native SDK telemetry plugin for Euro Truck Simulator 2'
     ChkAts           = 'Install native SDK telemetry plugin for American Truck Simulator'
     PluginFound      = 'Detected automatically'
     PluginMissing    = 'Not detected automatically — check & browse if installed'
-    DllMissingNote   = 'Warning: redist\scs_direct_telemetry.dll not found in installer package.'
+    DllMissingNote   = 'Warning: redist\overlayobs_foozzee_telemetry.dll not found in installer package.'
     GrpProfile       = '3. Streamer Profile (written to config.js)'
     LblDriver        = 'Streamer Nickname'
     LblTwitch        = 'Twitch Channel'
@@ -63,13 +63,13 @@ $Strings = @{
     StatusOk         = 'Installed'
     StatusOkBak      = 'Installed (legacy plugin -> .bak)'
     StatusSkipped    = 'Skipped'
-    StatusWarnNoDll  = 'Skipped (redist\scs_direct_telemetry.dll missing)'
+    StatusWarnNoDll  = 'Skipped (redist\overlayobs_foozzee_telemetry.dll missing)'
     DoneFormTitle    = 'INSTALLATION COMPLETE // УСТАНОВКА ЗАВЕРШЕНА'
     DoneHeader       = 'INSTALLATION COMPLETE'
     DoneSub          = 'Your ETS2 / ATS cockpit overlay & native SCS SDK 1.16 plugin are ready.'
     DoneOverlayLine  = 'Overlay files & config.js'
-    DoneEts2Line     = 'ETS2 Plugin (scs_direct_telemetry.dll)'
-    DoneAtsLine      = 'ATS Plugin (scs_direct_telemetry.dll)'
+    DoneEts2Line     = 'ETS2 Plugin (overlayobs_foozzee_telemetry.dll)'
+    DoneAtsLine      = 'ATS Plugin (overlayobs_foozzee_telemetry.dll)'
     DoneShortcutLine = 'Desktop Shortcut'
     DoneDaLine       = 'DonationAlerts'
     StatusDaOk       = 'Configured [OK]'
@@ -89,12 +89,12 @@ $Strings = @{
     LangBtnRu        = 'Русский (RU)'
     GrpInstallDir    = '1. Папка установки оверлея'
     BrowseBtn        = 'Обзор...'
-    GrpPlugins       = '2. Установка нативного плагина телеметрии (scs_direct_telemetry.dll)'
+    GrpPlugins       = '2. Установка нативного плагина телеметрии (overlayobs_foozzee_telemetry.dll)'
     ChkEts2          = 'Установить плагин телеметрии для Euro Truck Simulator 2'
     ChkAts           = 'Установить плагин телеметрии для American Truck Simulator'
     PluginFound      = 'Найдено автоматически'
     PluginMissing    = 'Не найдено автоматически — отметьте и укажите папку при необходимости'
-    DllMissingNote   = 'Внимание: файл redist\scs_direct_telemetry.dll отсутствует в сборке.'
+    DllMissingNote   = 'Внимание: файл redist\overlayobs_foozzee_telemetry.dll отсутствует в сборке.'
     GrpProfile       = '3. Профиль стримера (записывается в config.js)'
     LblDriver        = 'Никнейм стримера'
     LblTwitch        = 'Канал Twitch'
@@ -124,13 +124,13 @@ $Strings = @{
     StatusOk         = 'Установлено'
     StatusOkBak      = 'Установлено (старый плагин -> .bak)'
     StatusSkipped    = 'Пропущено'
-    StatusWarnNoDll  = 'Пропущено (нет redist\scs_direct_telemetry.dll)'
+    StatusWarnNoDll  = 'Пропущено (нет redist\overlayobs_foozzee_telemetry.dll)'
     DoneFormTitle    = 'INSTALLATION COMPLETE // УСТАНОВКА ЗАВЕРШЕНА'
     DoneHeader       = 'УСТАНОВКА ЗАВЕРШЕНА'
     DoneSub          = 'Оверлей ETS2 / ATS и нативный плагин SCS SDK 1.16 готовы к работе.'
     DoneOverlayLine  = 'Файлы оверлея и config.js'
-    DoneEts2Line     = 'Плагин ETS2 (scs_direct_telemetry.dll)'
-    DoneAtsLine      = 'Плагин ATS (scs_direct_telemetry.dll)'
+    DoneEts2Line     = 'Плагин ETS2 (overlayobs_foozzee_telemetry.dll)'
+    DoneAtsLine      = 'Плагин ATS (overlayobs_foozzee_telemetry.dll)'
     DoneShortcutLine = 'Ярлык на Рабочем столе'
     DoneDaLine       = 'DonationAlerts'
     StatusDaOk       = 'Configured [OK]'
@@ -457,24 +457,22 @@ function Install-NativePluginToGame {
   $pluginsDir = Resolve-TruckPluginDir -SelectedPath $GamePath
   New-Item -ItemType Directory -Force -Path $pluginsDir | Out-Null
 
-  $legacyDll = Join-Path $pluginsDir 'rtrucksim_telemetry.dll'
-  $backedUpLegacy = $false
-  if (Test-Path -LiteralPath $legacyDll) {
-    $bakDll = "$legacyDll.bak"
-    if (Test-Path -LiteralPath $bakDll) {
-      Remove-Item -LiteralPath $bakDll -Force -ErrorAction SilentlyContinue
-    }
-    Move-Item -LiteralPath $legacyDll -Destination $bakDll -Force
-    $backedUpLegacy = $true
+  # Удаление устаревшего scs_direct_telemetry.dll при обновлении
+  $oldDirectDll = Join-Path $pluginsDir 'scs_direct_telemetry.dll'
+  if (Test-Path -LiteralPath $oldDirectDll) {
+    try {
+      Remove-Item -LiteralPath $oldDirectDll -Force -ErrorAction SilentlyContinue
+    } catch {}
   }
 
-  $targetDll = Join-Path $pluginsDir 'scs_direct_telemetry.dll'
+  # ВАЖНО: rtrucksim_telemetry.dll строго не трогаем и не переименовываем!
+
+  $targetDll = Join-Path $pluginsDir 'overlayobs_foozzee_telemetry.dll'
   Copy-Item -LiteralPath $SourceDll -Destination $targetDll -Force
 
-  $prefix = if ($backedUpLegacy) { $LangStrings.StatusOkBak } else { $LangStrings.StatusOk }
   return @{
     Ok   = $true
-    Text = "$prefix -> $targetDll"
+    Text = "$($LangStrings.StatusOk) -> $targetDll"
   }
 }
 
@@ -1105,7 +1103,7 @@ $btnInstall.Add_Click({
     $daOk = (-not [string]::IsNullOrWhiteSpace($daTokenClean))
     $daReport = if ($daOk) { $L.StatusDaOk } else { $L.StatusDaSkipped }
 
-    # 2. Install scs_direct_telemetry.dll into selected games (and migrate legacy rtrucksim_telemetry.dll -> .bak)
+    # 2. Install overlayobs_foozzee_telemetry.dll into selected games
     $hasDll = Test-Path -LiteralPath $RedistDll
     $ets2Ok = $false
     $ets2Report = $L.StatusSkipped

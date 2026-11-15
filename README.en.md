@@ -2,7 +2,7 @@
 
 > **Professional broadcast cockpit HUD for OBS Studio powered by native SCS Telemetry SDK 1.16**
 
-[![Release](https://img.shields.io/badge/Release-v1.1.2-orange?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases)
+[![Release](https://img.shields.io/badge/Release-v1.1.3-orange?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20x64-blue?style=for-the-badge&logo=windows)](https://www.microsoft.com/windows)
 [![SCS SDK](https://img.shields.io/badge/SCS%20SDK-v1.16%20Native-yellow?style=for-the-badge)](https://modding.scssoft.com/wiki/Documentation/Tools/Telemetry_server)
 [![DLC Coaches](https://img.shields.io/badge/ETS2-DLC%20Coaches%20Supported-green?style=for-the-badge)](https://scssoft.com/)
@@ -18,7 +18,7 @@
 ## 📌 Table of Contents
 
 1. [Overview & Key Features](#-overview--key-features)
-2. [What's New in v1.1.2](#-whats-new-in-v112)
+2. [What's New in v1.1.3](#-whats-new-in-v113)
 3. [Architecture & Components](#-architecture--components)
 4. [HUD Layout & Elements](#-hud-layout--elements)
 5. [System Requirements](#-system-requirements)
@@ -34,7 +34,7 @@
 
 **ETS2 / ATS Cockpit Telemetry Stream Overlay** is an ultra-low latency, broadcast-grade telemetry HUD designed specifically for live streamers on Twitch, YouTube, and TikTok. Built around realistic amber/ice cockpit ergonomics, it provides comprehensive driving, vehicle, and trip telemetry while keeping the driver's windshield, mirrors, and in-game GPS completely unobstructed.
 
-* ⚡ **Zero-Overhead Shared Memory:** Bundles a custom C++ plugin (`scs_direct_telemetry.dll`) that interfaces directly with SCS Telemetry SDK 1.16 via Win32 Shared Memory. Zero external proxy tools, third-party executables, or heavy Node runtimes required.
+* ⚡ **Zero-Overhead Shared Memory:** Bundles a custom C++ plugin (`overlayobs_foozzee_telemetry.dll`) that interfaces directly with SCS Telemetry SDK 1.16 via Win32 Shared Memory. Zero external proxy tools, third-party executables, or heavy Node runtimes required.
 * 🖥️ **2-Row Lower Dashboard ("Torpedo"):** Occupies the lower edge of a `1920×1080` canvas, offering pristine visibility for natural simulation viewing.
 * 📱 **Mobile Vertical Layout:** Native `1080×1920` vertical layout optimized for TikTok Live, YouTube Shorts, and Instagram Reels with built-in UI overlay safe zones.
 * ⏱️ **Real-World Navigation ETA (`real-eta-panel`):** Automatically detects the active map scale (`1:19` highways, `1:3` cities, `1:10` UK) to convert in-game navigation time into precise real-world hours and minutes remaining.
@@ -43,19 +43,31 @@
 
 ---
 
-## 🚀 What's New in v1.1.2
+## 🚀 What's New in v1.1.3
 
 > [!IMPORTANT]
-> **Release v1.1.2** introduces a standalone Pip-Boy 3000 update notification terminal with WebAudio retro synth effects, 100% bilingual EN/RU support, built-in ETS2/ATS city & stops database with phonetic transliteration, an interactive project support button in the GUI installer, and updated OBS Studio integration instructions.
+> **Release v1.1.3** delivers critical telemetry bridge stability, integrates active cargo and passenger route details directly into the primary cockpit module, provides 100% bilingual separation between English and Russian modes, renames the native plugin to `overlayobs_foozzee_telemetry.dll` with `NULL DACL` shared memory security descriptors, and features the Pip-Boy 3000 retro update notification terminal.
 
+* 🗺️ **Primary HUD Route & Trip Display:**
+  * Active cargo name and tonnage or passenger coach route now render directly inside the primary dashboard module (`#route-value` and `#lt-cargo`).
+  * Live passenger comfort satisfaction rating (**`SATISFACTION: XX%`**) for ETS2 DLC Coaches displayed in the central cluster.
+* 🌐 **100% Strict Bilingual Separation (EN / RU):**
+  * Complete linguistic purity: zero Cyrillic tokens leak into English mode, and zero raw Latin tokens leak into Russian mode regardless of game client language.
+  * Comprehensive `CITIES_DB` dictionary with reverse lookup and phonetic transliteration fallback for mod maps and rare DLC cities.
+* ⚡ **Telemetry Bridge Parsing Fix (`scripts/udp-bridge.ps1`):**
+  * Resolved a PowerShell syntax evaluation error (`CommandNotFoundException`) inside `Clean-PlaceName` that previously triggered false `offline` telemetry states.
+* 🛡️ **Shared Memory Security Architecture (`Local\FooZzeeSCSTelemetry`):**
+  * Configured an explicit Win32 `SECURITY_DESCRIPTOR` with `NULL DACL` in `native-plugin/plugin.cpp`, preventing `ERROR_ACCESS_DENIED` (Win32 Error 5) when ETS2 or Steam runs with elevated Administrator privileges.
+* 🔄 **Native Plugin Renaming & Hardening:**
+  * Renamed the native telemetry plugin to `overlayobs_foozzee_telemetry.dll` across source code, build scripts, installers, and runtime scripts to avoid file naming collisions with other tools.
+  * Disabled legacy file-based debug logging (`scs_sdk_dump.log`) to eliminate disk I/O overhead.
+* 🧹 **Automated Legacy File Cleanup:**
+  * Updated `scripts/installer.ps1` and `build-and-install-plugin.bat` to automatically remove obsolete `scs_direct_telemetry.dll` from game directories while preserving third-party plugins.
 * 📟 **Pip-Boy 3000 Standalone Auto-Update Terminal:**
   * Autonomous update checking (`assets/js/ets2-updater.js`) against the official GitHub API (`releases/latest`) without disrupting stream operations.
   * Retro CRT aesthetics: authentic green phosphor glow (`#00ff66`), scanlines, tube glass vignetting, and cathode-ray power-on/off animations.
   * Built-in WebAudio retro synthesizer: procedural typewriter key clicks during text generation and high-voltage capacitor discharge hum on shutdown.
-  * Interactive control buttons: **`[ 🚀 UPDATE NOW ]`** (opens latest release on GitHub) and **`[ 💤 NEVERMIND ]`** (smooth CRT shutdown with session dismissal).
-  * Smart bilingual changelog extraction: automatically separates English and Russian release notes from GitHub release bodies.
-  * Click anywhere inside the terminal body to skip typewriter printing instantly.
-  * On-demand testing via `?test_update=1` URL query parameter or `window.showPipBoyUpdateModal()`.
+  * Interactive control buttons: **`[ 🚀 UPDATE NOW ]`** and **`[ 💤 NEVERMIND ]`**.
 * 💖 **«SUPPORT PROJECT» Button in Installer:**
   * Interactive button added to `Install-Overlay.bat` (`scripts/installer.ps1`), linking directly to the author's DonationAlerts page: `https://www.donationalerts.com/r/foozzee`.
 * 🚌 **Full Euro Truck Simulator 2 — DLC Coaches Support:**
@@ -78,7 +90,7 @@
 
 ```mermaid
 flowchart LR
-    A["Euro Truck Simulator 2 / ATS\n(64-bit Game Engine)"] -->|"SCS Telemetry SDK 1.16"| B["scs_direct_telemetry.dll\n(Native C++ Release Plugin)"]
+    A["Euro Truck Simulator 2 / ATS\n(64-bit Game Engine)"] -->|"SCS Telemetry SDK 1.16"| B["overlayobs_foozzee_telemetry.dll\n(Native C++ Release Plugin)"]
     B -->|"Shared Memory\nLocal\\FooZzeeSCSTelemetry"| C["udp-bridge.ps1\n(Local HTTP/JSON Server :30002)"]
     C -->|"JSON Polling (30-60 FPS)\n/telemetry"| D["OBS Studio Browser Source\n(ets2-desktop.html / ets2-vertical.html)"]
     E["Twitch IRC & DonationAlerts"] -->|"WebSockets\n(Alerts & Live Chat)"| D
@@ -87,7 +99,7 @@ flowchart LR
 
 | Component | Responsibility | Technology Stack |
 |---|---|---|
-| `scs_direct_telemetry.dll` | In-process telemetry hook & serialization | C++20, SCS Telemetry SDK 1.16, Win32 Shared Memory |
+| `overlayobs_foozzee_telemetry.dll` | In-process telemetry hook & serialization | C++20, SCS Telemetry SDK 1.16, Win32 Shared Memory |
 | `scripts/udp-bridge.ps1` | Ultra-fast local HTTP bridge server (`:30002`) | PowerShell 5.1+, `HttpListener`, JSON |
 | `assets/js/ets2-updater.js` | Standalone Pip-Boy 3000 update detector | ES6 JavaScript, WebAudio API, GitHub REST API |
 | `assets/css/ets2-pipboy.css` | Phosphor CRT scanlines, vignette & animations | Pure CSS3, Keyframe Animations, Flexbox |
@@ -108,14 +120,14 @@ flowchart LR
 
 ## ⚡ 1-Click GUI Installation
 
-1. Download the latest release archive **`ETS2-ATS-Stream-Overlay-v1.1.2.zip`** from [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
+1. Download the latest release archive **`ETS2-ATS-Stream-Overlay-v1.1.3.zip`** from [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
 2. Extract the archive into any permanent folder (e.g., `C:\ETS2-ATS-Stream-Overlay`).
 3. Run **`Install-Overlay.bat`**:
    * Choose **`English (EN)`** or **`Русский (RU)`** in the top-right corner.
    * The installer auto-detects your Steam game directories.
    * Enter your **Streamer Nickname**, **Twitch Channel**, and optionally your secret **DonationAlerts Token**.
    * Click **`Install`**.
-4. The wizard will automatically copy `scs_direct_telemetry.dll` into each game's `bin\win_x64\plugins` folder, generate your `config.js`, and create the **`ETS2-ATS Overlay Bridge`** Desktop shortcut.
+4. The wizard will automatically copy `overlayobs_foozzee_telemetry.dll` into each game's `bin\win_x64\plugins` folder, generate your `config.js`, and create the **`ETS2-ATS Overlay Bridge`** Desktop shortcut.
    * You can also use the **«💖 SUPPORT PROJECT»** button in the installer's footer to support the creator on DonationAlerts.
 
 ---
@@ -125,9 +137,9 @@ flowchart LR
 To configure the overlay manually:
 
 1. Copy `config.example.js` to `config.js`.
-2. Copy `./redist/scs_direct_telemetry.dll` into:
-   * `.../Euro Truck Simulator 2/bin/win_x64/plugins/scs_direct_telemetry.dll`
-   * `.../American Truck Simulator/bin/win_x64/plugins/scs_direct_telemetry.dll`
+2. Copy `./redist/overlayobs_foozzee_telemetry.dll` into:
+   * `.../Euro Truck Simulator 2/bin/win_x64/plugins/overlayobs_foozzee_telemetry.dll`
+   * `.../American Truck Simulator/bin/win_x64/plugins/overlayobs_foozzee_telemetry.dll`
 3. Edit `config.js`:
 
 ```javascript
@@ -188,7 +200,7 @@ window.OVERLAY_CONFIG = {
 
 | Symptom | Probable Cause | Action |
 |---|---|---|
-| Speedometer shows `--` and `STANDBY` | Bridge not running or DLL missing | Start `start-telemetry.bat`. Confirm `scs_direct_telemetry.dll` is in `bin\win_x64\plugins\`. Visit `http://127.0.0.1:30002/health` in your browser. |
+| Speedometer shows `--` and `STANDBY` | Bridge not running or DLL missing | Start `start-telemetry.bat`. Confirm `overlayobs_foozzee_telemetry.dll` is in `bin\win_x64\plugins\`. Visit `http://127.0.0.1:30002/health` in your browser. |
 | Game is running but HUD doesn't update | 32-bit game or SDK declined | Run the 64-bit simulator. On initial startup, accept the in-game prompt granting SDK access. In the game main menu, telemetry remains in standby until a profile loads. |
 | "Port 30002 already in use" | Duplicate bridge running | Close any extra command prompt window running `start-telemetry.bat`. |
 | No donation alerts appearing | Invalid DonationAlerts token | Verify `socketToken` in `config.js` (copy the secret token from *Account Settings -> Secret Token*, not the widget URL). |
