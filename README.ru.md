@@ -2,7 +2,7 @@
 
 > **Профессиональный приборный HUD-оверлей для OBS Studio на базе нативного SCS Telemetry SDK 1.16**
 
-[![Релиз](https://img.shields.io/badge/Релиз-v1.2.0-orange?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases)
+[![Релиз](https://img.shields.io/badge/Релиз-v1.2.1-orange?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases)
 [![Платформа](https://img.shields.io/badge/Платформа-Windows%20x64-blue?style=for-the-badge&logo=windows)](https://www.microsoft.com/windows)
 [![SCS SDK](https://img.shields.io/badge/SCS%20SDK-v1.16%20Native-yellow?style=for-the-badge)](https://modding.scssoft.com/wiki/Documentation/Tools/Telemetry_server)
 [![DLC Coaches](https://img.shields.io/badge/ETS2-DLC%20Coaches%20Поддерживается-green?style=for-the-badge)](https://scssoft.com/)
@@ -131,7 +131,7 @@ flowchart LR
 
 ## ⚡ Быстрая установка (1-клик установщик)
 
-1. Скачайте архив релиза **`ETS2-ATS-Stream-Overlay-v1.2.0.zip`** из раздела [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
+1. Скачайте архив релиза **`ETS2-ATS-Stream-Overlay-v1.2.1.zip`** из раздела [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
 2. Распакуйте архив в постоянную папку (например, `C:\ETS2-ATS-Stream-Overlay`).
 3. Запустите файл **`Install-Overlay.bat`**:
    * В правом верхнем углу выберите язык: **`Русский (RU)`** или **`English (EN)`**.

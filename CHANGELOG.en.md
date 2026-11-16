@@ -5,7 +5,7 @@
 
 [![Keep a Changelog](https://img.shields.io/badge/Changelog-Keep%20a%20Changelog%201.1.1-orange?style=for-the-badge&logo=git)](https://keepachangelog.com/)
 [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-blue?style=for-the-badge&logo=semver)](https://semver.org/)
-[![Latest Release](https://img.shields.io/badge/Latest-v1.2.0-green?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.2.0)
+[![Latest Release](https://img.shields.io/badge/Latest-v1.2.1-green?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.2.1)
 [![License](https://img.shields.io/badge/License-MIT-purple?style=for-the-badge)](./LICENSE)
 
 ---
@@ -16,11 +16,26 @@
 
 ## 📌 Version Index
 
+* [v1.2.1 (2026-11-16) — GUI Installer Documentation Viewers & Commands Quick Access](#121---2026-11-16)
 * [v1.2.0 (2026-11-16) — In-Game Event Toast Notifications, SVG Icons & Web Audio API Sound Synthesizer](#120---2026-11-16)
 * [v1.1.3 (2026-11-15) — Telemetry Stability, Native Plugin Renaming & 100% Bilingual HUD](#113---2026-11-15)
 * [v1.1.2 (2026-11-15) — Pip-Boy 3000 Standalone Auto-Update Terminal, 100% Bilingual Localization & DLC Coaches](#112---2026-11-15)
 * [v1.1.0 (2026-11-15) — ETS2 DLC Coaches Support, Solid Dashboard & Enhanced SCS Telemetry](#110---2026-11-15)
 * [v1.0.0 (2026-11-12) — Initial Release (Native SCS Telemetry SDK 1.16 & Broadcast HUD)](#100---2026-11-12)
+
+---
+
+## [1.2.1] - 2026-11-16
+
+> [!IMPORTANT]
+> **Release v1.2.1** integrates native dark-themed documentation viewer windows directly into the GUI Setup Wizard (`Install-Overlay.bat` / `scripts/installer.ps1`), enabling instant access to the Changelog and Interactive Commands Reference in the user's active language before or after installation.
+
+### 🚀 Added
+* **📖 Setup Wizard Documentation Viewers (`scripts/installer.ps1`):**
+  * Added dedicated «📜 Changelog» and «📖 Commands» buttons in Group 4 of the GUI installer.
+  * Launches clean modal viewer windows displaying the complete version history (`CHANGELOG.ru.md` / `CHANGELOG.en.md`) and commands reference (`commands.ru.md` / `commands.en.md`) strictly matching the installer's active language.
+  * Resilient fallback file resolution searching across current directory, parent path, and target overlay folder.
+  * Built-in «📄 Open in Notepad» button for external viewing or printing.
 
 ---
 
@@ -233,6 +248,7 @@ Integrated 4 new native telemetry channels into the C++ plugin (`overlayobs_fooz
 * **Telegram:** [@foozzeestream](https://t.me/foozzeestream)
 * **VK:** [vk.ru/gtfun](https://vk.ru/gtfun)
 
+[1.2.1]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.3...v1.2.0
 [1.1.3]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.0...v1.1.2

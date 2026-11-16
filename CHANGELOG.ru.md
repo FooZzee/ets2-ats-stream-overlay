@@ -5,7 +5,7 @@
 
 [![Keep a Changelog](https://img.shields.io/badge/Changelog-Keep%20a%20Changelog%201.1.1-orange?style=for-the-badge&logo=git)](https://keepachangelog.com/)
 [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-blue?style=for-the-badge&logo=semver)](https://semver.org/)
-[![Latest Release](https://img.shields.io/badge/Релиз-v1.2.0-green?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.2.0)
+[![Latest Release](https://img.shields.io/badge/Релиз-v1.2.1-green?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.2.1)
 [![License](https://img.shields.io/badge/Лицензия-MIT-purple?style=for-the-badge)](./LICENSE)
 
 ---
@@ -16,11 +16,26 @@
 
 ## 📌 Навигация по версиям
 
+* [v1.2.1 (2026-11-16) — Встроенные средства просмотра документации и справочник команд](#121---2026-11-16)
 * [v1.2.0 (2026-11-16) — Всплывающие уведомления о событиях, SVG-иконки и Web Audio API синтезатор звуков](#120---2026-11-16)
 * [v1.1.3 (2026-11-15) — Стабильность телеметрии, переименование плагина и 100% двуязычный HUD](#113---2026-11-15)
 * [v1.1.2 (2026-11-15) — Автономная проверка обновлений Pip-Boy 3000, 100% двуязычная локализация и DLC Coaches](#112---2026-11-15)
 * [v1.1.0 (2026-11-15) — Поддержка ETS2 DLC Coaches, непрозрачная торпеда и новые каналы SCS SDK](#110---2026-11-15)
 * [v1.0.0 (2026-11-12) — Первый публичный релиз (Нативный плагин SCS SDK 1.16 и приборный HUD)](#100---2026-11-12)
+
+---
+
+## [1.2.1] - 2026-11-16
+
+> [!IMPORTANT]
+> **Релиз v1.2.1** добавляет в графический установщик (`Install-Overlay.bat` / `scripts/installer.ps1`) встроенные модальные окна для чтения списка изменений и интерактивных команд на выбранном языке оверлея непосредственно перед или после установки.
+
+### 🚀 Добавлено
+* **📖 Встроенный просмотр документации в мастере установки (`scripts/installer.ps1`):**
+  * В группу 4 установщика добавлены кнопки «📜 Список изменений» и «📖 Список команд».
+  * Открытие отдельных модальных окон в тёмной теме с отображением полной истории версий (`CHANGELOG.ru.md` / `CHANGELOG.en.md`) и справочника команд (`commands.ru.md` / `commands.en.md`) в соответствии с выбранным в установщике языком.
+  * Умный поиск файлов документации по путям установки и родительским каталогам.
+  * Кнопка «📄 Открыть в блокноте» для внешнего просмотра и копирования.
 
 ---
 
@@ -225,6 +240,7 @@
 * **Telegram:** [@foozzeestream](https://t.me/foozzeestream)
 * **VK:** [vk.ru/gtfun](https://vk.ru/gtfun)
 
+[1.2.1]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.3...v1.2.0
 [1.1.3]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.0...v1.1.2

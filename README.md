@@ -3,7 +3,7 @@
 > **Professional broadcast cockpit HUD for OBS Studio powered by native SCS Telemetry SDK 1.16**  
 > **Профессиональный бортовой HUD-оверлей для OBS Studio на базе нативного SCS Telemetry SDK 1.16**
 
-[![Release](https://img.shields.io/badge/Release-v1.2.0-orange?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases)
+[![Release](https://img.shields.io/badge/Release-v1.2.1-orange?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20x64-blue?style=for-the-badge&logo=windows)](https://www.microsoft.com/windows)
 [![SCS SDK](https://img.shields.io/badge/SCS%20SDK-v1.16%20Native-yellow?style=for-the-badge)](https://modding.scssoft.com/wiki/Documentation/Tools/Telemetry_server)
 [![DLC Coaches](https://img.shields.io/badge/ETS2-DLC%20Coaches%20Supported-green?style=for-the-badge)](https://scssoft.com/)
@@ -16,7 +16,7 @@
 
 [![English Documentation](https://img.shields.io/badge/Documentation-English-2563eb?style=flat-square&logo=gitbook&logoColor=white)](#-english-documentation)
 [![Русская документация](https://img.shields.io/badge/Документация-Русский-dc2626?style=flat-square&logo=gitbook&logoColor=white)](#-русская-документация)
-[![Changelog](https://img.shields.io/badge/Changelog-v1.2.0-10b981?style=flat-square&logo=github)](./CHANGELOG.md)
+[![Changelog](https://img.shields.io/badge/Changelog-v1.2.1-10b981?style=flat-square&logo=github)](./CHANGELOG.md)
 [![Commands](https://img.shields.io/badge/Commands-Reference-9333ea?style=flat-square&logo=gitbook)](./commands.md)
 
 *Standalone files:* [English (README.en.md)](./README.en.md) • [Русский (README.ru.md)](./README.ru.md) • [Commands (commands.md)](./commands.md) • [Commands EN (commands.en.md)](./commands.en.md) • [Справочник команд RU (commands.ru.md)](./commands.ru.md)
@@ -54,7 +54,7 @@ flowchart LR
 ```
 
 ### ⚡ Quick Start
-1. Download **`ETS2-ATS-Stream-Overlay-v1.2.0.zip`** from [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
+1. Download **`ETS2-ATS-Stream-Overlay-v1.2.1.zip`** from [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
 2. Extract the archive into any folder (e.g. `C:\ETS2-ATS-Stream-Overlay`).
 3. Run **`Install-Overlay.bat`**, enter your Twitch username and DonationAlerts token, and click **Install**.
 4. Double-click the **`ETS2-ATS Overlay Bridge`** Desktop shortcut before streaming.
@@ -91,7 +91,7 @@ flowchart LR
 * ⚡ **1-клик графический установщик (`Install-Overlay.bat`):** Автоматический поиск игр в Steam, установка плагина, очистка устаревших файлов, защищённое поле токена DonationAlerts и ярлык на Рабочем столе.
 
 ### ⚡ Быстрый старт
-1. Скачайте архив **`ETS2-ATS-Stream-Overlay-v1.2.0.zip`** из раздела [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
+1. Скачайте архив **`ETS2-ATS-Stream-Overlay-v1.2.1.zip`** из раздела [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
 2. Распакуйте архив в удобную папку (например, `C:\ETS2-ATS-Stream-Overlay`).
 3. Запустите **`Install-Overlay.bat`**, введите никнейм Twitch и токен DonationAlerts, затем нажмите **Установить**.
 4. Перед началом стрима запустите ярлык на Рабочем столе: **`ETS2-ATS Overlay Bridge`**.
