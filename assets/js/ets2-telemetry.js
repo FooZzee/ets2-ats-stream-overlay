@@ -103,7 +103,80 @@
         bus_job: 'РЕЙСОВЫЙ АВТОБУС',
         coach: 'РЕЙСОВЫЙ АВТОБУС',
         dispatch_job: 'ДИСПЕТЧЕРСКИЙ РЕЙС'
-      }
+      },
+      eventCategoryFine: 'ШТРАФ // ПОЛИЦИЯ',
+      eventCategoryToll: 'ОПЛАТА ДОРОГИ',
+      eventCategoryRefuel: 'ДОЗАПРАВКА ТОПЛИВА',
+      eventCategoryFerry: 'МОРСКАЯ ПЕРЕПРАВА',
+      eventCategoryTrain: 'Ж/Д ПЕРЕПРАВА',
+      eventCategoryJobDelivered: 'РЕЙС ЗАВЕРШЁН',
+      eventCategoryJobCancelled: 'РЕЙС АННУЛИРОВАН',
+      eventCategoryCargoDamage: 'ПОВРЕЖДЕНИЕ ГРУЗА',
+      eventCargoDamageTitle: 'Зафиксирован урон груза',
+      eventCategoryService: 'ТЕХОБСЛУЖИВАНИЕ',
+      eventServiceTitle: 'Ремонт и обслуживание завершены',
+      eventServiceValue: 'Восстановлено 100%',
+      eventCategoryLowFuel: 'РЕЗЕРВ ТОПЛИВА',
+      eventLowFuelTitle: 'Низкий остаток топлива',
+      eventCategoryBusStop: 'ПАССАЖИРСКИЙ РЕЙС',
+      eventBusStopTitle: 'Остановка // Посадка пассажиров',
+      eventCategoryBusComfort: 'КОМФОРТ ПАССАЖИРОВ',
+      eventBusComfortTitle: 'Резкое снижение комфорта',
+      eventCategoryChatHonk: 'ИНТЕРАКТИВНЫЙ КЛАКСОН',
+      eventChatHonkTitle: 'Приветственный гудок',
+      eventChatHonkValue: 'Пневмосигнал тягача',
+      eventCategoryChatCb: '15 КАНАЛ // РАЦИЯ СИ-БИ',
+      eventCategoryChatRoute: 'GPS // ТЕКУЩИЙ МАРШРУТ',
+      eventCategoryChatStats: 'СТАТИСТИКА СТРИМА',
+      eventCategoryChatTruck: 'ТЯГАЧ // СОСТАВ',
+      eventCategoryChatDriver: 'ВОДИТЕЛЬ // ДОСЬЕ',
+      eventSummaryRoute: 'Маршрут:',
+      eventSummaryDistance: 'Пройдено:',
+      eventSummaryRevenue: 'Оплата:',
+      eventSummaryXP: 'Опыт:',
+      eventSummaryFines: 'Штрафы:',
+      eventSummaryBetsWon: 'Ставки зашли:',
+      eventSummaryNoBets: 'Ставок не было',
+      badgeFine: 'ШТРАФ',
+      badgeToll: 'ОПЛАТА',
+      badgeFuel: 'АЗС',
+      badgeFerry: 'ПАРОМ',
+      badgeTrain: 'ПОЕЗД',
+      badgeDelivered: 'КОНТРАКТ',
+      badgeCancelled: 'ОТМЕНА',
+      badgeDamage: 'ГРУЗ',
+      badgeService: 'СТО',
+      badgeLowFuel: 'РЕЗЕРВ',
+      badgeCoach: 'АВТОБУС',
+      badgeComfort: 'КОМФОРТ',
+      badgeHonk: 'СИГНАЛ',
+      badgeRadio: 'РАЦИЯ',
+      badgeChat: 'ЧАТ',
+      badgeTruck: 'ТЯГАЧ',
+      badgeDriver: 'ВОДИТЕЛЬ',
+      badgeStats: 'СТАТИСТИКА',
+      badgeRoute: 'МАРШРУТ',
+      badgeWinners: 'ПОБЕДИТЕЛИ',
+      eventFineSpeeding: 'Превышение скорости',
+      eventFineSpeedingCamera: 'Камера контроля скорости',
+      eventFineRedSignal: 'Проезд на красный свет',
+      eventFineCrash: 'ДТП // Столкновение',
+      eventFineNoLights: 'Движение без фар',
+      eventFineAvoidSleeping: 'Нарушение режима отдыха',
+      eventFineWrongWay: 'Движение по встречной полосе',
+      eventFineAvoidWeighing: 'Пропуск весового контроля',
+      eventFineIllegalTrailer: 'Неразрешённый прицеп',
+      eventFineAvoidInspection: 'Пропуск инспекции',
+      eventFineIllegalBorderCrossing: 'Нарушение пограничного контроля',
+      eventFineHardShoulderViolation: 'Движение по обочине',
+      eventFineDamagedVehicleUsage: 'Критическая неисправность ТС',
+      eventFineGeneric: 'Дорожный штраф',
+      eventTollTitle: 'Платная автомагистраль',
+      eventRefuelTitle: 'Заправка завершена',
+      eventFerryTitle: 'Паромная переправа',
+      eventTrainTitle: 'Железнодорожная переправа',
+      eventJobDeliveredTitle: 'Груз успешно доставлен',
+      eventJobCancelledTitle: 'Контракт аннулирован'
     },
     en: {
       days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
@@ -196,7 +269,80 @@
         bus_job: 'COACH ROUTE',
         coach: 'COACH ROUTE',
         dispatch_job: 'DISPATCH JOB'
-      }
+      },
+      eventCategoryFine: 'TRAFFIC FINE // POLICE',
+      eventCategoryToll: 'TOLL PAYMENT',
+      eventCategoryRefuel: 'REFUELING // STATION',
+      eventCategoryFerry: 'FERRY TRANSIT',
+      eventCategoryTrain: 'TRAIN TRANSIT',
+      eventCategoryJobDelivered: 'JOB DELIVERED',
+      eventCategoryJobCancelled: 'JOB CANCELLED',
+      eventCategoryCargoDamage: 'CARGO DAMAGE',
+      eventCargoDamageTitle: 'Cargo Damage Detected',
+      eventCategoryService: 'VEHICLE SERVICE',
+      eventServiceTitle: 'Repair & Service Completed',
+      eventServiceValue: 'Restored 100%',
+      eventCategoryLowFuel: 'LOW FUEL RESERVE',
+      eventLowFuelTitle: 'Low Fuel Warning',
+      eventCategoryBusStop: 'PASSENGER COACH',
+      eventBusStopTitle: 'Bus Stop // Boarding',
+      eventCategoryBusComfort: 'PASSENGER COMFORT',
+      eventBusComfortTitle: 'Comfort Rating Drop',
+      eventCategoryChatHonk: 'INTERACTIVE AIR HORN',
+      eventChatHonkTitle: 'Horn Greeting',
+      eventChatHonkValue: 'Truck Pneumatic Horn',
+      eventCategoryChatCb: 'CH 15 // CB RADIO',
+      eventCategoryChatRoute: 'GPS // CURRENT ROUTE',
+      eventCategoryChatStats: 'STREAM SESSION STATS',
+      eventCategoryChatTruck: 'TRUCK // FLEET',
+      eventCategoryChatDriver: 'DRIVER // DOSSIER',
+      eventSummaryRoute: 'Route:',
+      eventSummaryDistance: 'Distance:',
+      eventSummaryRevenue: 'Payment:',
+      eventSummaryXP: 'XP:',
+      eventSummaryFines: 'Fines:',
+      eventSummaryBetsWon: 'Won Bets:',
+      eventSummaryNoBets: 'No bets placed',
+      badgeFine: 'FINE',
+      badgeToll: 'TOLL',
+      badgeFuel: 'FUEL',
+      badgeFerry: 'FERRY',
+      badgeTrain: 'TRAIN',
+      badgeDelivered: 'CONTRACT',
+      badgeCancelled: 'CANCEL',
+      badgeDamage: 'CARGO',
+      badgeService: 'SERVICE',
+      badgeLowFuel: 'RESERVE',
+      badgeCoach: 'COACH',
+      badgeComfort: 'COMFORT',
+      badgeHonk: 'HORN',
+      badgeRadio: 'CB RADIO',
+      badgeChat: 'CHAT',
+      badgeTruck: 'TRUCK',
+      badgeDriver: 'DRIVER',
+      badgeStats: 'STATS',
+      badgeRoute: 'GPS',
+      badgeWinners: 'WINNERS',
+      eventFineSpeeding: 'Speeding Violation',
+      eventFineSpeedingCamera: 'Speed Camera Violation',
+      eventFineRedSignal: 'Red Light Violation',
+      eventFineCrash: 'Vehicle Collision',
+      eventFineNoLights: 'Driving Without Lights',
+      eventFineAvoidSleeping: 'Fatigue / Rest Violation',
+      eventFineWrongWay: 'Wrong Way Driving',
+      eventFineAvoidWeighing: 'Weigh Station Avoided',
+      eventFineIllegalTrailer: 'Illegal Trailer',
+      eventFineAvoidInspection: 'Inspection Avoided',
+      eventFineIllegalBorderCrossing: 'Border Control Violation',
+      eventFineHardShoulderViolation: 'Hard Shoulder Violation',
+      eventFineDamagedVehicleUsage: 'Damaged Vehicle',
+      eventFineGeneric: 'Traffic Violation',
+      eventTollTitle: 'Highway Toll Paid',
+      eventRefuelTitle: 'Refueling Completed',
+      eventFerryTitle: 'Ferry Transit',
+      eventTrainTitle: 'Train Transit',
+      eventJobDeliveredTitle: 'Cargo Delivered',
+      eventJobCancelledTitle: 'Contract Cancelled'
     }
   };
 
@@ -2627,6 +2773,1850 @@
     return { drivenText, litersText, avgText, maxSpeedText };
   }
 
+  /* ==========================================================================
+     МОДУЛЬ ИГРОВЫХ СОБЫТИЙ, ЗВУКОВОГО СИНТЕЗАТОРА И ТОСТ-УВЕДОМЛЕНИЙ
+     ========================================================================== */
+  const EVENT_SVG_ICONS = {
+    speeding: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="28" cy="28" r="25" fill="#f8fafc" stroke="#ef4444" stroke-width="5"/>
+      <text x="28" y="35" font-family="'Tektur', sans-serif" font-weight="900" font-size="20" fill="#0f172a" text-anchor="middle">80</text>
+      <path d="M42 10 L48 4 M46 14 L52 14 M38 6 L42 2" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="43" cy="11" r="3" fill="#f59e0b"/>
+    </svg>`,
+
+    speeding_camera: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="28" cy="28" r="25" fill="#f8fafc" stroke="#ef4444" stroke-width="5"/>
+      <text x="28" y="35" font-family="'Tektur', sans-serif" font-weight="900" font-size="20" fill="#0f172a" text-anchor="middle">90</text>
+      <path d="M42 10 L48 4 M46 14 L52 14 M38 6 L42 2" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="43" cy="11" r="3" fill="#f59e0b"/>
+    </svg>`,
+
+    red_signal: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="18" y="4" width="20" height="48" rx="8" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+      <path d="M16 14 Q28 8 40 14" stroke="#475569" stroke-width="2" fill="none"/>
+      <path d="M16 28 Q28 22 40 28" stroke="#475569" stroke-width="2" fill="none"/>
+      <path d="M16 42 Q28 36 40 42" stroke="#475569" stroke-width="2" fill="none"/>
+      <circle cx="28" cy="14" r="8" fill="#ef4444" opacity="0.38"/>
+      <circle cx="28" cy="14" r="6" fill="#ef4444"/>
+      <circle cx="26" cy="12" r="2" fill="#fca5a5"/>
+      <circle cx="28" cy="28" r="5" fill="#332a15" stroke="#78350f" stroke-width="1"/>
+      <circle cx="28" cy="42" r="5" fill="#0f291e" stroke="#064e3b" stroke-width="1"/>
+    </svg>`,
+
+    crash: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M28 8 L32 20 L44 14 L36 24 L48 28 L36 32 L42 42 L30 35 L28 48 L24 35 L12 40 L18 30 L6 26 L19 23 L12 12 L24 20 Z" fill="#f59e0b" opacity="0.95"/>
+      <path d="M28 14 L30 22 L38 18 L33 25 L40 28 L33 30 L37 37 L30 32 L28 39 L25 32 L18 35 L22 29 L14 27 L22 24 L18 18 L25 22 Z" fill="#fef08a"/>
+      <path d="M6 38 L16 38 L21 33 L12 31 Z" fill="#ef4444"/>
+      <path d="M50 38 L40 38 L35 33 L44 31 Z" fill="#94a3b8"/>
+    </svg>`,
+
+    no_lights: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 18 C12 18 24 16 26 28 C24 40 12 38 12 38 Z" fill="#334155" stroke="#94a3b8" stroke-width="2.5"/>
+      <path d="M20 23 C22 25 22 31 20 33" stroke="#cbd5e1" stroke-width="2"/>
+      <path d="M30 20 L44 14 M32 28 L46 28 M30 36 L44 42" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="28" cy="28" r="22" stroke="#ef4444" stroke-width="3.5" fill="none"/>
+      <line x1="12" y1="12" x2="44" y2="44" stroke="#ef4444" stroke-width="3.5" stroke-linecap="round"/>
+    </svg>`,
+
+    avoid_sleeping: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="26" cy="30" r="19" fill="#1e293b" stroke="#38bdf8" stroke-width="2.5"/>
+      <circle cx="26" cy="30" r="2.5" fill="#f8fafc"/>
+      <path d="M26 30 L26 18 M26 30 L35 34" stroke="#f8fafc" stroke-width="2.5" stroke-linecap="round"/>
+      <rect x="23" y="7" width="6" height="4" rx="1.5" fill="#38bdf8"/>
+      <text x="42" y="18" font-family="'Tektur', sans-serif" font-weight="900" font-size="14" fill="#f59e0b">Z</text>
+      <text x="47" y="27" font-family="'Tektur', sans-serif" font-weight="900" font-size="10" fill="#f59e0b">z</text>
+      <text x="50" y="35" font-family="'Tektur', sans-serif" font-weight="900" font-size="8" fill="#fbbf24">z</text>
+    </svg>`,
+
+    wrong_way: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="28" cy="28" r="24" fill="#ef4444" stroke="#b91c1c" stroke-width="2"/>
+      <rect x="11" y="23" width="34" height="10" rx="2" fill="#ffffff"/>
+      <path d="M28 8 L33 14 L23 14 Z M28 48 L23 42 L33 42 Z" fill="#ffffff" opacity="0.8"/>
+    </svg>`,
+
+    avoid_weighing: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="40" width="44" height="6" rx="2" fill="#334155" stroke="#64748b" stroke-width="1.5"/>
+      <rect x="14" y="46" width="6" height="4" fill="#475569"/>
+      <rect x="36" y="46" width="6" height="4" fill="#475569"/>
+      <path d="M10 38 L10 24 L28 24 L36 30 L42 30 L42 38 Z" fill="#f59e0b" stroke="#d97706" stroke-width="1.5"/>
+      <circle cx="16" cy="38" r="4" fill="#0f172a" stroke="#cbd5e1" stroke-width="1.5"/>
+      <circle cx="36" cy="38" r="4" fill="#0f172a" stroke="#cbd5e1" stroke-width="1.5"/>
+      <polygon points="28,6 38,22 18,22" fill="#ef4444" stroke="#ffffff" stroke-width="1.5"/>
+      <text x="28" y="20" font-family="'Inter', sans-serif" font-weight="900" font-size="12" fill="#ffffff" text-anchor="middle">!</text>
+    </svg>`,
+
+    refuel: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="8" y="10" width="26" height="38" rx="4" fill="#0f172a" stroke="#10b981" stroke-width="2.5"/>
+      <rect x="13" y="16" width="16" height="10" rx="2" fill="#064e3b" stroke="#34d399" stroke-width="1"/>
+      <text x="21" y="23" font-family="'Tektur', sans-serif" font-weight="700" font-size="6" fill="#34d399" text-anchor="middle">GAS</text>
+      <path d="M34 18 C42 18 44 26 44 32 C44 38 41 40 41 36 L41 24 L46 22" stroke="#34d399" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      <path d="M21 32 C21 32 27 39 27 42 C27 45.3 24.3 48 21 48 C17.7 48 15 45.3 15 42 C15 39 21 32 21 32 Z" fill="#34d399"/>
+    </svg>`,
+
+    tollgate: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="8" y="20" width="10" height="28" rx="2" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+      <circle cx="13" cy="24" r="3" fill="#38bdf8"/>
+      <path d="M13 24 L50 16" stroke="#ef4444" stroke-width="5" stroke-linecap="round"/>
+      <path d="M13 24 L50 16" stroke="#ffffff" stroke-width="5" stroke-dasharray="7 7" stroke-linecap="round"/>
+      <circle cx="36" cy="38" r="11" fill="#0284c7" stroke="#38bdf8" stroke-width="2"/>
+      <text x="36" y="44" font-family="'Tektur', sans-serif" font-weight="900" font-size="14" fill="#ffffff" text-anchor="middle">€</text>
+    </svg>`,
+
+    ferry: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M6 34 L12 44 L44 44 L50 34 L38 34 L38 24 L30 24 L30 18 L24 18 L24 24 L14 24 L14 34 Z" fill="#f59e0b" stroke="#fbbf24" stroke-width="1.5"/>
+      <rect x="25" y="14" width="5" height="5" fill="#ef4444"/>
+      <circle cx="28" cy="10" r="2" fill="#94a3b8" opacity="0.6"/>
+      <circle cx="32" cy="7" r="2.5" fill="#94a3b8" opacity="0.4"/>
+      <circle cx="18" cy="29" r="1.5" fill="#0f172a"/>
+      <circle cx="24" cy="29" r="1.5" fill="#0f172a"/>
+      <circle cx="30" cy="29" r="1.5" fill="#0f172a"/>
+      <path d="M4 48 C8 46 12 46 16 48 C20 50 24 50 28 48 C32 46 36 46 40 48 C44 50 48 50 52 48" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>`,
+
+    train: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="12" y="8" width="32" height="36" rx="6" fill="#1e293b" stroke="#f59e0b" stroke-width="2.5"/>
+      <rect x="17" y="14" width="22" height="12" rx="3" fill="#38bdf8" opacity="0.85"/>
+      <circle cx="18" cy="36" r="3.5" fill="#fef08a" stroke="#f59e0b" stroke-width="1"/>
+      <circle cx="38" cy="36" r="3.5" fill="#fef08a" stroke="#f59e0b" stroke-width="1"/>
+      <circle cx="28" cy="11" r="2" fill="#fef08a"/>
+      <path d="M8 48 L48 48 M14 44 L42 44 M16 52 L40 52" stroke="#64748b" stroke-width="2" stroke-linecap="round"/>
+    </svg>`,
+
+    job_delivered: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M28 4 L48 12 L48 28 C48 40 38 48 28 52 C18 48 8 40 8 28 L8 12 Z" fill="#15803d" stroke="#22c55e" stroke-width="2.5"/>
+      <path d="M18 28 L25 35 L38 20" stroke="#f0fdf4" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`,
+
+    job_cancelled: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M28 4 L48 12 L48 28 C48 40 38 48 28 52 C18 48 8 40 8 28 L8 12 Z" fill="#991b1b" stroke="#ef4444" stroke-width="2.5"/>
+      <path d="M20 20 L36 36 M36 20 L20 36" stroke="#fef2f2" stroke-width="4.5" stroke-linecap="round"/>
+    </svg>`,
+
+    generic_fine: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="28" cy="28" r="24" fill="#1e293b" stroke="#ef4444" stroke-width="3"/>
+      <polygon points="28,10 40,36 16,36" fill="#ef4444"/>
+      <text x="28" y="32" font-family="'Inter', sans-serif" font-weight="900" font-size="16" fill="#ffffff" text-anchor="middle">!</text>
+    </svg>`,
+
+    illegal_trailer: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="16" width="32" height="22" rx="3" fill="#1e293b" stroke="#f59e0b" stroke-width="2"/>
+      <line x1="38" y1="27" x2="48" y2="27" stroke="#94a3b8" stroke-width="4"/>
+      <circle cx="16" cy="40" r="4.5" fill="#0f172a" stroke="#cbd5e1" stroke-width="2"/>
+      <circle cx="28" cy="40" r="4.5" fill="#0f172a" stroke="#cbd5e1" stroke-width="2"/>
+      <circle cx="40" cy="20" r="13" fill="#ef4444" stroke="#ffffff" stroke-width="2.5"/>
+      <line x1="31" y1="29" x2="49" y2="11" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+    </svg>`,
+
+    damaged_vehicle: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="8" y="14" width="28" height="26" rx="4" fill="#1e293b" stroke="#ef4444" stroke-width="2"/>
+      <path d="M12 18 L24 30 M24 18 L12 30" stroke="#fca5a5" stroke-width="2"/>
+      <circle cx="15" cy="42" r="4" fill="#0f172a" stroke="#ef4444" stroke-width="2"/>
+      <circle cx="29" cy="42" r="4" fill="#0f172a" stroke="#ef4444" stroke-width="2"/>
+      <path d="M34 14 C38 8 44 8 46 14 C48 10 52 14 50 20 C54 24 50 30 44 28" fill="#94a3b8" opacity="0.65"/>
+      <polygon points="42,32 52,48 32,48" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5"/>
+      <text x="42" y="45" font-family="'Inter', sans-serif" font-weight="900" font-size="11" fill="#000000" text-anchor="middle">!</text>
+    </svg>`,
+
+    illegal_border_crossing: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="24" width="8" height="24" rx="2" fill="#334155" stroke="#64748b" stroke-width="1.5"/>
+      <rect x="42" y="24" width="8" height="24" rx="2" fill="#334155" stroke="#64748b" stroke-width="1.5"/>
+      <path d="M10 28 L46 28" stroke="#ef4444" stroke-width="6" stroke-linecap="round"/>
+      <path d="M10 28 L46 28" stroke="#ffffff" stroke-width="6" stroke-dasharray="6 6" stroke-linecap="round"/>
+      <circle cx="28" cy="14" r="10" fill="#dc2626" stroke="#ffffff" stroke-width="2"/>
+      <rect x="22" y="12" width="12" height="4" rx="1" fill="#ffffff"/>
+    </svg>`,
+
+    hard_shoulder_violation: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="8" width="44" height="40" rx="6" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+      <line x1="20" y1="8" x2="20" y2="48" stroke="#ffffff" stroke-width="2.5" stroke-dasharray="5 5"/>
+      <line x1="36" y1="8" x2="36" y2="48" stroke="#f59e0b" stroke-width="3"/>
+      <path d="M14 38 L14 26 L18 20 L22 20 L22 38 Z" fill="#38bdf8"/>
+      <path d="M22 26 C26 26 34 24 38 18" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="2 3"/>
+      <polygon points="38,14 43,20 35,21" fill="#ef4444"/>
+    </svg>`,
+
+    cargo_damage: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="8" y="12" width="40" height="36" rx="4" fill="#78350f" stroke="#b45309" stroke-width="2"/>
+      <path d="M8 22 L48 22 M28 22 L28 48" stroke="#92400e" stroke-width="2"/>
+      <path d="M22 12 L30 24 L24 32 L34 44" stroke="#ef4444" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      <polygon points="40,24 52,44 28,44" fill="#ef4444" stroke="#ffffff" stroke-width="1.5"/>
+      <text x="40" y="41" font-family="'Inter', sans-serif" font-weight="900" font-size="13" fill="#ffffff" text-anchor="middle">!</text>
+    </svg>`,
+
+    service: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="28" cy="28" r="22" fill="#064e3b" stroke="#10b981" stroke-width="2.5"/>
+      <path d="M18 38 L32 24 M28 20 L36 28 M34 16 C38 12 44 14 46 16 C48 18 50 24 46 28 L40 22" stroke="#34d399" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="20" cy="36" r="4" fill="#10b981"/>
+      <path d="M28 10 L30 14 M28 46 L30 42 M10 28 L14 30 M46 28 L42 30" stroke="#6ee7b7" stroke-width="2" stroke-linecap="round"/>
+    </svg>`,
+
+    low_fuel: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="8" y="10" width="26" height="38" rx="4" fill="#1e293b" stroke="#f59e0b" stroke-width="2.5"/>
+      <rect x="13" y="16" width="16" height="10" rx="2" fill="#451a03" stroke="#f59e0b" stroke-width="1"/>
+      <text x="21" y="23" font-family="'Tektur', sans-serif" font-weight="700" font-size="6" fill="#fbbf24" text-anchor="middle">LOW</text>
+      <path d="M34 18 C42 18 44 26 44 32 C44 38 41 40 41 36 L41 24 L46 22" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      <polygon points="21,30 27,42 15,42" fill="#ef4444"/>
+      <text x="21" y="40" font-family="'Inter', sans-serif" font-weight="900" font-size="9" fill="#ffffff" text-anchor="middle">!</text>
+    </svg>`,
+
+    bus_stop: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="8" y="12" width="40" height="28" rx="5" fill="#134e4a" stroke="#14b8a6" stroke-width="2.5"/>
+      <rect x="12" y="16" width="10" height="10" rx="2" fill="#2dd4bf" opacity="0.8"/>
+      <rect x="24" y="16" width="10" height="10" rx="2" fill="#2dd4bf" opacity="0.8"/>
+      <rect x="36" y="16" width="8" height="18" rx="1" fill="#0f766e" stroke="#5eead4" stroke-width="1"/>
+      <circle cx="16" cy="42" r="4.5" fill="#0f172a" stroke="#2dd4bf" stroke-width="2"/>
+      <circle cx="38" cy="42" r="4.5" fill="#0f172a" stroke="#2dd4bf" stroke-width="2"/>
+      <line x1="4" y1="48" x2="52" y2="48" stroke="#64748b" stroke-width="2" stroke-linecap="round"/>
+    </svg>`,
+
+    bus_comfort: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="28" cy="28" r="23" fill="#1e293b" stroke="#f97316" stroke-width="2.5"/>
+      <path d="M20 16 C20 16 28 14 36 16 C36 24 34 32 34 36 L18 36 L18 20 Z" fill="#ea580c" opacity="0.4"/>
+      <path d="M16 36 L36 36 C38 36 40 38 40 40 L14 40 C14 38 15 36 16 36 Z" fill="#fdba74"/>
+      <path d="M22 16 C22 16 26 20 28 20 C30 20 34 16 34 16" stroke="#fed7aa" stroke-width="2" stroke-linecap="round"/>
+      <polygon points="38,8 48,24 28,24" fill="#f97316" stroke="#ffffff" stroke-width="1.5"/>
+      <text x="38" y="21" font-family="'Inter', sans-serif" font-weight="900" font-size="11" fill="#ffffff" text-anchor="middle">!</text>
+    </svg>`,
+
+    chat_honk: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 22 L24 22 L38 12 L38 34 L24 24 L8 24 Z" fill="#a855f7" stroke="#c084fc" stroke-width="2"/>
+      <path d="M8 32 L24 32 L38 24 L38 44 L24 34 L8 34 Z" fill="#9333ea" stroke="#c084fc" stroke-width="2"/>
+      <path d="M42 16 C46 20 46 36 42 40" stroke="#e9d5ff" stroke-width="3" stroke-linecap="round"/>
+      <path d="M47 11 C53 17 53 39 47 45" stroke="#f3e8ff" stroke-width="3" stroke-linecap="round"/>
+    </svg>`,
+
+    chat_cb: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="16" y="8" width="24" height="30" rx="10" fill="#1e293b" stroke="#eab308" stroke-width="2.5"/>
+      <circle cx="28" cy="18" r="6" fill="#0f172a" stroke="#ca8a04" stroke-width="1"/>
+      <circle cx="28" cy="18" r="2" fill="#facc15"/>
+      <rect x="12" y="16" width="4" height="8" rx="2" fill="#eab308"/>
+      <path d="M28 38 C28 44 24 46 28 50 C32 54 28 56 28 56" stroke="#facc15" stroke-width="3" stroke-linecap="round" fill="none"/>
+    </svg>`,
+
+    chat_route: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="8" y="8" width="40" height="40" rx="8" fill="#0c4a6e" stroke="#38bdf8" stroke-width="2.5"/>
+      <path d="M16 40 L24 28 L32 34 L40 18" stroke="#7dd3fc" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <polygon points="40,14 44,22 36,20" fill="#38bdf8"/>
+      <circle cx="16" cy="40" r="3" fill="#38bdf8"/>
+    </svg>`,
+
+    chat_stats: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="8" width="44" height="40" rx="6" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+      <line x1="14" y1="40" x2="14" y2="30" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
+      <line x1="24" y1="40" x2="24" y2="22" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
+      <line x1="34" y1="40" x2="34" y2="16" stroke="#4ade80" stroke-width="4" stroke-linecap="round"/>
+      <line x1="44" y1="40" x2="44" y2="26" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
+      <polygon points="28,6 30,11 36,11 31,14 33,19 28,16 23,19 25,14 20,11 26,11" fill="#facc15"/>
+    </svg>`,
+
+    chat_truck: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="12" y="8" width="32" height="36" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="2.5"/>
+      <rect x="16" y="12" width="24" height="12" rx="2" fill="#0284c7" opacity="0.8"/>
+      <rect x="18" y="28" width="20" height="10" rx="1" fill="#0f172a" stroke="#64748b" stroke-width="1"/>
+      <circle cx="16" cy="38" r="2.5" fill="#fef08a"/>
+      <circle cx="40" cy="38" r="2.5" fill="#fef08a"/>
+      <line x1="8" y1="46" x2="48" y2="46" stroke="#64748b" stroke-width="2.5"/>
+    </svg>`,
+
+    chat_driver: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M28 6 L46 12 L46 28 C46 38 38 46 28 50 C18 46 10 38 10 28 L10 12 Z" fill="#1e293b" stroke="#38bdf8" stroke-width="2.5"/>
+      <circle cx="28" cy="22" r="6" fill="#38bdf8"/>
+      <path d="M18 36 C18 31 22 29 28 29 C34 29 38 31 38 36" fill="#38bdf8"/>
+      <polygon points="28,34 30,38 34,38 31,40 32,44 28,42 24,44 25,40 22,38 26,38" fill="#facc15"/>
+    </svg>`
+  };
+
+  const TelemetrySoundEngine = (() => {
+    let ctx = null;
+
+    function getAudioContext() {
+      if (!ctx) {
+        const AudioCtxClass = global.AudioContext || global.webkitAudioContext;
+        if (AudioCtxClass) {
+          ctx = new AudioCtxClass();
+        }
+      }
+      if (ctx && ctx.state === 'suspended') {
+        ctx.resume().catch(() => {});
+      }
+      return ctx;
+    }
+
+    function createNoiseBuffer(c, durationSec) {
+      const bufferSize = Math.max(1, Math.floor(c.sampleRate * durationSec));
+      const buffer = c.createBuffer(1, bufferSize, c.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+      return buffer;
+    }
+
+    function playSpeeding(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const masterGain = c.createGain();
+      masterGain.gain.setValueAtTime(vol * 0.9, t0);
+      masterGain.connect(c.destination);
+
+      const noiseBuf = createNoiseBuffer(c, 0.04);
+      const click1 = c.createBufferSource();
+      click1.buffer = noiseBuf;
+      const bpf1 = c.createBiquadFilter();
+      bpf1.type = 'bandpass';
+      bpf1.frequency.setValueAtTime(2200, t0);
+      bpf1.Q.setValueAtTime(3.0, t0);
+      const g1 = c.createGain();
+      g1.gain.setValueAtTime(0.8, t0);
+      g1.gain.exponentialRampToValueAtTime(0.001, t0 + 0.035);
+      click1.connect(bpf1);
+      bpf1.connect(g1);
+      g1.connect(masterGain);
+      click1.start(t0);
+
+      const tClick2 = t0 + 0.055;
+      const click2 = c.createBufferSource();
+      click2.buffer = noiseBuf;
+      const bpf2 = c.createBiquadFilter();
+      bpf2.type = 'bandpass';
+      bpf2.frequency.setValueAtTime(1600, tClick2);
+      bpf2.Q.setValueAtTime(2.5, tClick2);
+      const g2 = c.createGain();
+      g2.gain.setValueAtTime(0.9, tClick2);
+      g2.gain.exponentialRampToValueAtTime(0.001, tClick2 + 0.04);
+      click2.connect(bpf2);
+      bpf2.connect(g2);
+      g2.connect(masterGain);
+      click2.start(tClick2);
+
+      const tFlash = t0 + 0.06;
+      const oscFlash = c.createOscillator();
+      oscFlash.type = 'sine';
+      oscFlash.frequency.setValueAtTime(3800, tFlash);
+      oscFlash.frequency.exponentialRampToValueAtTime(7400, tFlash + 0.16);
+      const gFlash = c.createGain();
+      gFlash.gain.setValueAtTime(0.12, tFlash);
+      gFlash.gain.exponentialRampToValueAtTime(0.001, tFlash + 0.22);
+      oscFlash.connect(gFlash);
+      gFlash.connect(masterGain);
+      oscFlash.start(tFlash);
+      oscFlash.stop(tFlash + 0.23);
+    }
+
+    function playRedSignal(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const masterGain = c.createGain();
+      masterGain.gain.setValueAtTime(vol * 0.85, t0);
+      masterGain.connect(c.destination);
+
+      [
+        { start: t0, duration: 0.13 },
+        { start: t0 + 0.18, duration: 0.28 }
+      ].forEach((burst) => {
+        const carrier = c.createOscillator();
+        carrier.type = 'sine';
+        carrier.frequency.setValueAtTime(2950, burst.start);
+
+        const lfo = c.createOscillator();
+        lfo.type = 'triangle';
+        lfo.frequency.setValueAtTime(24, burst.start);
+        const lfoGain = c.createGain();
+        lfoGain.gain.setValueAtTime(280, burst.start);
+        lfo.connect(carrier.frequency);
+
+        const airOsc = c.createOscillator();
+        airOsc.type = 'sine';
+        airOsc.frequency.setValueAtTime(3320, burst.start);
+        const airGain = c.createGain();
+        airGain.gain.setValueAtTime(0.22, burst.start);
+
+        const bpf = c.createBiquadFilter();
+        bpf.type = 'bandpass';
+        bpf.frequency.setValueAtTime(3000, burst.start);
+        bpf.Q.setValueAtTime(4.0, burst.start);
+
+        const burstGain = c.createGain();
+        burstGain.gain.setValueAtTime(0.001, burst.start);
+        burstGain.gain.linearRampToValueAtTime(0.7, burst.start + 0.015);
+        burstGain.gain.setValueAtTime(0.7, burst.start + burst.duration - 0.02);
+        burstGain.gain.exponentialRampToValueAtTime(0.001, burst.start + burst.duration);
+
+        carrier.connect(bpf);
+        airOsc.connect(airGain);
+        airGain.connect(bpf);
+        bpf.connect(burstGain);
+        burstGain.connect(masterGain);
+
+        carrier.start(burst.start);
+        lfo.start(burst.start);
+        airOsc.start(burst.start);
+        carrier.stop(burst.start + burst.duration + 0.01);
+        lfo.stop(burst.start + burst.duration + 0.01);
+        airOsc.stop(burst.start + burst.duration + 0.01);
+      });
+    }
+
+    function playCrash(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const masterGain = c.createGain();
+      masterGain.gain.setValueAtTime(vol * 0.9, t0);
+      masterGain.connect(c.destination);
+
+      [
+        { start: t0, duration: 0.12 },
+        { start: t0 + 0.16, duration: 0.14 }
+      ].forEach((chirp) => {
+        const osc = c.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(680, chirp.start);
+        osc.frequency.exponentialRampToValueAtTime(1620, chirp.start + chirp.duration);
+
+        const bpf = c.createBiquadFilter();
+        bpf.type = 'bandpass';
+        bpf.frequency.setValueAtTime(1100, chirp.start);
+        bpf.Q.setValueAtTime(1.8, chirp.start);
+
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.001, chirp.start);
+        g.gain.linearRampToValueAtTime(0.65, chirp.start + 0.01);
+        g.gain.setValueAtTime(0.65, chirp.start + chirp.duration - 0.015);
+        g.gain.exponentialRampToValueAtTime(0.001, chirp.start + chirp.duration);
+
+        osc.connect(bpf);
+        bpf.connect(g);
+        g.connect(masterGain);
+
+        osc.start(chirp.start);
+        osc.stop(chirp.start + chirp.duration + 0.01);
+      });
+    }
+
+    function playNoLights(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const masterGain = c.createGain();
+      masterGain.gain.setValueAtTime(vol * 0.75, t0);
+      masterGain.connect(c.destination);
+
+      [
+        { start: t0, duration: 0.10 },
+        { start: t0 + 0.15, duration: 0.10 }
+      ].forEach((pulse) => {
+        const osc = c.createOscillator();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(460, pulse.start);
+
+        const lpf = c.createBiquadFilter();
+        lpf.type = 'lowpass';
+        lpf.frequency.setValueAtTime(1400, pulse.start);
+
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.45, pulse.start);
+        g.gain.exponentialRampToValueAtTime(0.001, pulse.start + pulse.duration);
+
+        osc.connect(lpf);
+        lpf.connect(g);
+        g.connect(masterGain);
+
+        osc.start(pulse.start);
+        osc.stop(pulse.start + pulse.duration + 0.01);
+      });
+    }
+
+    function playTachograph(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const masterGain = c.createGain();
+      masterGain.gain.setValueAtTime(vol * 0.7, t0);
+      masterGain.connect(c.destination);
+
+      [
+        { f: 880, start: t0, duration: 0.08 },
+        { f: 1100, start: t0 + 0.12, duration: 0.10 }
+      ].forEach((tone) => {
+        const osc = c.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(tone.f, tone.start);
+
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.55, tone.start);
+        g.gain.exponentialRampToValueAtTime(0.001, tone.start + tone.duration);
+
+        osc.connect(g);
+        g.connect(masterGain);
+
+        osc.start(tone.start);
+        osc.stop(tone.start + tone.duration + 0.01);
+      });
+    }
+
+    function playWrongWay(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const masterGain = c.createGain();
+      masterGain.gain.setValueAtTime(vol * 0.85, t0);
+      masterGain.connect(c.destination);
+
+      const duration = 0.28;
+      [415, 311].forEach((f) => {
+        const osc = c.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(f, t0);
+
+        const lpf = c.createBiquadFilter();
+        lpf.type = 'lowpass';
+        lpf.frequency.setValueAtTime(1100, t0);
+
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.001, t0);
+        g.gain.linearRampToValueAtTime(0.4, t0 + 0.015);
+        g.gain.setValueAtTime(0.4, t0 + duration - 0.03);
+        g.gain.exponentialRampToValueAtTime(0.001, t0 + duration);
+
+        osc.connect(lpf);
+        lpf.connect(g);
+        g.connect(masterGain);
+
+        osc.start(t0);
+        osc.stop(t0 + duration + 0.01);
+      });
+    }
+
+    function playWarningChime(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const masterGain = c.createGain();
+      masterGain.gain.setValueAtTime(vol * 0.75, t0);
+      masterGain.connect(c.destination);
+
+      [
+        { f: 520, start: t0, duration: 0.08 },
+        { f: 660, start: t0 + 0.10, duration: 0.08 },
+        { f: 880, start: t0 + 0.20, duration: 0.12 }
+      ].forEach((tone) => {
+        const osc = c.createOscillator();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(tone.f, tone.start);
+
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.5, tone.start);
+        g.gain.exponentialRampToValueAtTime(0.001, tone.start + tone.duration);
+
+        osc.connect(g);
+        g.connect(masterGain);
+
+        osc.start(tone.start);
+        osc.stop(tone.start + tone.duration + 0.01);
+      });
+    }
+
+    function playRefuel(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const masterGain = c.createGain();
+      masterGain.gain.setValueAtTime(vol * 0.8, t0);
+      masterGain.connect(c.destination);
+
+      [
+        { f: 587.33, start: t0, duration: 0.14 },
+        { f: 880.00, start: t0 + 0.13, duration: 0.32 }
+      ].forEach((tone) => {
+        const osc = c.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(tone.f, tone.start);
+
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.001, tone.start);
+        g.gain.linearRampToValueAtTime(0.55, tone.start + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.001, tone.start + tone.duration);
+
+        osc.connect(g);
+        g.connect(masterGain);
+
+        osc.start(tone.start);
+        osc.stop(tone.start + tone.duration + 0.01);
+      });
+    }
+
+    function playTollgate(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const masterGain = c.createGain();
+      masterGain.gain.setValueAtTime(vol * 0.85, t0);
+      masterGain.connect(c.destination);
+
+      const osc = c.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1850, t0);
+
+      const osc2 = c.createOscillator();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(3700, t0);
+      const g2 = c.createGain();
+      g2.gain.setValueAtTime(0.08, t0);
+
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.001, t0);
+      g.gain.linearRampToValueAtTime(0.6, t0 + 0.003);
+      g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.085);
+
+      osc.connect(g);
+      osc2.connect(g2);
+      g2.connect(g);
+      g.connect(masterGain);
+
+      osc.start(t0);
+      osc2.start(t0);
+      osc.stop(t0 + 0.09);
+      osc2.stop(t0 + 0.09);
+    }
+
+    function playFerry(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const masterGain = c.createGain();
+      masterGain.gain.setValueAtTime(vol * 0.9, t0);
+      masterGain.connect(c.destination);
+
+      const duration = 0.52;
+      [146.8, 185.0, 220.0].forEach((f) => {
+        const osc = c.createOscillator();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(f, t0);
+
+        const lpf = c.createBiquadFilter();
+        lpf.type = 'lowpass';
+        lpf.frequency.setValueAtTime(750, t0);
+
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.001, t0);
+        g.gain.linearRampToValueAtTime(0.4, t0 + 0.06);
+        g.gain.setValueAtTime(0.4, t0 + duration - 0.08);
+        g.gain.exponentialRampToValueAtTime(0.001, t0 + duration);
+
+        osc.connect(lpf);
+        lpf.connect(g);
+        g.connect(masterGain);
+
+        osc.start(t0);
+        osc.stop(t0 + duration + 0.01);
+      });
+    }
+
+    function playTrain(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const masterGain = c.createGain();
+      masterGain.gain.setValueAtTime(vol * 0.85, t0);
+      masterGain.connect(c.destination);
+
+      const duration = 0.40;
+      [311.1, 369.9].forEach((f) => {
+        const osc = c.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(f, t0);
+
+        const lpf = c.createBiquadFilter();
+        lpf.type = 'lowpass';
+        lpf.frequency.setValueAtTime(950, t0);
+
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.001, t0);
+        g.gain.linearRampToValueAtTime(0.38, t0 + 0.035);
+        g.gain.setValueAtTime(0.38, t0 + duration - 0.05);
+        g.gain.exponentialRampToValueAtTime(0.001, t0 + duration);
+
+        osc.connect(lpf);
+        lpf.connect(g);
+        g.connect(masterGain);
+
+        osc.start(t0);
+        osc.stop(t0 + duration + 0.01);
+      });
+    }
+
+    function playJobDelivered(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const masterGain = c.createGain();
+      masterGain.gain.setValueAtTime(vol * 0.8, t0);
+      masterGain.connect(c.destination);
+
+      [
+        { f: 523.25, start: t0, duration: 0.18 },
+        { f: 659.25, start: t0 + 0.09, duration: 0.18 },
+        { f: 783.99, start: t0 + 0.18, duration: 0.22 },
+        { f: 1046.50, start: t0 + 0.27, duration: 0.45 }
+      ].forEach((note) => {
+        const osc = c.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(note.f, note.start);
+
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.001, note.start);
+        g.gain.linearRampToValueAtTime(0.5, note.start + 0.015);
+        g.gain.exponentialRampToValueAtTime(0.001, note.start + note.duration);
+
+        osc.connect(g);
+        g.connect(masterGain);
+
+        osc.start(note.start);
+        osc.stop(note.start + note.duration + 0.01);
+      });
+    }
+
+    function playJobCancelled(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const masterGain = c.createGain();
+      masterGain.gain.setValueAtTime(vol * 0.8, t0);
+      masterGain.connect(c.destination);
+
+      const duration = 0.42;
+      const osc = c.createOscillator();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(520, t0);
+      osc.frequency.exponentialRampToValueAtTime(240, t0 + duration);
+
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.001, t0);
+      g.gain.linearRampToValueAtTime(0.55, t0 + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, t0 + duration);
+
+      osc.connect(g);
+      g.connect(masterGain);
+
+      osc.start(t0);
+      osc.stop(t0 + duration + 0.01);
+    }
+
+    function playCargoDamage(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const masterGain = c.createGain();
+      masterGain.gain.setValueAtTime(vol * 0.9, t0);
+      masterGain.connect(c.destination);
+
+      const oscThump = c.createOscillator();
+      oscThump.type = 'sine';
+      oscThump.frequency.setValueAtTime(95, t0);
+      oscThump.frequency.exponentialRampToValueAtTime(32, t0 + 0.22);
+      const gThump = c.createGain();
+      gThump.gain.setValueAtTime(0.85, t0);
+      gThump.gain.exponentialRampToValueAtTime(0.001, t0 + 0.24);
+      oscThump.connect(gThump);
+      gThump.connect(masterGain);
+      oscThump.start(t0);
+      oscThump.stop(t0 + 0.25);
+
+      [t0 + 0.08, t0 + 0.20].forEach((pt) => {
+        const oscBeep = c.createOscillator();
+        oscBeep.type = 'sine';
+        oscBeep.frequency.setValueAtTime(2400, pt);
+        const gBeep = c.createGain();
+        gBeep.gain.setValueAtTime(0.45, pt);
+        gBeep.gain.exponentialRampToValueAtTime(0.001, pt + 0.07);
+        oscBeep.connect(gBeep);
+        gBeep.connect(masterGain);
+        oscBeep.start(pt);
+        oscBeep.stop(pt + 0.08);
+      });
+    }
+
+    function playService(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const masterGain = c.createGain();
+      masterGain.gain.setValueAtTime(vol * 0.85, t0);
+      masterGain.connect(c.destination);
+
+      const noise = createNoiseBuffer(c, 0.03);
+      for (let i = 0; i < 4; i++) {
+        const nt = t0 + i * 0.055;
+        const src = c.createBufferSource();
+        src.buffer = noise;
+        const bpf = c.createBiquadFilter();
+        bpf.type = 'bandpass';
+        bpf.frequency.setValueAtTime(1400, nt);
+        bpf.Q.setValueAtTime(2.5, nt);
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.7, nt);
+        g.gain.exponentialRampToValueAtTime(0.001, nt + 0.045);
+        src.connect(bpf);
+        bpf.connect(g);
+        g.connect(masterGain);
+        src.start(nt);
+      }
+
+      [
+        { f: 523.25, start: t0 + 0.28, dur: 0.12 },
+        { f: 659.25, start: t0 + 0.36, dur: 0.25 }
+      ].forEach((note) => {
+        const osc = c.createOscillator();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(note.f, note.start);
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.4, note.start);
+        g.gain.exponentialRampToValueAtTime(0.001, note.start + note.dur);
+        osc.connect(g);
+        g.connect(masterGain);
+        osc.start(note.start);
+        osc.stop(note.start + note.dur + 0.01);
+      });
+    }
+
+    function playLowFuel(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const masterGain = c.createGain();
+      masterGain.gain.setValueAtTime(vol * 0.8, t0);
+      masterGain.connect(c.destination);
+
+      const osc = c.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(750, t0);
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.001, t0);
+      g.gain.linearRampToValueAtTime(0.65, t0 + 0.02);
+      g.gain.setValueAtTime(0.65, t0 + 0.14);
+      g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.20);
+      osc.connect(g);
+      g.connect(masterGain);
+      osc.start(t0);
+      osc.stop(t0 + 0.21);
+    }
+
+    function playBusDoors(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const masterGain = c.createGain();
+      masterGain.gain.setValueAtTime(vol * 0.8, t0);
+      masterGain.connect(c.destination);
+
+      const dur = 0.35;
+      const noiseBuf = createNoiseBuffer(c, dur);
+      const noiseSrc = c.createBufferSource();
+      noiseSrc.buffer = noiseBuf;
+      const lpf = c.createBiquadFilter();
+      lpf.type = 'lowpass';
+      lpf.frequency.setValueAtTime(700, t0);
+      const gNoise = c.createGain();
+      gNoise.gain.setValueAtTime(0.35, t0);
+      gNoise.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+      noiseSrc.connect(lpf);
+      lpf.connect(gNoise);
+      gNoise.connect(masterGain);
+      noiseSrc.start(t0);
+
+      [
+        { f: 659.25, start: t0 + 0.15, dur: 0.18 },
+        { f: 523.25, start: t0 + 0.30, dur: 0.35 }
+      ].forEach((bell) => {
+        const osc = c.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(bell.f, bell.start);
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.5, bell.start);
+        g.gain.exponentialRampToValueAtTime(0.001, bell.start + bell.dur);
+        osc.connect(g);
+        g.connect(masterGain);
+        osc.start(bell.start);
+        osc.stop(bell.start + bell.dur + 0.01);
+      });
+    }
+
+    function playBusComfortWarn(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const masterGain = c.createGain();
+      masterGain.gain.setValueAtTime(vol * 0.75, t0);
+      masterGain.connect(c.destination);
+
+      const osc = c.createOscillator();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(392, t0);
+      osc.frequency.exponentialRampToValueAtTime(330, t0 + 0.22);
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.5, t0);
+      g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.25);
+      osc.connect(g);
+      g.connect(masterGain);
+      osc.start(t0);
+      osc.stop(t0 + 0.26);
+    }
+
+    function playTruckPneumoHorn(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const masterGain = c.createGain();
+      masterGain.gain.setValueAtTime(vol * 0.9, t0);
+      masterGain.connect(c.destination);
+
+      const dur = 0.55;
+      [220, 277.18].forEach((f) => {
+        const osc = c.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(f, t0);
+        const lpf = c.createBiquadFilter();
+        lpf.type = 'lowpass';
+        lpf.frequency.setValueAtTime(800, t0);
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.001, t0);
+        g.gain.linearRampToValueAtTime(0.45, t0 + 0.04);
+        g.gain.setValueAtTime(0.45, t0 + dur - 0.08);
+        g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+        osc.connect(lpf);
+        lpf.connect(g);
+        g.connect(masterGain);
+        osc.start(t0);
+        osc.stop(t0 + dur + 0.01);
+      });
+    }
+
+    function playCBRadio(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const masterGain = c.createGain();
+      masterGain.gain.setValueAtTime(vol * 0.8, t0);
+      masterGain.connect(c.destination);
+
+      const noiseBuf = createNoiseBuffer(c, 0.06);
+      const src = c.createBufferSource();
+      src.buffer = noiseBuf;
+      const bpf = c.createBiquadFilter();
+      bpf.type = 'bandpass';
+      bpf.frequency.setValueAtTime(1200, t0);
+      const gNoise = c.createGain();
+      gNoise.gain.setValueAtTime(0.6, t0);
+      gNoise.gain.exponentialRampToValueAtTime(0.001, t0 + 0.05);
+      src.connect(bpf);
+      bpf.connect(gNoise);
+      gNoise.connect(masterGain);
+      src.start(t0);
+
+      const tBeep = t0 + 0.09;
+      const osc = c.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1046.5, tBeep);
+      const gBeep = c.createGain();
+      gBeep.gain.setValueAtTime(0.45, tBeep);
+      gBeep.gain.exponentialRampToValueAtTime(0.001, tBeep + 0.11);
+      osc.connect(gBeep);
+      gBeep.connect(masterGain);
+      osc.start(tBeep);
+      osc.stop(tBeep + 0.12);
+    }
+
+    return {
+      playSpeeding,
+      playRedSignal,
+      playCrash,
+      playNoLights,
+      playTachograph,
+      playWrongWay,
+      playWarningChime,
+      playRefuel,
+      playTollgate,
+      playFerry,
+      playTrain,
+      playJobDelivered,
+      playJobCancelled,
+      playCargoDamage,
+      playService,
+      playLowFuel,
+      playBusDoors,
+      playBusComfortWarn,
+      playTruckPneumoHorn,
+      playCBRadio
+    };
+  })();
+
+  function playEventAudio(type, offence) {
+    const etsCfg = config.ets2 || {};
+    if (etsCfg.eventSoundEnabled === false) return;
+    const vol = typeof etsCfg.eventSoundVolume === 'number'
+      ? Math.max(0, Math.min(1, etsCfg.eventSoundVolume))
+      : 0.65;
+    if (vol <= 0) return;
+
+    const soundKey = offence || type;
+    const candidatePath = `./assets/sounds/${soundKey}.mp3`;
+
+    try {
+      const audio = new Audio(candidatePath);
+      audio.volume = vol;
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          synthesizeEventSound(type, offence, vol);
+        });
+      }
+    } catch (_) {
+      synthesizeEventSound(type, offence, vol);
+    }
+  }
+
+  function synthesizeEventSound(type, offence, vol) {
+    if (type === 'fine') {
+      switch (offence) {
+        case 'speeding':
+        case 'speeding_camera':
+          TelemetrySoundEngine.playSpeeding(vol);
+          break;
+        case 'red_signal':
+          TelemetrySoundEngine.playRedSignal(vol);
+          break;
+        case 'crash':
+          TelemetrySoundEngine.playCrash(vol);
+          break;
+        case 'no_lights':
+          TelemetrySoundEngine.playNoLights(vol);
+          break;
+        case 'avoid_sleeping':
+          TelemetrySoundEngine.playTachograph(vol);
+          break;
+        case 'wrong_way':
+          TelemetrySoundEngine.playWrongWay(vol);
+          break;
+        case 'avoid_weighing':
+        case 'illegal_trailer':
+        case 'avoid_inspection':
+        case 'illegal_border_crossing':
+        case 'hard_shoulder_violation':
+        case 'damaged_vehicle':
+        case 'damaged_vehicle_usage':
+        default:
+          TelemetrySoundEngine.playWarningChime(vol);
+          break;
+      }
+    } else if (type === 'tollgate') {
+      TelemetrySoundEngine.playTollgate(vol);
+    } else if (type === 'refuel') {
+      TelemetrySoundEngine.playRefuel(vol);
+    } else if (type === 'ferry') {
+      TelemetrySoundEngine.playFerry(vol);
+    } else if (type === 'train') {
+      TelemetrySoundEngine.playTrain(vol);
+    } else if (type === 'job_delivered') {
+      TelemetrySoundEngine.playJobDelivered(vol);
+    } else if (type === 'job_cancelled') {
+      TelemetrySoundEngine.playJobCancelled(vol);
+    } else if (type === 'cargo_damage') {
+      TelemetrySoundEngine.playCargoDamage(vol);
+    } else if (type === 'service') {
+      TelemetrySoundEngine.playService(vol);
+    } else if (type === 'low_fuel') {
+      TelemetrySoundEngine.playLowFuel(vol);
+    } else if (type === 'bus_stop') {
+      TelemetrySoundEngine.playBusDoors(vol);
+    } else if (type === 'bus_comfort') {
+      TelemetrySoundEngine.playBusComfortWarn(vol);
+    } else if (type === 'chat_honk') {
+      TelemetrySoundEngine.playTruckPneumoHorn(vol);
+    } else if (type === 'chat_cb') {
+      TelemetrySoundEngine.playCBRadio(vol);
+    } else if (type === 'chat_route' || type === 'chat_stats' || type === 'chat_truck' || type === 'chat_driver') {
+      TelemetrySoundEngine.playWarningChime(vol * 0.7);
+    }
+  }
+
+  function resolveEventDetails(event) {
+    const type = event.type || 'fine';
+    const offence = event.offence || '';
+    const amount = Number(event.amount) || 0;
+    const xp = Number(event.xp) || 0;
+    const source = event.source || '';
+    const target = event.target || '';
+
+    let category = '';
+    let title = '';
+    let valueText = '';
+    let subText = '';
+    let badgeText = '';
+    let svgIcon = '';
+    let cardModifier = type;
+    let summaryMetrics = null;
+    let durationMs = 4500;
+
+    if (type === 'fine') {
+      category = t('eventCategoryFine');
+      badgeText = t('badgeFine');
+      cardModifier = 'fine';
+      valueText = amount > 0 ? `− € ${formatIntWithSpaces(amount)}` : '';
+
+      switch (offence) {
+        case 'speeding':
+          title = t('eventFineSpeeding');
+          svgIcon = EVENT_SVG_ICONS.speeding;
+          break;
+        case 'speeding_camera':
+          title = t('eventFineSpeedingCamera');
+          svgIcon = EVENT_SVG_ICONS.speeding_camera;
+          break;
+        case 'red_signal':
+          title = t('eventFineRedSignal');
+          svgIcon = EVENT_SVG_ICONS.red_signal;
+          break;
+        case 'crash':
+          title = t('eventFineCrash');
+          svgIcon = EVENT_SVG_ICONS.crash;
+          break;
+        case 'no_lights':
+          title = t('eventFineNoLights');
+          svgIcon = EVENT_SVG_ICONS.no_lights;
+          break;
+        case 'avoid_sleeping':
+          title = t('eventFineAvoidSleeping');
+          svgIcon = EVENT_SVG_ICONS.avoid_sleeping;
+          break;
+        case 'wrong_way':
+          title = t('eventFineWrongWay');
+          svgIcon = EVENT_SVG_ICONS.wrong_way;
+          break;
+        case 'avoid_weighing':
+          title = t('eventFineAvoidWeighing');
+          svgIcon = EVENT_SVG_ICONS.avoid_weighing;
+          break;
+        case 'illegal_trailer':
+          title = t('eventFineIllegalTrailer');
+          svgIcon = EVENT_SVG_ICONS.illegal_trailer;
+          break;
+        case 'avoid_inspection':
+          title = t('eventFineAvoidInspection');
+          svgIcon = EVENT_SVG_ICONS.avoid_weighing;
+          break;
+        case 'illegal_border_crossing':
+          title = t('eventFineIllegalBorderCrossing');
+          svgIcon = EVENT_SVG_ICONS.illegal_border_crossing;
+          break;
+        case 'hard_shoulder_violation':
+          title = t('eventFineHardShoulderViolation');
+          svgIcon = EVENT_SVG_ICONS.hard_shoulder_violation;
+          break;
+        case 'damaged_vehicle':
+        case 'damaged_vehicle_usage':
+          title = t('eventFineDamagedVehicleUsage');
+          svgIcon = EVENT_SVG_ICONS.damaged_vehicle;
+          break;
+        default:
+          title = offence ? offence.replace(/_/g, ' ') : t('eventFineGeneric');
+          svgIcon = EVENT_SVG_ICONS.generic_fine;
+          break;
+      }
+    } else if (type === 'tollgate') {
+      category = t('eventCategoryToll');
+      title = t('eventTollTitle');
+      badgeText = t('badgeToll');
+      cardModifier = 'tollgate';
+      valueText = amount > 0 ? `− € ${formatIntWithSpaces(amount)}` : `€ 0`;
+      svgIcon = EVENT_SVG_ICONS.tollgate;
+    } else if (type === 'refuel') {
+      category = t('eventCategoryRefuel');
+      title = t('eventRefuelTitle');
+      badgeText = t('badgeFuel');
+      cardModifier = 'refuel';
+      valueText = `+ ${amount} ${t('l')}`;
+      if (event.currentFuel) {
+        subText = `(${event.currentFuel} ${t('l')})`;
+      }
+      svgIcon = EVENT_SVG_ICONS.refuel;
+    } else if (type === 'ferry') {
+      category = t('eventCategoryFerry');
+      title = (source && target) ? `${source} ➔ ${target}` : t('eventFerryTitle');
+      badgeText = t('badgeFerry');
+      cardModifier = 'ferry';
+      valueText = amount > 0 ? `− € ${formatIntWithSpaces(amount)}` : `€ 0`;
+      if (source && target) {
+        subText = t('eventFerryTitle');
+      }
+      svgIcon = EVENT_SVG_ICONS.ferry;
+    } else if (type === 'train') {
+      category = t('eventCategoryTrain');
+      title = (source && target) ? `${source} ➔ ${target}` : t('eventTrainTitle');
+      badgeText = t('badgeTrain');
+      cardModifier = 'train';
+      valueText = amount > 0 ? `− € ${formatIntWithSpaces(amount)}` : `€ 0`;
+      if (source && target) {
+        subText = t('eventTrainTitle');
+      }
+      svgIcon = EVENT_SVG_ICONS.train;
+    } else if (type === 'job_delivered') {
+      category = t('eventCategoryJobDelivered');
+      title = t('eventJobDeliveredTitle');
+      badgeText = t('badgeDelivered');
+      cardModifier = 'job_delivered';
+      valueText = amount > 0 ? `+ € ${formatIntWithSpaces(amount)}` : `+ € 0`;
+      if (xp > 0) {
+        subText = `(+ ${xp} XP)`;
+      }
+      svgIcon = EVENT_SVG_ICONS.job_delivered;
+      if (event.summaryMetrics) {
+        summaryMetrics = event.summaryMetrics;
+        cardModifier = 'job_delivered event-toast-card--summary';
+        durationMs = 7000;
+      }
+    } else if (type === 'job_cancelled') {
+      category = t('eventCategoryJobCancelled');
+      title = t('eventJobCancelledTitle');
+      badgeText = t('badgeCancelled');
+      cardModifier = 'job_cancelled';
+      valueText = amount > 0 ? `− € ${formatIntWithSpaces(amount)}` : `€ 0`;
+      svgIcon = EVENT_SVG_ICONS.job_cancelled;
+    } else if (type === 'cargo_damage') {
+      category = t('eventCategoryCargoDamage');
+      title = event.title || t('eventCargoDamageTitle');
+      badgeText = t('badgeDamage');
+      cardModifier = 'cargo_damage';
+      valueText = event.valueText || `+${event.amount || '1.0'}%`;
+      svgIcon = EVENT_SVG_ICONS.cargo_damage;
+    } else if (type === 'service') {
+      category = t('eventCategoryService');
+      title = event.title || t('eventServiceTitle');
+      badgeText = t('badgeService');
+      cardModifier = 'service';
+      valueText = t('eventServiceValue');
+      svgIcon = EVENT_SVG_ICONS.service;
+    } else if (type === 'low_fuel') {
+      category = t('eventCategoryLowFuel');
+      title = event.title || t('eventLowFuelTitle');
+      badgeText = t('badgeLowFuel');
+      cardModifier = 'low_fuel';
+      valueText = event.valueText || `${event.amount || 45} ${t('l')}`;
+      if (event.subText) subText = event.subText;
+      svgIcon = EVENT_SVG_ICONS.low_fuel;
+    } else if (type === 'bus_stop') {
+      category = t('eventCategoryBusStop');
+      title = event.title || t('eventBusStopTitle');
+      badgeText = t('badgeCoach');
+      cardModifier = 'bus_stop';
+      valueText = event.valueText || event.target || 'Station';
+      svgIcon = EVENT_SVG_ICONS.bus_stop;
+    } else if (type === 'bus_comfort') {
+      category = t('eventCategoryBusComfort');
+      title = event.title || t('eventBusComfortTitle');
+      badgeText = t('badgeComfort');
+      cardModifier = 'bus_comfort';
+      valueText = event.valueText || `-${event.amount || 10}%`;
+      svgIcon = EVENT_SVG_ICONS.bus_comfort;
+    } else if (type === 'chat_honk') {
+      category = t('eventCategoryChatHonk');
+      title = event.title || `${t('eventChatHonkTitle')} @${event.user || 'Viewer'}`;
+      badgeText = t('badgeHonk');
+      cardModifier = 'chat_honk';
+      valueText = t('eventChatHonkValue');
+      svgIcon = EVENT_SVG_ICONS.chat_honk;
+    } else if (type === 'chat_cb') {
+      category = t('eventCategoryChatCb');
+      title = `@${event.user || 'Driver'}`;
+      badgeText = t('badgeRadio');
+      cardModifier = 'chat_cb';
+      valueText = event.text || event.valueText || '';
+      svgIcon = EVENT_SVG_ICONS.chat_cb;
+    } else if (type === 'chat_route') {
+      category = t('eventCategoryChatRoute');
+      title = event.title || t('noRouteTitle');
+      badgeText = t('badgeRoute');
+      cardModifier = 'chat_info';
+      valueText = event.valueText || '';
+      subText = event.subText || '';
+      svgIcon = EVENT_SVG_ICONS.chat_route;
+    } else if (type === 'chat_stats') {
+      category = t('eventCategoryChatStats');
+      title = event.title || 'Stats';
+      badgeText = t('badgeStats');
+      cardModifier = 'chat_info';
+      valueText = event.valueText || '';
+      subText = event.subText || '';
+      svgIcon = EVENT_SVG_ICONS.chat_stats;
+    } else if (type === 'chat_truck') {
+      category = t('eventCategoryChatTruck');
+      title = event.title || 'Truck';
+      badgeText = t('badgeTruck');
+      cardModifier = 'chat_info';
+      valueText = event.valueText || '';
+      subText = event.subText || '';
+      svgIcon = EVENT_SVG_ICONS.chat_truck;
+    } else if (type === 'chat_driver') {
+      category = t('eventCategoryChatDriver');
+      title = event.title || 'Driver';
+      badgeText = t('badgeDriver');
+      cardModifier = 'chat_info';
+      valueText = event.valueText || '';
+      subText = event.subText || '';
+      svgIcon = EVENT_SVG_ICONS.chat_driver;
+    }
+
+    return {
+      category,
+      title,
+      valueText,
+      subText,
+      badgeText,
+      svgIcon,
+      cardModifier,
+      summaryMetrics,
+      durationMs
+    };
+  }
+
+  const eventToastQueue = [];
+  let isEventToastShowing = false;
+  let eventToastTimer = null;
+  let eventToastLeaveTimer = null;
+
+  function enqueueTelemetryEvent(eventData) {
+    const etsCfg = config.ets2 || {};
+    if (etsCfg.eventsEnabled === false) return;
+    eventToastQueue.push(eventData);
+    processNextTelemetryEvent();
+  }
+
+  function processNextTelemetryEvent() {
+    if (isEventToastShowing || eventToastQueue.length === 0) return;
+    const eventData = eventToastQueue.shift();
+    isEventToastShowing = true;
+
+    showTelemetryEventCard(eventData, () => {
+      isEventToastShowing = false;
+      setTimeout(processNextTelemetryEvent, 250);
+    });
+  }
+
+  function getToastContainer() {
+    let container = global.document.getElementById('telemetry-event-toast');
+    if (!container) {
+      container = global.document.createElement('div');
+      container.id = 'telemetry-event-toast';
+      container.className = 'telemetry-event-toast';
+      container.setAttribute('aria-live', 'assertive');
+      container.setAttribute('aria-atomic', 'true');
+      const scene = global.document.querySelector('.scene-desktop') ||
+                    global.document.querySelector('.scene-vertical') ||
+                    global.document.body;
+      scene.appendChild(container);
+    }
+    return container;
+  }
+
+  function showTelemetryEventCard(eventData, onComplete) {
+    const container = getToastContainer();
+    const details = resolveEventDetails(eventData);
+
+    const card = global.document.createElement('div');
+    card.className = `event-toast-card event-toast-card--${details.cardModifier}`;
+
+    let summaryHtml = '';
+    if (details.summaryMetrics) {
+      const sm = details.summaryMetrics;
+      summaryHtml = `
+        <div class="event-toast-summary-metrics">
+          ${sm.route ? `<div class="event-toast-metric-item"><span class="event-toast-metric-label">${escapeHtml(t('eventSummaryRoute'))}</span> <span class="event-toast-metric-val">${escapeHtml(sm.route)}</span></div>` : ''}
+          ${sm.distance ? `<div class="event-toast-metric-item"><span class="event-toast-metric-label">${escapeHtml(t('eventSummaryDistance'))}</span> <span class="event-toast-metric-val">${escapeHtml(sm.distance)}</span></div>` : ''}
+          ${sm.revenue ? `<div class="event-toast-metric-item"><span class="event-toast-metric-label">${escapeHtml(t('eventSummaryRevenue'))}</span> <span class="event-toast-metric-val event-toast-metric-val--accent">+ € ${escapeHtml(formatIntWithSpaces(sm.revenue))}</span></div>` : ''}
+          ${sm.xp ? `<div class="event-toast-metric-item"><span class="event-toast-metric-label">${escapeHtml(t('eventSummaryXP'))}</span> <span class="event-toast-metric-val">+ ${escapeHtml(sm.xp)} XP</span></div>` : ''}
+          ${sm.finesText ? `<div class="event-toast-metric-item"><span class="event-toast-metric-label">${escapeHtml(t('eventSummaryFines'))}</span> <span class="event-toast-metric-val event-toast-metric-val--warn">${escapeHtml(sm.finesText)}</span></div>` : ''}
+        </div>
+        ${sm.winners ? `<div class="event-toast-winners-row"><span class="event-toast-winners-tag">${escapeHtml(t('badgeWinners'))}:</span> <span>${escapeHtml(sm.winners)}</span></div>` : ''}
+      `;
+    }
+
+    card.innerHTML = `
+      <div class="event-toast-icon-wrap" aria-hidden="true">
+        ${details.svgIcon}
+      </div>
+      <div class="event-toast-content">
+        <div class="event-toast-head">
+          <span class="event-toast-category">${escapeHtml(details.category)}</span>
+          ${details.badgeText ? `<span class="event-toast-badge">${escapeHtml(details.badgeText)}</span>` : ''}
+        </div>
+        <div class="event-toast-title">${escapeHtml(details.title)}</div>
+        <div class="event-toast-desc">
+          ${details.valueText ? `<span class="event-toast-value">${escapeHtml(details.valueText)}</span>` : ''}
+          ${details.subText ? `<span class="event-toast-sub">${escapeHtml(details.subText)}</span>` : ''}
+        </div>
+        ${summaryHtml}
+      </div>
+    `;
+
+    container.innerHTML = '';
+    container.appendChild(card);
+
+    playEventAudio(eventData.type, eventData.offence);
+
+    requestAnimationFrame(() => {
+      card.classList.add('is-visible');
+    });
+
+    const displayMs = Math.max(3000, Number(details.durationMs) || 4500);
+
+    if (eventToastTimer) clearTimeout(eventToastTimer);
+    eventToastTimer = setTimeout(() => {
+      card.classList.remove('is-visible');
+      card.classList.add('is-leaving');
+
+      if (eventToastLeaveTimer) clearTimeout(eventToastLeaveTimer);
+      eventToastLeaveTimer = setTimeout(() => {
+        if (card.parentNode === container) {
+          container.removeChild(card);
+        }
+        if (typeof onComplete === 'function') {
+          onComplete();
+        }
+      }, 350);
+    }, displayMs);
+  }
+
+  const sessionStats = {
+    jobsCompleted: 0,
+    kmDriven: 0,
+    maxSpeed: 0,
+    revenue: 0,
+    finesCount: 0,
+    finesTotal: 0,
+    refuelsCount: 0,
+    currentTripFines: 0,
+    currentTripFinesAmount: 0,
+    safetyScore: 100
+  };
+
+  const tripBets = new Map();
+
+  let lastCargoDmg = null;
+  let lastTruckWear = null;
+  let lastCargoDmgAlertAt = 0;
+  let lastServiceAlertAt = 0;
+  let lowFuelAlerted = false;
+  let lastBusStopId = null;
+  let lastBusSat = null;
+  let latestJobStateSnapshot = null;
+  let latestIdentitySnapshot = null;
+
+  function checkCargoAndDamageEvents(data, speedKmh) {
+    const now = Date.now();
+    const currentCargoDmg = parseFiniteTelemetryNumber(
+      data.cargoDmg ?? data.jobDmg ?? (data.cargo && data.cargo.damage)
+    );
+
+    const wEng = Number(data.wEngine ?? (data.truck && data.truck.wearEngine) ?? 0);
+    const wCh = Number(data.wChassis ?? (data.truck && data.truck.wearChassis) ?? 0);
+    const wTr = Number(data.wTrans ?? (data.truck && data.truck.wearTransmission) ?? 0);
+    const wCb = Number(data.wCabin ?? (data.truck && data.truck.wearCabin) ?? 0);
+    const currentTruckWear = (wEng * 0.35 + wCh * 0.35 + wTr * 0.15 + wCb * 0.15);
+
+    if (lastCargoDmg !== null && currentCargoDmg !== null) {
+      const deltaCargo = currentCargoDmg - lastCargoDmg;
+      if (deltaCargo >= 0.009 && (now - lastCargoDmgAlertAt >= 5000)) {
+        lastCargoDmgAlertAt = now;
+        enqueueTelemetryEvent({
+          type: 'cargo_damage',
+          amount: (deltaCargo * 100).toFixed(1),
+          valueText: `+${(deltaCargo * 100).toFixed(1)}%`
+        });
+        sessionStats.safetyScore = Math.max(10, sessionStats.safetyScore - 8);
+      }
+    }
+
+    if (lastTruckWear !== null) {
+      const deltaWear = currentTruckWear - lastTruckWear;
+      if (deltaWear >= 0.03 && (now - lastCargoDmgAlertAt >= 5000)) {
+        lastCargoDmgAlertAt = now;
+        enqueueTelemetryEvent({
+          type: 'cargo_damage',
+          title: t('eventCategoryCargoDamage'),
+          amount: (deltaWear * 100).toFixed(1),
+          valueText: `+${(deltaWear * 100).toFixed(1)}%`
+        });
+        sessionStats.safetyScore = Math.max(10, sessionStats.safetyScore - 5);
+      }
+
+      if (speedKmh < 1.0 && lastTruckWear >= 0.03 && currentTruckWear <= 0.005) {
+        if (now - lastServiceAlertAt >= 10000) {
+          lastServiceAlertAt = now;
+          enqueueTelemetryEvent({ type: 'service' });
+        }
+      }
+    }
+
+    lastCargoDmg = currentCargoDmg;
+    lastTruckWear = currentTruckWear;
+  }
+
+  function checkLowFuelWarning(currentFuel, data) {
+    if (typeof currentFuel !== 'number' || !Number.isFinite(currentFuel) || currentFuel <= 0) return;
+    const fuelCap = parseFiniteTelemetryNumber(data.fuelCapacity ?? (data.fuel && data.fuel.capacity)) || 600;
+    const isWarn = isTruthyTelemetryFlag(data.fuelWarning ?? data.fuelWarn ?? (data.fuel && data.fuel.warning));
+
+    if (currentFuel < fuelCap * 0.12 || isWarn) {
+      if (!lowFuelAlerted) {
+        lowFuelAlerted = true;
+        const rawRange = data.fuelRange ?? (data.fuel && data.fuel.range);
+        const rangeText = rawRange ? `(~${Math.round(rawRange)} ${t('km')})` : '';
+        enqueueTelemetryEvent({
+          type: 'low_fuel',
+          amount: Math.round(currentFuel),
+          valueText: `${Math.round(currentFuel)} ${t('l')}`,
+          subText: rangeText
+        });
+      }
+    } else if (currentFuel > fuelCap * 0.25) {
+      lowFuelAlerted = false;
+    }
+  }
+
+  function checkBusEvents(data) {
+    const isBus = isTruthyTelemetryFlag(data.isBusJob) || data.jobMarket === 'bus_job' || data.jobMarket === 'coach';
+    if (!isBus) return;
+
+    const stopName = (data.destinationStop && (data.destinationStop.name || data.destinationStop.id)) ||
+                     (data.sourceStop && (data.sourceStop.name || data.sourceStop.id));
+    if (stopName && stopName !== lastBusStopId) {
+      if (lastBusStopId !== null) {
+        enqueueTelemetryEvent({
+          type: 'bus_stop',
+          target: stopName,
+          valueText: stopName
+        });
+      }
+      lastBusStopId = stopName;
+    }
+
+    const sat = parseFiniteTelemetryNumber(data.busSat);
+    if (sat !== null) {
+      if (lastBusSat !== null && sat < lastBusSat - 0.075) {
+        const drop = Math.round((lastBusSat - sat) * 100);
+        enqueueTelemetryEvent({
+          type: 'bus_comfort',
+          amount: drop,
+          valueText: `-${drop}%`
+        });
+      }
+      lastBusSat = sat;
+    }
+  }
+
+  let prevFuel = null;
+  const refuelTracking = {
+    active: false,
+    startFuel: 0,
+    lastFuel: 0,
+    lastIncreaseTime: 0
+  };
+
+  function checkRefuelProgress(currentFuel, speedKmh) {
+    if (typeof currentFuel !== 'number' || !Number.isFinite(currentFuel) || currentFuel <= 0) return;
+
+    if (prevFuel === null) {
+      prevFuel = currentFuel;
+      return;
+    }
+
+    const now = Date.now();
+
+    if (speedKmh < 1.0) {
+      const benchmarkFuel = refuelTracking.active ? refuelTracking.lastFuel : prevFuel;
+      if (currentFuel > benchmarkFuel + 0.25) {
+        if (!refuelTracking.active) {
+          refuelTracking.active = true;
+          refuelTracking.startFuel = prevFuel;
+        }
+        refuelTracking.lastFuel = currentFuel;
+        refuelTracking.lastIncreaseTime = now;
+      }
+    }
+
+    if (refuelTracking.active) {
+      const timeSinceIncrease = now - refuelTracking.lastIncreaseTime;
+      const speedMoved = speedKmh >= 1.0;
+      const fuelStopped = timeSinceIncrease >= 2000;
+
+      if (fuelStopped || speedMoved) {
+        const addedLiters = Math.round(refuelTracking.lastFuel - refuelTracking.startFuel);
+        refuelTracking.active = false;
+        if (addedLiters >= 5) {
+          sessionStats.refuelsCount += 1;
+          enqueueTelemetryEvent({
+            type: 'refuel',
+            amount: addedLiters,
+            currentFuel: Math.round(refuelTracking.lastFuel)
+          });
+        }
+      }
+    }
+
+    prevFuel = currentFuel;
+  }
+
+  let lastProcessedEventSeq = 0;
+
+  function handleIncomingTelemetryEvent(lastEvent) {
+    if (!lastEvent || typeof lastEvent !== 'object') return;
+    const seq = Number(lastEvent.seq);
+    if (!Number.isFinite(seq) || seq <= 0) return;
+
+    if (lastProcessedEventSeq === 0) {
+      lastProcessedEventSeq = seq;
+      return;
+    }
+
+    if (seq > lastProcessedEventSeq) {
+      lastProcessedEventSeq = seq;
+
+      if (lastEvent.type === 'fine') {
+        const amt = Number(lastEvent.amount) || 0;
+        sessionStats.finesCount += 1;
+        sessionStats.finesTotal += amt;
+        sessionStats.currentTripFines += 1;
+        sessionStats.currentTripFinesAmount += amt;
+        sessionStats.safetyScore = Math.max(10, sessionStats.safetyScore - 4);
+      } else if (lastEvent.type === 'job_delivered') {
+        const amt = Number(lastEvent.amount) || 0;
+        sessionStats.jobsCompleted += 1;
+        sessionStats.revenue += amt;
+
+        const outcome = sessionStats.currentTripFines === 0 ? 'clean' : 'fine';
+        const winningUsers = [];
+        tripBets.forEach((bet, user) => {
+          if (bet === outcome) winningUsers.push(`@${user}`);
+        });
+
+        const routeText = latestJobStateSnapshot ? latestJobStateSnapshot.routeText : '';
+        const finesSummary = sessionStats.currentTripFines === 0
+          ? (lang === 'ru' ? '0 (ЧИСТЫЙ РЕЙС)' : '0 (CLEAN TRIP)')
+          : `${sessionStats.currentTripFines} (€ ${formatIntWithSpaces(sessionStats.currentTripFinesAmount)})`;
+
+        lastEvent.summaryMetrics = {
+          route: routeText,
+          distance: latestJobStateSnapshot ? latestJobStateSnapshot.distanceText : '',
+          revenue: amt,
+          xp: Number(lastEvent.xp) || 0,
+          finesText: finesSummary,
+          winners: winningUsers.length > 0 ? winningUsers.join(', ') : t('eventSummaryNoBets')
+        };
+
+        tripBets.clear();
+        sessionStats.currentTripFines = 0;
+        sessionStats.currentTripFinesAmount = 0;
+      }
+
+      enqueueTelemetryEvent(lastEvent);
+    }
+  }
+
+  app.triggerChatCommand = function(cmdType, username, text, meta) {
+    const etsCfg = config.ets2 || {};
+    if (etsCfg.eventsEnabled === false) return;
+
+    if (cmdType === 'honk') {
+      enqueueTelemetryEvent({
+        type: 'chat_honk',
+        user: username
+      });
+    } else if (cmdType === 'cb') {
+      enqueueTelemetryEvent({
+        type: 'chat_cb',
+        user: username,
+        text: text
+      });
+    } else if (cmdType === 'route') {
+      const routeText = (latestJobStateSnapshot && latestJobStateSnapshot.routeText) || config.ets2.routeText || t('noRouteTitle');
+      const dist = (latestJobStateSnapshot && latestJobStateSnapshot.distanceText) || '';
+      enqueueTelemetryEvent({
+        type: 'chat_route',
+        title: routeText,
+        valueText: dist ? `${t('range')}: ${dist}` : ''
+      });
+    } else if (cmdType === 'stats') {
+      const revText = `€ ${formatIntWithSpaces(sessionStats.revenue)}`;
+      const finesText = `${sessionStats.finesCount} (€ ${formatIntWithSpaces(sessionStats.finesTotal)})`;
+      enqueueTelemetryEvent({
+        type: 'chat_stats',
+        title: lang === 'ru'
+          ? `Рейсов: ${sessionStats.jobsCompleted} | Доход: ${revText}`
+          : `Jobs: ${sessionStats.jobsCompleted} | Revenue: ${revText}`,
+        valueText: lang === 'ru'
+          ? `Пройдено: ${sessionStats.kmDriven} км | Штрафов: ${finesText}`
+          : `Driven: ${sessionStats.kmDriven} km | Fines: ${finesText}`
+      });
+    } else if (cmdType === 'truck') {
+      const model = (latestIdentitySnapshot && latestIdentitySnapshot.modelText) || 'MAN / SCANIA / VOLVO';
+      const plate = (latestIdentitySnapshot && latestIdentitySnapshot.plateText) || '';
+      const fuelStr = prevFuel ? `${Math.round(prevFuel)} ${t('l')}` : '';
+      enqueueTelemetryEvent({
+        type: 'chat_truck',
+        title: model,
+        valueText: plate ? `[${plate}] ${fuelStr}` : fuelStr
+      });
+    } else if (cmdType === 'driver') {
+      const driver = config.ets2.driverName || 'FOOZZEE';
+      enqueueTelemetryEvent({
+        type: 'chat_driver',
+        title: `${t('driverPrefix')}: ${driver}`,
+        valueText: `Safety Score: ${sessionStats.safetyScore}% | Max: ${sessionStats.maxSpeed} ${t('kmh')}`
+      });
+    }
+  };
+
+  app.recordTripBet = function(username, betType) {
+    if (!username) return;
+    const cleanBet = (betType === 'clean' || betType === 'чистый') ? 'clean' :
+                    (betType === 'fine' || betType === 'штраф') ? 'fine' : null;
+    if (cleanBet) {
+      tripBets.set(String(username).toLowerCase(), cleanBet);
+      return true;
+    }
+    return false;
+  };
+
+  app.getSessionStats = function() {
+    return { ...sessionStats, activeBets: tripBets.size };
+  };
+
+  global.testTelemetryEvent = function(type, offence, customAmount) {
+    let tKind = String(type || 'fine').toLowerCase();
+    let off = String(offence || '').toLowerCase();
+
+    const knownOffences = [
+      'speeding', 'speeding_camera', 'red_signal', 'crash', 'no_lights',
+      'avoid_sleeping', 'wrong_way', 'avoid_weighing', 'illegal_trailer',
+      'avoid_inspection', 'illegal_border_crossing', 'hard_shoulder_violation',
+      'damaged_vehicle', 'damaged_vehicle_usage', 'generic'
+    ];
+    if (knownOffences.includes(tKind)) {
+      off = tKind;
+      tKind = 'fine';
+    }
+
+    const mock = {
+      seq: Date.now(),
+      type: tKind,
+      offence: off,
+      amount: Number(customAmount) || 0,
+      xp: 0,
+      source: '',
+      target: ''
+    };
+
+    if (tKind === 'fine') {
+      if (!off) off = 'speeding';
+      mock.offence = off;
+      mock.amount = customAmount ? Number(customAmount) :
+                    (off === 'speeding' || off === 'speeding_camera') ? 550 :
+                    (off === 'red_signal') ? 350 :
+                    (off === 'crash') ? 400 :
+                    (off === 'no_lights') ? 150 :
+                    (off === 'avoid_sleeping') ? 150 :
+                    (off === 'wrong_way') ? 100 : 250;
+    } else if (tKind === 'tollgate') {
+      mock.amount = customAmount ? Number(customAmount) : 45;
+    } else if (tKind === 'refuel') {
+      mock.amount = customAmount ? Number(customAmount) : 185;
+      mock.currentFuel = 540;
+    } else if (tKind === 'ferry') {
+      mock.amount = customAmount ? Number(customAmount) : 320;
+      mock.source = lang === 'ru' ? 'Дувр' : 'Dover';
+      mock.target = lang === 'ru' ? 'Кале' : 'Calais';
+    } else if (tKind === 'train') {
+      mock.amount = customAmount ? Number(customAmount) : 260;
+      mock.source = lang === 'ru' ? 'Фолкстон' : 'Folkestone';
+      mock.target = lang === 'ru' ? 'Кале' : 'Calais';
+    } else if (tKind === 'job_delivered') {
+      mock.amount = customAmount ? Number(customAmount) : 14850;
+      mock.xp = 980;
+      mock.summaryMetrics = {
+        route: lang === 'ru' ? 'Берлин → Париж (24Т)' : 'Berlin → Paris (24T)',
+        distance: '1 050 км',
+        revenue: mock.amount,
+        xp: 980,
+        finesText: lang === 'ru' ? '0 (ЧИСТЫЙ РЕЙС)' : '0 (CLEAN TRIP)',
+        winners: '@VipViewer, @Trucker_77'
+      };
+    } else if (tKind === 'job_cancelled') {
+      mock.amount = customAmount ? Number(customAmount) : 12000;
+    } else if (tKind === 'cargo_damage') {
+      mock.amount = customAmount || '2.5';
+      mock.valueText = `+${mock.amount}%`;
+    } else if (tKind === 'service') {
+      mock.valueText = t('eventServiceValue');
+    } else if (tKind === 'low_fuel') {
+      mock.amount = customAmount || 55;
+      mock.subText = '(~110 км)';
+    } else if (tKind === 'bus_stop') {
+      mock.target = off || 'Berlin ZOB';
+    } else if (tKind === 'bus_comfort') {
+      mock.amount = customAmount || 12;
+      mock.valueText = `-${mock.amount}%`;
+    } else if (tKind === 'chat_honk') {
+      mock.user = off || 'VipFan';
+    } else if (tKind === 'chat_cb') {
+      mock.user = off || 'Trucker_99';
+      mock.text = '15 канал, как дорожка на Мюнхен?';
+    } else if (tKind === 'chat_route' || tKind === 'chat_stats' || tKind === 'chat_truck' || tKind === 'chat_driver') {
+      mock.title = 'Test Card';
+      mock.valueText = 'Test Value';
+    }
+
+    enqueueTelemetryEvent(mock);
+    return `[ETS2 Event Test] Dispatched: type="${tKind}", offence="${mock.offence}", amount=${mock.amount}`;
+  };
+
+  global.demoAllTelemetryEvents = function() {
+    const list = [
+      { type: 'chat_honk', user: 'VipViewer' },
+      { type: 'chat_cb', user: 'Trucker_77', text: 'Всем привет в 15 канале! На Париж чисто?' },
+      { type: 'cargo_damage', amount: '2.5', valueText: '+2.5%' },
+      { type: 'fine', offence: 'speeding', amount: 550 },
+      { type: 'fine', offence: 'red_signal', amount: 350 },
+      { type: 'tollgate', amount: 48 },
+      { type: 'refuel', amount: 240, currentFuel: 680 },
+      { type: 'service' },
+      { type: 'low_fuel', amount: 65, subText: '(~120 км)' },
+      { type: 'bus_stop', target: 'Berlin Hbf' },
+      { type: 'bus_comfort', amount: 15, valueText: '-15%' },
+      { type: 'ferry', amount: 320, source: 'Dover', target: 'Calais' },
+      {
+        type: 'job_delivered',
+        amount: 28400,
+        xp: 1450,
+        summaryMetrics: {
+          route: lang === 'ru' ? 'Берлин → Париж (24Т)' : 'Berlin → Paris (24T)',
+          distance: '1 050 км',
+          revenue: 28400,
+          xp: 1450,
+          finesText: lang === 'ru' ? '0 (ЧИСТЫЙ РЕЙС)' : '0 (CLEAN TRIP)',
+          winners: '@VipViewer, @SubPilot, @Trucker_77'
+        }
+      }
+    ];
+
+    list.forEach((evt) => {
+      enqueueTelemetryEvent(evt);
+    });
+
+    return `[Demo] Enqueued ${list.length} telemetry events sequentially!`;
+  };
+
   function renderTelemetryPacket(rawData) {
     const data = unwrapTelemetryPayload(rawData);
     if (!data || typeof data !== 'object') return;
@@ -2808,6 +4798,31 @@
     });
 
     applyGameStatusBadge(data, false, gameId, jobState.hasJob);
+
+    latestJobStateSnapshot = jobState;
+    latestIdentitySnapshot = identity;
+
+    if (speedKmh > sessionStats.maxSpeed) {
+      sessionStats.maxSpeed = speedKmh;
+    }
+    const currentOdo = parseFiniteTelemetryNumber(data.tripDriven ?? (data.trip && data.trip.driven) ?? data.driven);
+    if (currentOdo && currentOdo > sessionStats.kmDriven) {
+      sessionStats.kmDriven = Math.round(currentOdo);
+    }
+
+    const currentFuel = Number(data.fuel);
+    if (Number.isFinite(currentFuel) && currentFuel > 0) {
+      checkRefuelProgress(currentFuel, speedKmh);
+      checkLowFuelWarning(currentFuel, data);
+    }
+
+    checkCargoAndDamageEvents(data, speedKmh);
+    checkBusEvents(data);
+
+    const lastEvent = data.lastEvent || (data.tel && data.tel.lastEvent);
+    if (lastEvent) {
+      handleIncomingTelemetryEvent(lastEvent);
+    }
   }
 
   /* ==========================================================================
@@ -2867,6 +4882,9 @@
     }
     if (raw.paused !== undefined && merged.paused === undefined) {
       merged.paused = raw.paused;
+    }
+    if (raw.lastEvent !== undefined && merged.lastEvent === undefined) {
+      merged.lastEvent = raw.lastEvent;
     }
 
     if (raw.cfg && typeof raw.cfg === 'object') {

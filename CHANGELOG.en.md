@@ -16,10 +16,65 @@
 
 ## 📌 Version Index
 
+* [v1.2.0 (2026-11-16) — In-Game Event Toast Notifications, SVG Icons & Web Audio API Sound Synthesizer](#120---2026-11-16)
 * [v1.1.3 (2026-11-15) — Telemetry Stability, Native Plugin Renaming & 100% Bilingual HUD](#113---2026-11-15)
 * [v1.1.2 (2026-11-15) — Pip-Boy 3000 Standalone Auto-Update Terminal, 100% Bilingual Localization & DLC Coaches](#112---2026-11-15)
 * [v1.1.0 (2026-11-15) — ETS2 DLC Coaches Support, Solid Dashboard & Enhanced SCS Telemetry](#110---2026-11-15)
 * [v1.0.0 (2026-11-12) — Initial Release (Native SCS Telemetry SDK 1.16 & Broadcast HUD)](#100---2026-11-12)
+
+---
+
+## [1.2.0] - 2026-11-16
+
+> [!IMPORTANT]
+> **Release v1.2.0** introduces in-game telemetry event toast popups positioned at the upper windscreen area (14% from top, ~150px level), 100% bilingual badge localization, comprehensive SCS SDK traffic fines dictionary, procedural Web Audio API sound synthesizer, smart stream session statistics, and Twitch chat interactive viewer commands (`!honk`, `!cb`, `!route`, `!stats`, `!truck`, `!driver`, `!bet`).
+
+### 🚀 Added
+
+#### 🔔 Windscreen In-Game Toast Notifications (`.telemetry-event-toast`)
+* **Upper Windscreen HUD Placement:**
+  * Fixed positioning at the upper windscreen zone (`top: 14%; left: 50%`) with opaque cockpit background (`#0e131b`), accent glow borders, 4.5s holding duration, and sequential FIFO queue.
+  * 100% language purity: fully localized badge tags (`FINE`, `TOLL`, `FUEL`, `FERRY`, `TRAIN`, `CONTRACT`, `CANCEL`, `CARGO`, `SERVICE`, `RESERVE`, `COACH`, `COMFORT`, `HORN`, `CB RADIO`, `STATS`, `WINNERS`).
+
+#### ⚡ Native SCS SDK Event Capture (`overlayobs_foozzee_telemetry.dll`)
+* **Real-time Gameplay Event Interception:**
+  * Captures traffic fines (`player.fine.offence`), tollgates (`player.tollgate.paid`), ferries (`player.use.ferry`), trains (`player.use.train`), job delivered (`job.delivered`), and job cancelled (`job.cancelled`).
+  * Full dictionary of rare SCS SDK offences: `illegal_trailer`, `damaged_vehicle`, `illegal_border_crossing`, `hard_shoulder_violation`, `generic` with unique SVG vector icons and sounds.
+
+#### 🛠️ Telemetry & Fleet Detectors
+* **Cargo & Chassis Damage:**
+  * Real-time monitoring of cargo damage delta (`>= 1%`) and chassis impact (`>= 3%`), red warning toast with cracked crate icon and blunt thud + computer beep audio.
+* **Service Station Complete:**
+  * Automated repair detection at speed < 1 km/h when wear drops to 0%, emerald toast with wrench icon and pneumatic impact wrench sound.
+* **Low Fuel Reserve:**
+  * Single alert per tank refill when fuel drops below 12% capacity, amber warning toast with fuel pump icon and Scania/Volvo warning chime.
+* **DLC Coaches Tours:**
+  * Support for passenger stops (`bus_stop`) with pneumatic door hiss + Ding-Dong chime, and passenger comfort drop alert (`bus_comfort`).
+
+#### 📊 Stream Session Statistics & Expanded Delivery Summary
+* **Full Stream Run Tracking:**
+  * Persistent tracking of jobs completed, km driven, maximum speed, total revenue, fines tally, and driver safety score.
+  * Expanded 7.0s delivery summary card featuring route, distance, revenue, XP, trip fines, and viewer bet winners.
+
+#### 💬 Interactive Twitch Chat Commands (`ets2-chat.js`)
+* **Role-Based Live Interactions:**
+  * `!honk` / `!гудок`: VIP, Sub, Mod, Broadcaster access, cooldown throttled, triggers loud pneumatic air horn and purple toast.
+  * `!cb <message>` / `!рация <текст>`: Follower access, URL sanitizer, 70-char limit, triggers CB channel 15 toast with squelch and Roger Beep.
+  * Info cards: `!route` / `!рейс`, `!stats` / `!стата`, `!truck` / `!тягач`, `!driver` / `!водитель`.
+  * Trip Delivery Bet: `!bet clean` / `!ставка чистый` vs `!bet fine` / `!ставка штраф` with automatic payout announcement on delivery.
+
+#### 🧪 Test Tools & Demo Mode
+* **Instant Verification Functions:**
+  * `window.testTelemetryEvent()`, `window.testChatCommand()`, and `window.demoAllTelemetryEvents()` for full live demonstration of all cards and sound effects.
+
+#### 🔊 Autonomous Web Audio API Sound Synthesizer (`TelemetrySoundEngine`)
+* **Zero External Dependencies:**
+  * Fully code-generated procedural sound effects: mechanical dual shutter click with flash whine, police whistle with pea trill modulation, police Yelp horn sweep, tachograph beeps, car horn blast, refuel chime, transponder ping, ship horn, train air horn, and job chords.
+  * Transparent fallback to `./assets/sounds/<event>.mp3` if custom audio files are provided.
+
+#### 🧪 Developer Console Test Helper
+* **Browser Test API:**
+  * Global function `window.testTelemetryEvent(type, offence)` to test and preview all notification types, icons, and audio effects directly from the browser console.
 
 ---
 

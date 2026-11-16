@@ -1420,7 +1420,481 @@ body.show-guides .hud-guides {
   }
   .chat-msg,
   .alert-card,
+  .event-toast-card,
   .social-slide {
     transition-duration: 0.08s !important;
   }
+}
+
+/* ==========================================================================
+   Всплывающие игровые уведомления (Telemetry Event Toast)
+   Позиционирование в верхней части экрана (top: 14%; left: 50%)
+   ========================================================================== */
+.telemetry-event-toast {
+  position: fixed;
+  top: 14%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 900;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.event-toast-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #0e131b;
+  border-radius: 10px;
+  padding: 12px 20px 12px 16px;
+  min-width: 440px;
+  max-width: 620px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  box-sizing: border-box;
+  opacity: 0;
+  transform: scale(0.88) translateY(-14px);
+  transition:
+    opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.event-toast-card.is-visible {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+.event-toast-card.is-leaving {
+  opacity: 0;
+  transform: scale(0.94) translateY(-10px);
+  transition:
+    opacity 0.32s ease,
+    transform 0.32s ease;
+}
+
+.event-toast-icon-wrap {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.event-toast-icon-wrap svg {
+  width: 56px;
+  height: 56px;
+  display: block;
+}
+
+.event-toast-content {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.event-toast-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.event-toast-category {
+  font-family: var(--font-accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9fb0c4;
+}
+
+.event-toast-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.event-toast-title {
+  font-family: var(--font-main);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #f3f6fb;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event-toast-desc {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.event-toast-value {
+  font-weight: 700;
+}
+
+.event-toast-sub {
+  font-size: 12px;
+  color: #8c9baed0;
+}
+
+/* 1. Штрафы (Fine / Penalty) */
+.event-toast-card--fine,
+.event-toast-card--job_cancelled {
+  border-color: rgba(239, 68, 68, 0.7);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85), 0 0 24px rgba(239, 68, 68, 0.22);
+}
+.event-toast-card--fine .event-toast-category,
+.event-toast-card--job_cancelled .event-toast-category {
+  color: #f87171;
+}
+.event-toast-card--fine .event-toast-icon-wrap,
+.event-toast-card--job_cancelled .event-toast-icon-wrap {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.35);
+}
+.event-toast-card--fine .event-toast-value,
+.event-toast-card--job_cancelled .event-toast-value {
+  color: #f87171;
+}
+.event-toast-card--fine .event-toast-badge,
+.event-toast-card--job_cancelled .event-toast-badge {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+/* 2. Платная дорога (Tollgate) */
+.event-toast-card--tollgate {
+  border-color: rgba(56, 189, 248, 0.7);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85), 0 0 24px rgba(56, 189, 248, 0.22);
+}
+.event-toast-card--tollgate .event-toast-category {
+  color: #38bdf8;
+}
+.event-toast-card--tollgate .event-toast-icon-wrap {
+  background: rgba(56, 189, 248, 0.1);
+  border-color: rgba(56, 189, 248, 0.35);
+}
+.event-toast-card--tollgate .event-toast-value {
+  color: #38bdf8;
+}
+.event-toast-card--tollgate .event-toast-badge {
+  background: rgba(56, 189, 248, 0.18);
+  color: #7dd3fc;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+}
+
+/* 3. Дозаправка (Refuel) */
+.event-toast-card--refuel {
+  border-color: rgba(16, 185, 129, 0.75);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85), 0 0 24px rgba(16, 185, 129, 0.25);
+}
+.event-toast-card--refuel .event-toast-category {
+  color: #34d399;
+}
+.event-toast-card--refuel .event-toast-icon-wrap {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+.event-toast-card--refuel .event-toast-value {
+  color: #34d399;
+}
+.event-toast-card--refuel .event-toast-badge {
+  background: rgba(16, 185, 129, 0.2);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+/* 4. Морской паром / ЖД поезд (Ferry / Train) */
+.event-toast-card--ferry,
+.event-toast-card--train {
+  border-color: rgba(245, 158, 11, 0.75);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85), 0 0 24px rgba(245, 158, 11, 0.22);
+}
+.event-toast-card--ferry .event-toast-category,
+.event-toast-card--train .event-toast-category {
+  color: #fbbf24;
+}
+.event-toast-card--ferry .event-toast-icon-wrap,
+.event-toast-card--train .event-toast-icon-wrap {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.35);
+}
+.event-toast-card--ferry .event-toast-value,
+.event-toast-card--train .event-toast-value {
+  color: #fbbf24;
+}
+.event-toast-card--ferry .event-toast-badge,
+.event-toast-card--train .event-toast-badge {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fde68a;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+/* 5. Успешная доставка груза (Job Delivered) */
+.event-toast-card--job_delivered {
+  border-color: rgba(34, 197, 94, 0.8);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85), 0 0 28px rgba(34, 197, 94, 0.28);
+}
+.event-toast-card--job_delivered .event-toast-category {
+  color: #4ade80;
+}
+.event-toast-card--job_delivered .event-toast-icon-wrap {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.4);
+}
+.event-toast-card--job_delivered .event-toast-value {
+  color: #4ade80;
+}
+.event-toast-card--job_delivered .event-toast-badge {
+  background: rgba(34, 197, 94, 0.22);
+  color: #86efac;
+  border: 1px solid rgba(34, 197, 94, 0.45);
+}
+
+/* 6. Повреждение груза (Cargo Damage) */
+.event-toast-card--cargo_damage {
+  border-color: rgba(239, 68, 68, 0.85);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85), 0 0 28px rgba(239, 68, 68, 0.32);
+}
+.event-toast-card--cargo_damage .event-toast-category {
+  color: #f87171;
+}
+.event-toast-card--cargo_damage .event-toast-icon-wrap {
+  background: rgba(239, 68, 68, 0.16);
+  border-color: rgba(239, 68, 68, 0.45);
+}
+.event-toast-card--cargo_damage .event-toast-value {
+  color: #f87171;
+}
+.event-toast-card--cargo_damage .event-toast-badge {
+  background: rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.5);
+}
+
+/* 7. Техобслуживание / Ремонт (Service Complete) */
+.event-toast-card--service {
+  border-color: rgba(16, 185, 129, 0.85);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85), 0 0 28px rgba(16, 185, 129, 0.28);
+}
+.event-toast-card--service .event-toast-category {
+  color: #34d399;
+}
+.event-toast-card--service .event-toast-icon-wrap {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+.event-toast-card--service .event-toast-value {
+  color: #34d399;
+}
+.event-toast-card--service .event-toast-badge {
+  background: rgba(16, 185, 129, 0.22);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.45);
+}
+
+/* 8. Резерв топлива (Low Fuel Warning) */
+.event-toast-card--low_fuel {
+  border-color: rgba(245, 158, 11, 0.85);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85), 0 0 28px rgba(245, 158, 11, 0.28);
+}
+.event-toast-card--low_fuel .event-toast-category {
+  color: #fbbf24;
+}
+.event-toast-card--low_fuel .event-toast-icon-wrap {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.4);
+}
+.event-toast-card--low_fuel .event-toast-value {
+  color: #fbbf24;
+}
+.event-toast-card--low_fuel .event-toast-badge {
+  background: rgba(245, 158, 11, 0.22);
+  color: #fde68a;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+}
+
+/* 9. Пассажирский тур / Автобусная остановка (Coach Stop) */
+.event-toast-card--bus_stop {
+  border-color: rgba(20, 184, 166, 0.85);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85), 0 0 28px rgba(20, 184, 166, 0.25);
+}
+.event-toast-card--bus_stop .event-toast-category {
+  color: #2dd4bf;
+}
+.event-toast-card--bus_stop .event-toast-icon-wrap {
+  background: rgba(20, 184, 166, 0.14);
+  border-color: rgba(20, 184, 166, 0.4);
+}
+.event-toast-card--bus_stop .event-toast-value {
+  color: #2dd4bf;
+}
+.event-toast-card--bus_stop .event-toast-badge {
+  background: rgba(20, 184, 166, 0.22);
+  color: #99f6e4;
+  border: 1px solid rgba(20, 184, 166, 0.45);
+}
+
+/* 10. Комфорт пассажиров (Passenger Comfort) */
+.event-toast-card--bus_comfort {
+  border-color: rgba(249, 115, 22, 0.85);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85), 0 0 28px rgba(249, 115, 22, 0.25);
+}
+.event-toast-card--bus_comfort .event-toast-category {
+  color: #fb923c;
+}
+.event-toast-card--bus_comfort .event-toast-icon-wrap {
+  background: rgba(249, 115, 22, 0.14);
+  border-color: rgba(249, 115, 22, 0.4);
+}
+.event-toast-card--bus_comfort .event-toast-value {
+  color: #fb923c;
+}
+.event-toast-card--bus_comfort .event-toast-badge {
+  background: rgba(249, 115, 22, 0.22);
+  color: #fed7aa;
+  border: 1px solid rgba(249, 115, 22, 0.45);
+}
+
+/* 11. Интерактивный клаксон (Chat Honk) */
+.event-toast-card--chat_honk {
+  border-color: rgba(168, 85, 247, 0.85);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85), 0 0 28px rgba(168, 85, 247, 0.3);
+}
+.event-toast-card--chat_honk .event-toast-category {
+  color: #c084fc;
+}
+.event-toast-card--chat_honk .event-toast-icon-wrap {
+  background: rgba(168, 85, 247, 0.16);
+  border-color: rgba(168, 85, 247, 0.45);
+}
+.event-toast-card--chat_honk .event-toast-value {
+  color: #e9d5ff;
+}
+.event-toast-card--chat_honk .event-toast-badge {
+  background: rgba(168, 85, 247, 0.25);
+  color: #f3e8ff;
+  border: 1px solid rgba(168, 85, 247, 0.5);
+}
+
+/* 12. CB-Рация дальнобойщика (Chat CB Radio) */
+.event-toast-card--chat_cb {
+  border-color: rgba(234, 179, 8, 0.85);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85), 0 0 28px rgba(234, 179, 8, 0.26);
+}
+.event-toast-card--chat_cb .event-toast-category {
+  color: #facc15;
+}
+.event-toast-card--chat_cb .event-toast-icon-wrap {
+  background: rgba(234, 179, 8, 0.14);
+  border-color: rgba(234, 179, 8, 0.4);
+}
+.event-toast-card--chat_cb .event-toast-value {
+  color: #fef08a;
+  font-family: var(--font-main);
+  font-size: 14.5px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+.event-toast-card--chat_cb .event-toast-badge {
+  background: rgba(234, 179, 8, 0.22);
+  color: #fef9c3;
+  border: 1px solid rgba(234, 179, 8, 0.45);
+}
+
+/* 13. Информационные карточки чата (Chat Info) */
+.event-toast-card--chat_info {
+  border-color: rgba(56, 189, 248, 0.8);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85), 0 0 26px rgba(56, 189, 248, 0.22);
+}
+.event-toast-card--chat_info .event-toast-category {
+  color: #38bdf8;
+}
+.event-toast-card--chat_info .event-toast-icon-wrap {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.38);
+}
+.event-toast-card--chat_info .event-toast-value {
+  color: #7dd3fc;
+}
+.event-toast-card--chat_info .event-toast-badge {
+  background: rgba(56, 189, 248, 0.2);
+  color: #e0f2fe;
+  border: 1px solid rgba(56, 189, 248, 0.45);
+}
+
+/* Расширенная карточка итогов рейса */
+.event-toast-card--summary {
+  min-width: 540px;
+  max-width: 680px;
+  padding: 14px 22px 14px 18px;
+}
+.event-toast-summary-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 4px;
+}
+.event-toast-metric-item {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+}
+.event-toast-metric-label {
+  font-size: 11px;
+  color: #9aa7b8;
+  text-transform: uppercase;
+}
+.event-toast-metric-val {
+  font-weight: 700;
+  color: #f3f6fb;
+}
+.event-toast-metric-val--accent {
+  color: #4ade80;
+}
+.event-toast-metric-val--warn {
+  color: #f87171;
+}
+.event-toast-winners-row {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.12);
+  font-size: 12px;
+  color: #cbd5e1;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.event-toast-winners-tag {
+  font-family: var(--font-accent);
+  font-size: 10px;
+  color: #facc15;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }

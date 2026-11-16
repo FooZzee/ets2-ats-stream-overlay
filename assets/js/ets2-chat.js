@@ -253,6 +253,134 @@
     return '';
   }
 
+  let lastHonkAt = 0;
+  let lastCbAt = 0;
+  let lastInfoAt = 0;
+  const userCooldownMap = new Map();
+
+  function handleChatCommand(username, text, tags, channel) {
+    if (!text || !text.startsWith('!')) return false;
+    const cmdCfg = config.chatCommands || {};
+    if (cmdCfg.enabled === false) return false;
+
+    const parts = text.trim().split(/\s+/);
+    const cmd = parts[0].toLowerCase();
+    const args = parts.slice(1).join(' ').trim();
+
+    const badges = String(tags.badges || '');
+    const userLower = String(username).toLowerCase();
+    const isBroadcaster = badges.includes('broadcaster/') || (channel && userLower === channel);
+    const isMod = tags.mod === '1' || badges.includes('moderator/') || isBroadcaster;
+    const isVip = tags.vip === '1' || badges.includes('vip/') || isMod;
+    const isSub = tags.subscriber === '1' || badges.includes('subscriber/') || isMod;
+    const isFirstMsg = tags['first-msg'] === '1';
+
+    const now = Date.now();
+    const userLastAt = userCooldownMap.get(userLower) || 0;
+    const perUserCd = (Number(cmdCfg.perUserCooldownSec) || 120) * 1000;
+
+    if (['!гудок', '!фафа', '!honk', '!клаксон'].includes(cmd)) {
+      if (!isVip && !isSub && !isMod) return true;
+      const globalCd = (Number(cmdCfg.honkCooldownSec) || 60) * 1000;
+      if (!isMod) {
+        if (now - lastHonkAt < globalCd) return true;
+        if (now - userLastAt < perUserCd) return true;
+      }
+      lastHonkAt = now;
+      userCooldownMap.set(userLower, now);
+      if (app.triggerChatCommand) {
+        app.triggerChatCommand('honk', username);
+      }
+      return true;
+    }
+
+    if (['!рация', '!сиби', '!cb'].includes(cmd)) {
+      if (isFirstMsg && !isSub && !isVip && !isMod) return true;
+      if (!args) return true;
+
+      const globalCd = (Number(cmdCfg.cbCooldownSec) || 45) * 1000;
+      if (!isMod) {
+        if (now - lastCbAt < globalCd) return true;
+        if (now - userLastAt < perUserCd) return true;
+      }
+
+      let cleanText = args
+        .replace(/https?:\/\/\S+/gi, '')
+        .replace(/\b[\w-]+\.(?:com|ru|net|org|io|gg|tv|me)\S*/gi, '')
+        .trim();
+      cleanText = cleanText.slice(0, 70).trim();
+      if (!cleanText) return true;
+
+      lastCbAt = now;
+      userCooldownMap.set(userLower, now);
+      if (app.triggerChatCommand) {
+        app.triggerChatCommand('cb', username, cleanText);
+      }
+      return true;
+    }
+
+    if (['!рейс', '!маршрут', '!груз', '!job', '!route'].includes(cmd)) {
+      const globalCd = (Number(cmdCfg.infoCooldownSec) || 30) * 1000;
+      if (!isMod && (now - lastInfoAt < globalCd)) return true;
+      lastInfoAt = now;
+      if (app.triggerChatCommand) {
+        app.triggerChatCommand('route', username);
+      }
+      return true;
+    }
+
+    if (['!стата', '!статистика', '!стрим', '!stats'].includes(cmd)) {
+      const globalCd = (Number(cmdCfg.infoCooldownSec) || 30) * 1000;
+      if (!isMod && (now - lastInfoAt < globalCd)) return true;
+      lastInfoAt = now;
+      if (app.triggerChatCommand) {
+        app.triggerChatCommand('stats', username);
+      }
+      return true;
+    }
+
+    if (['!тягач', '!автобус', '!машина', '!truck'].includes(cmd)) {
+      const globalCd = (Number(cmdCfg.infoCooldownSec) || 30) * 1000;
+      if (!isMod && (now - lastInfoAt < globalCd)) return true;
+      lastInfoAt = now;
+      if (app.triggerChatCommand) {
+        app.triggerChatCommand('truck', username);
+      }
+      return true;
+    }
+
+    if (['!водитель', '!права', '!рейтинг', '!driver'].includes(cmd)) {
+      const globalCd = (Number(cmdCfg.infoCooldownSec) || 30) * 1000;
+      if (!isMod && (now - lastInfoAt < globalCd)) return true;
+      lastInfoAt = now;
+      if (app.triggerChatCommand) {
+        app.triggerChatCommand('driver', username);
+      }
+      return true;
+    }
+
+    if (['!ставка', '!bet'].includes(cmd)) {
+      const choice = (args.split(/\s+/)[0] || '').toLowerCase();
+      if (app.recordTripBet) {
+        app.recordTripBet(username, choice);
+      }
+      return true;
+    }
+
+    return false;
+  }
+
+  global.testChatCommand = function(cmdString, testUser = 'Tester', role = 'vip') {
+    const mockTags = {
+      'display-name': testUser,
+      badges: role === 'mod' ? 'moderator/1' : role === 'driver' ? 'broadcaster/1' : role === 'vip' ? 'vip/1' : 'subscriber/1',
+      mod: role === 'mod' || role === 'driver' ? '1' : '0',
+      vip: role === 'vip' ? '1' : '0',
+      subscriber: role === 'sub' ? '1' : '0'
+    };
+    return handleChatCommand(testUser, cmdString, mockTags, 'tester');
+  };
+
   function connectTwitchIRC() {
     const tw = config.channels && config.channels.twitch;
     if (!tw || !tw.enabled || isPlaceholder(tw.channelName)) return false;
@@ -312,14 +440,19 @@
             if (text.startsWith('\x01ACTION ') && text.endsWith('\x01')) {
               text = text.slice(8, -1);
             }
-            pushMessage({
-              platform: 'twitch',
-              username,
-              text,
-              color: tags.color || '',
-              role: resolveTwitchRole(tags),
-              emotes: tags.emotes || ''
-            });
+
+            const isCmdHandled = handleChatCommand(username, text, tags, channel);
+
+            if (!isCmdHandled || !config.chat.hideCommands) {
+              pushMessage({
+                platform: 'twitch',
+                username,
+                text,
+                color: tags.color || '',
+                role: resolveTwitchRole(tags),
+                emotes: tags.emotes || ''
+              });
+            }
             return;
           }
 

@@ -7,7 +7,9 @@ Desktop.ini
 .DS_Store
 *.log
 *.tmp
+backups/
 _backup_*/
 _dist_*/
+scratch/
 .vscode/
 .idea/

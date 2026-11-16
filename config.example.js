@@ -58,6 +58,17 @@ window.OVERLAY_CONFIG = {
     ignoredUsers: ['Nightbot', 'StreamElements', 'Moobot']
   },
 
+  // Интерактивные команды Twitch-чата в оверлее (!гудок, !рация, !рейс, !стата, !тягач, !водитель, !ставка)
+  chatCommands: {
+    enabled: true,              // Включить интерактивные команды чата
+    cbRadioMinRole: 'follower', // Минимальная роль для !рация ('all' | 'follower' | 'subscriber' | 'vip' | 'mod')
+    honkMinRole: 'vip',         // Минимальная роль для !гудок ('subscriber' | 'vip' | 'mod' | 'broadcaster')
+    infoCooldownSec: 30,        // Глобальный кулдаун инфо-команд (!рейс, !стата, !тягач, !водитель)
+    cbCooldownSec: 45,          // Глобальный кулдаун !рация
+    honkCooldownSec: 60,        // Глобальный кулдаун !гудок
+    perUserCooldownSec: 120     // Персональный кулдаун команд на зрителя
+  },
+
   // Визуальные параметры (переопределяют CSS-переменные :root при загрузке)
   theme: {
     fontMain: "'Inter', sans-serif",
@@ -84,6 +95,9 @@ window.OVERLAY_CONFIG = {
     routeTag: 'ETS2 // ATS',
     routeText: 'В РЕЙСЕ // ОНЛАЙН',
     routeMeta: 'CRUISE',
+    eventsEnabled: true,        // Всплывающие уведомления о событиях (штрафы, оплата дорог, паром, заправка, сдача рейса)
+    eventSoundEnabled: true,    // Звуковые эффекты событий
+    eventSoundVolume: 0.65,     // Громкость звуковых эффектов событий (0.0 - 1.0)
     telemetryApi: {
       enabled: true,            // true — опрос локального HTTP-моста ./scripts/udp-bridge.ps1 (SCS SDK 1.16 Shared Memory)
       url: 'http://127.0.0.1:30002/telemetry',

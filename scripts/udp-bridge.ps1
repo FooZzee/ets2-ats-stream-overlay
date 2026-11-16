@@ -241,7 +241,7 @@ function Read-SharedMemoryTelemetry {
       return @{
         Status = 'offline'
         AgeMs  = [long]-1
-        Body   = '{"ok":false,"connected":false}'
+        Body   = '{"ok":false,"connected":false,"lastEvent":{"seq":0,"type":"","amount":0,"offence":"","source":"","target":"","xp":0}}'
       }
     }
 
@@ -320,7 +320,7 @@ function Read-SharedMemoryTelemetry {
       return @{
         Status = 'offline'
         AgeMs  = [long]-1
-        Body   = '{"ok":false,"connected":false}'
+        Body   = '{"ok":false,"connected":false,"lastEvent":{"seq":0,"type":"","amount":0,"offence":"","source":"","target":"","xp":0}}'
       }
     }
 
@@ -329,7 +329,7 @@ function Read-SharedMemoryTelemetry {
       return @{
         Status = 'disconnected'
         AgeMs  = $ageMs
-        Body   = '{"ok":true,"connected":false}'
+        Body   = '{"ok":true,"connected":false,"lastEvent":{"seq":0,"type":"","amount":0,"offence":"","source":"","target":"","xp":0}}'
       }
     }
 
@@ -337,7 +337,7 @@ function Read-SharedMemoryTelemetry {
       return @{
         Status = 'offline'
         AgeMs  = [long]-1
-        Body   = '{"ok":false,"connected":false}'
+        Body   = '{"ok":false,"connected":false,"lastEvent":{"seq":0,"type":"","amount":0,"offence":"","source":"","target":"","xp":0}}'
       }
     }
 
@@ -353,6 +353,25 @@ function Read-SharedMemoryTelemetry {
     $telIn = $shmState.tel
     $cfgIn = $shmState.cfg
     $srvIn = $shmState.srv
+    $eventIn = if ($null -ne $shmState -and $null -ne $shmState.lastEvent) { $shmState.lastEvent } else { $null }
+
+    $eventSeq = if ($null -ne $eventIn -and $null -ne $eventIn.seq) { [int64]$eventIn.seq } else { [int64]0 }
+    $eventType = if ($null -ne $eventIn -and $null -ne $eventIn.type) { [string]$eventIn.type } else { '' }
+    $eventAmount = if ($null -ne $eventIn -and $null -ne $eventIn.amount) { [int64]$eventIn.amount } else { [int64]0 }
+    $eventOffence = if ($null -ne $eventIn -and $null -ne $eventIn.offence) { [string]$eventIn.offence } else { '' }
+    $eventSource = if ($null -ne $eventIn -and $null -ne $eventIn.source) { [string]$eventIn.source } else { '' }
+    $eventTarget = if ($null -ne $eventIn -and $null -ne $eventIn.target) { [string]$eventIn.target } else { '' }
+    $eventXp = if ($null -ne $eventIn -and $null -ne $eventIn.xp) { [int]$eventIn.xp } else { 0 }
+
+    $lastEventObj = [ordered]@{
+      seq     = $eventSeq
+      type    = $eventType
+      amount  = $eventAmount
+      offence = $eventOffence
+      source  = $eventSource
+      target  = $eventTarget
+      xp      = $eventXp
+    }
 
     # Конвертация скоростей из м/с в км/ч (целые числа для корректной авто-детекции в JS)
     $speedMs       = if ($null -ne $telIn.speedMs) { [double]$telIn.speedMs } else { 0.0 }
@@ -617,6 +636,7 @@ function Read-SharedMemoryTelemetry {
       restStop        = $restStopRaw
       electric        = $electricRaw
       engine          = $engineRaw
+      lastEvent       = $lastEventObj
     }
 
     $payload = [ordered]@{}
@@ -664,6 +684,7 @@ function Read-SharedMemoryTelemetry {
     $payload['tripAvg']            = $tripStats.avg
     $payload['maxSpeed']           = $tripStats.maxSpeed
     $payload['tripMaxSpeed']       = $tripStats.maxSpeed
+    $payload['lastEvent']          = $lastEventObj
     $payload['updatedAtMs']        = [long][Math]::Floor(([DateTime]::UtcNow - $EpochUtc).TotalMilliseconds)
     $payload['ageMs']              = $ageMs
 
@@ -679,7 +700,7 @@ function Read-SharedMemoryTelemetry {
     return @{
       Status = 'offline'
       AgeMs  = [long]-1
-      Body   = '{"ok":false,"connected":false}'
+      Body   = '{"ok":false,"connected":false,"lastEvent":{"seq":0,"type":"","amount":0,"offence":"","source":"","target":"","xp":0}}'
     }
   } finally {
     if ($null -ne $accessor) {

@@ -2,7 +2,7 @@
 
 > **Professional broadcast cockpit HUD for OBS Studio powered by native SCS Telemetry SDK 1.16**
 
-[![Release](https://img.shields.io/badge/Release-v1.1.3-orange?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases)
+[![Release](https://img.shields.io/badge/Release-v1.2.0-orange?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20x64-blue?style=for-the-badge&logo=windows)](https://www.microsoft.com/windows)
 [![SCS SDK](https://img.shields.io/badge/SCS%20SDK-v1.16%20Native-yellow?style=for-the-badge)](https://modding.scssoft.com/wiki/Documentation/Tools/Telemetry_server)
 [![DLC Coaches](https://img.shields.io/badge/ETS2-DLC%20Coaches%20Supported-green?style=for-the-badge)](https://scssoft.com/)
@@ -11,14 +11,14 @@
 
 ---
 
-> **Navigation:** **English** | [Русский](./README.ru.md) | [Bilingual Combined README](./README.md) | [Changelog](./CHANGELOG.md)
+> **Navigation:** **English** | [Русский](./README.ru.md) | [Bilingual Combined README](./README.md) | [Changelog](./CHANGELOG.md) | [Commands Reference](./commands.en.md)
 
 ---
 
 ## 📌 Table of Contents
 
 1. [Overview & Key Features](#-overview--key-features)
-2. [What's New in v1.1.3](#-whats-new-in-v113)
+2. [What's New in v1.2.0](#-whats-new-in-v120)
 3. [Architecture & Components](#-architecture--components)
 4. [HUD Layout & Elements](#-hud-layout--elements)
 5. [System Requirements](#-system-requirements)
@@ -43,10 +43,21 @@
 
 ---
 
-## 🚀 What's New in v1.1.3
+## 🚀 What's New in v1.2.0
 
 > [!IMPORTANT]
-> **Release v1.1.3** delivers critical telemetry bridge stability, integrates active cargo and passenger route details directly into the primary cockpit module, provides 100% bilingual separation between English and Russian modes, renames the native plugin to `overlayobs_foozzee_telemetry.dll` with `NULL DACL` shared memory security descriptors, and features the Pip-Boy 3000 retro update notification terminal.
+> **Release v1.2.0** introduces in-game telemetry event popups positioned at the upper windscreen area (`top: 14%`), 100% bilingual badge localization, procedural Web Audio API sound synthesizer, smart stream session statistics, and Twitch chat interactive viewer commands (`!honk`, `!cb`, `!route`, `!stats`, `!truck`, `!driver`, `!bet`).
+
+* 🔔 **Windscreen In-Game Toast Notifications (`.telemetry-event-toast`):**
+  * Positioned at the top windscreen clear zone (`top: 14%; left: 50%`) with opaque cockpit background (`#0e131b`), accent glow borders, 4.5s holding duration, and sequential FIFO queue.
+  * 100% localized badge tags (`FINE`, `TOLL`, `FUEL`, `FERRY`, `TRAIN`, `CONTRACT`, `CANCEL`, `CARGO`, `SERVICE`, `RESERVE`, `COACH`, `COMFORT`, `HORN`, `CB RADIO`, `STATS`, `WINNERS`).
+* ⚡ **Full SCS SDK Gameplay Event Interception:**
+  * Real-time capture of traffic fines, tollgates, maritime ferries, rail transits, cargo deliveries, and contract cancellations.
+  * Comprehensive dictionary for rare SCS SDK offences: `illegal_trailer`, `damaged_vehicle`, `illegal_border_crossing`, `hard_shoulder_violation`, `generic` with unique multi-color SVG vector icons and synthesized audio.
+* 🛠️ **Telemetry & Fleet Detectors:**
+  * Automated real-time alerts for cargo/chassis damage, service station overhaul complete, low fuel reserve warning, and DLC Coaches passenger comfort drops.
+* 💬 **Twitch Chat Interactive Commands (`ets2-chat.js`):**
+  * Role-based viewer interactions: `!honk`, `!cb <text>`, `!route`, `!stats`, `!truck`, `!driver`, and job outcome bets (`!bet clean` / `!bet fine`). See [Commands Reference](./commands.en.md).
 
 * 🗺️ **Primary HUD Route & Trip Display:**
   * Active cargo name and tonnage or passenger coach route now render directly inside the primary dashboard module (`#route-value` and `#lt-cargo`).

@@ -19,6 +19,7 @@
 #include "eurotrucks2/scssdk_telemetry_eut2.h"
 #include "amtrucks/scssdk_ats.h"
 #include "amtrucks/scssdk_telemetry_ats.h"
+#include "common/scssdk_telemetry_common_gameplay_events.h"
 
 namespace {
 
@@ -173,6 +174,18 @@ SharedTelemetryHeader* g_sharedPtr      = nullptr;
 scs_log_t              g_gameLog        = nullptr;
 uint64_t               g_lastFlushMs    = 0;
 RuntimeState           g_state{};
+
+struct GameEventState {
+  uint32_t    seq = 0;
+  std::string type;
+  int64_t     amount = 0;
+  std::string offence;
+  std::string source;
+  std::string target;
+  int32_t     xp = 0;
+};
+
+GameEventState g_lastEvent{};
 
 inline void ClearJobConfig() {
   g_state.hasJob = false;
@@ -410,7 +423,19 @@ std::string BuildTelemetryJson() {
   j += ",\"restStop\":"; j += std::to_string(g_state.restStop);
   j += ",\"electric\":"; j += (g_state.electric ? "true" : "false");
   j += ",\"engine\":"; j += (g_state.engine ? "true" : "false");
-  j += "}}";
+  j += "}";
+
+  // lastEvent
+  j += ",\"lastEvent\":{\"seq\":"; j += std::to_string(g_lastEvent.seq);
+  j += ",\"type\":"; AppendJsonString(j, g_lastEvent.type);
+  j += ",\"amount\":"; j += std::to_string(g_lastEvent.amount);
+  j += ",\"offence\":"; AppendJsonString(j, g_lastEvent.offence);
+  j += ",\"source\":"; AppendJsonString(j, g_lastEvent.source);
+  j += ",\"target\":"; AppendJsonString(j, g_lastEvent.target);
+  j += ",\"xp\":"; j += std::to_string(g_lastEvent.xp);
+  j += "}";
+
+  j += "}";
 
   return j;
 }
@@ -424,7 +449,9 @@ void WriteSharedMemorySnapshot(bool isConnected, bool forceWrite) {
   }
   g_lastFlushMs = nowMs;
 
-  std::string payload = isConnected ? BuildTelemetryJson() : std::string("{\"srv\":{\"connected\":false}}");
+  std::string payload = isConnected
+    ? BuildTelemetryJson()
+    : std::string("{\"srv\":{\"connected\":false},\"lastEvent\":{\"seq\":0,\"type\":\"\",\"amount\":0,\"offence\":\"\",\"source\":\"\",\"target\":\"\",\"xp\":0}}");
   uint32_t payloadLen = static_cast<uint32_t>((std::min)(payload.size(), static_cast<size_t>(kMaxJsonPayload - 1u)));
 
   uint32_t seq = g_sharedPtr->sequence;
@@ -637,6 +664,48 @@ inline bool TryGetAttrU64(const scs_named_value_t* attr, uint64_t& out) {
   return false;
 }
 
+inline bool TryGetAttrS64(const scs_named_value_t* attr, int64_t& out) {
+  if (!attr) return false;
+  if (attr->value.type == SCS_VALUE_TYPE_s64) {
+    out = attr->value.value_s64.value;
+    return true;
+  }
+  if (attr->value.type == SCS_VALUE_TYPE_u64) {
+    out = static_cast<int64_t>(attr->value.value_u64.value);
+    return true;
+  }
+  if (attr->value.type == SCS_VALUE_TYPE_s32) {
+    out = static_cast<int64_t>(attr->value.value_s32.value);
+    return true;
+  }
+  if (attr->value.type == SCS_VALUE_TYPE_u32) {
+    out = static_cast<int64_t>(attr->value.value_u32.value);
+    return true;
+  }
+  return false;
+}
+
+inline bool TryGetAttrS32(const scs_named_value_t* attr, int32_t& out) {
+  if (!attr) return false;
+  if (attr->value.type == SCS_VALUE_TYPE_s32) {
+    out = attr->value.value_s32.value;
+    return true;
+  }
+  if (attr->value.type == SCS_VALUE_TYPE_u32) {
+    out = static_cast<int32_t>(attr->value.value_u32.value);
+    return true;
+  }
+  if (attr->value.type == SCS_VALUE_TYPE_s64) {
+    out = static_cast<int32_t>(attr->value.value_s64.value);
+    return true;
+  }
+  if (attr->value.type == SCS_VALUE_TYPE_u64) {
+    out = static_cast<int32_t>(attr->value.value_u64.value);
+    return true;
+  }
+  return false;
+}
+
 void DumpEventAttributes(const char*, const char*, const scs_named_value_t*) {
   // Debug disk dump disabled in production
 }
@@ -645,6 +714,137 @@ SCSAPI_VOID OnGameplayEvent(const scs_event_t, const void* const event_info, con
   const auto* info = static_cast<const scs_telemetry_gameplay_event_t*>(event_info);
   if (!info || !info->id) return;
   DumpEventAttributes("GAMEPLAY", info->id, info->attributes);
+
+  const char* eventId = info->id;
+  std::string eventType;
+  int64_t     eventAmount = 0;
+  std::string eventOffence;
+  std::string eventSource;
+  std::string eventTarget;
+  int32_t     eventXp = 0;
+  bool        handled = false;
+
+  if (std::strcmp(eventId, SCS_TELEMETRY_GAMEPLAY_EVENT_player_fined) == 0 ||
+      std::strcmp(eventId, "player.fine.offence") == 0 ||
+      std::strcmp(eventId, "player.fine") == 0) {
+    eventType = "fine";
+    handled = true;
+    if (info->attributes) {
+      for (const scs_named_value_t* attr = info->attributes; attr->name != nullptr; ++attr) {
+        if (std::strcmp(attr->name, SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_fine_offence) == 0 ||
+            std::strcmp(attr->name, "fine_offence") == 0 ||
+            std::strcmp(attr->name, "offence") == 0) {
+          TryGetAttrString(attr, eventOffence);
+        } else if (std::strcmp(attr->name, SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_fine_amount) == 0 ||
+                   std::strcmp(attr->name, "fine_amount") == 0 ||
+                   std::strcmp(attr->name, SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_pay_amount) == 0 ||
+                   std::strcmp(attr->name, "pay_amount") == 0 ||
+                   std::strcmp(attr->name, "amount") == 0) {
+          TryGetAttrS64(attr, eventAmount);
+        }
+      }
+    }
+  } else if (std::strcmp(eventId, SCS_TELEMETRY_GAMEPLAY_EVENT_player_tollgate_paid) == 0 ||
+             std::strcmp(eventId, "tollgate.paid") == 0) {
+    eventType = "tollgate";
+    handled = true;
+    if (info->attributes) {
+      for (const scs_named_value_t* attr = info->attributes; attr->name != nullptr; ++attr) {
+        if (std::strcmp(attr->name, SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_pay_amount) == 0 ||
+            std::strcmp(attr->name, "pay_amount") == 0 ||
+            std::strcmp(attr->name, "amount") == 0) {
+          TryGetAttrS64(attr, eventAmount);
+        }
+      }
+    }
+  } else if (std::strcmp(eventId, SCS_TELEMETRY_GAMEPLAY_EVENT_player_use_ferry) == 0 ||
+             std::strcmp(eventId, "use.ferry") == 0) {
+    eventType = "ferry";
+    handled = true;
+    if (info->attributes) {
+      for (const scs_named_value_t* attr = info->attributes; attr->name != nullptr; ++attr) {
+        if (std::strcmp(attr->name, SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_pay_amount) == 0 ||
+            std::strcmp(attr->name, "pay_amount") == 0 ||
+            std::strcmp(attr->name, "amount") == 0) {
+          TryGetAttrS64(attr, eventAmount);
+        } else if (std::strcmp(attr->name, SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_source_name) == 0 ||
+                   std::strcmp(attr->name, "source_name") == 0 ||
+                   std::strcmp(attr->name, "source") == 0) {
+          TryGetAttrString(attr, eventSource);
+        } else if (std::strcmp(attr->name, SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_target_name) == 0 ||
+                   std::strcmp(attr->name, "target_name") == 0 ||
+                   std::strcmp(attr->name, "target") == 0) {
+          TryGetAttrString(attr, eventTarget);
+        }
+      }
+    }
+  } else if (std::strcmp(eventId, SCS_TELEMETRY_GAMEPLAY_EVENT_player_use_train) == 0 ||
+             std::strcmp(eventId, "use.train") == 0) {
+    eventType = "train";
+    handled = true;
+    if (info->attributes) {
+      for (const scs_named_value_t* attr = info->attributes; attr->name != nullptr; ++attr) {
+        if (std::strcmp(attr->name, SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_pay_amount) == 0 ||
+            std::strcmp(attr->name, "pay_amount") == 0 ||
+            std::strcmp(attr->name, "amount") == 0) {
+          TryGetAttrS64(attr, eventAmount);
+        } else if (std::strcmp(attr->name, SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_source_name) == 0 ||
+                   std::strcmp(attr->name, "source_name") == 0 ||
+                   std::strcmp(attr->name, "source") == 0) {
+          TryGetAttrString(attr, eventSource);
+        } else if (std::strcmp(attr->name, SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_target_name) == 0 ||
+                   std::strcmp(attr->name, "target_name") == 0 ||
+                   std::strcmp(attr->name, "target") == 0) {
+          TryGetAttrString(attr, eventTarget);
+        }
+      }
+    }
+  } else if (std::strcmp(eventId, SCS_TELEMETRY_GAMEPLAY_EVENT_job_delivered) == 0 ||
+             std::strcmp(eventId, SCS_TELEMETRY_GAMEPLAY_EVENT_car_job_delivered) == 0 ||
+             std::strcmp(eventId, "job.delivered") == 0) {
+    eventType = "job_delivered";
+    handled = true;
+    if (info->attributes) {
+      for (const scs_named_value_t* attr = info->attributes; attr->name != nullptr; ++attr) {
+        if (std::strcmp(attr->name, SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_revenue) == 0 ||
+            std::strcmp(attr->name, SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_pay_amount) == 0 ||
+            std::strcmp(attr->name, "pay_amount") == 0 ||
+            std::strcmp(attr->name, "amount") == 0) {
+          TryGetAttrS64(attr, eventAmount);
+        } else if (std::strcmp(attr->name, SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_earned_xp) == 0 ||
+                   std::strcmp(attr->name, "earned_xp") == 0 ||
+                   std::strcmp(attr->name, "xp") == 0) {
+          TryGetAttrS32(attr, eventXp);
+        }
+      }
+    }
+  } else if (std::strcmp(eventId, SCS_TELEMETRY_GAMEPLAY_EVENT_job_cancelled) == 0 ||
+             std::strcmp(eventId, SCS_TELEMETRY_GAMEPLAY_EVENT_car_job_cancelled) == 0 ||
+             std::strcmp(eventId, "job.cancelled") == 0) {
+    eventType = "job_cancelled";
+    handled = true;
+    if (info->attributes) {
+      for (const scs_named_value_t* attr = info->attributes; attr->name != nullptr; ++attr) {
+        if (std::strcmp(attr->name, SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_cancel_penalty) == 0 ||
+            std::strcmp(attr->name, "cancel_penalty") == 0 ||
+            std::strcmp(attr->name, "penalty") == 0 ||
+            std::strcmp(attr->name, "amount") == 0) {
+          TryGetAttrS64(attr, eventAmount);
+        }
+      }
+    }
+  }
+
+  if (handled) {
+    ++g_lastEvent.seq;
+    g_lastEvent.type = eventType;
+    g_lastEvent.amount = eventAmount;
+    g_lastEvent.offence = eventOffence;
+    g_lastEvent.source = eventSource;
+    g_lastEvent.target = eventTarget;
+    g_lastEvent.xp = eventXp;
+    WriteSharedMemorySnapshot(true, true);
+  }
 }
 
 SCSAPI_VOID OnConfigurationEvent(const scs_event_t, const void* const event_info, const scs_context_t) {
@@ -953,6 +1153,7 @@ SCSAPI_RESULT scs_telemetry_init(const scs_u32_t version, const scs_telemetry_in
 
   g_gameLog = initParams->common.log;
   g_state = RuntimeState{};
+  g_lastEvent = GameEventState{};
   g_lastFlushMs = 0;
 
   if (initParams->common.game_id) {

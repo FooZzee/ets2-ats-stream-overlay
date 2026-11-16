@@ -25,10 +25,42 @@
 ## 🇬🇧 English Changelog
 
 ### 📌 Version Index (EN)
+* [v1.2.0 (2026-11-16) — In-Game Event Toast Notifications, SVG Icons & Web Audio API Sound Synthesizer](#120---2026-11-16-en)
 * [v1.1.3 (2026-11-15) — Telemetry Stability, Native Plugin Renaming & 100% Bilingual HUD](#113---2026-11-15-en)
 * [v1.1.2 (2026-11-15) — Pip-Boy 3000 Standalone Auto-Update Terminal, 100% Bilingual Localization & DLC Coaches](#112---2026-11-15-en)
 * [v1.1.0 (2026-11-15) — ETS2 DLC Coaches Support, Solid Dashboard & Enhanced SCS Telemetry](#110---2026-11-15-en)
 * [v1.0.0 (2026-11-12) — Initial Release (Native SCS Telemetry SDK 1.16 & Broadcast HUD)](#100---2026-11-12-en)
+
+---
+
+<a id="120---2026-11-16-en"></a>
+### [1.2.0] - 2026-11-16
+
+> [!IMPORTANT]
+> **Release v1.2.0** introduces in-game telemetry event toast popups positioned at the upper windscreen area (14% from top, ~150px level), 100% bilingual badge localization, comprehensive SCS SDK traffic fines dictionary, procedural Web Audio API sound synthesizer, smart stream session statistics, and Twitch chat interactive viewer commands (`!honk`, `!cb`, `!route`, `!stats`, `!truck`, `!driver`, `!bet`).
+
+#### 🚀 Added
+* **🔔 Windscreen In-Game Toast Notifications (`.telemetry-event-toast`):**
+  * Positioned at the top windscreen clear zone (`top: 14%; left: 50%`) with opaque background (`#0e131b`), accent glow borders, 4.5s holding duration, and sequential FIFO queue.
+  * 100% language purity: localized badge tags (`FINE`, `TOLL`, `FUEL`, `FERRY`, `TRAIN`, `CONTRACT`, `CANCEL`, `CARGO`, `SERVICE`, `RESERVE`, `COACH`, `COMFORT`, `HORN`, `CB RADIO`, `STATS`, `WINNERS`).
+* **⚡ Native SCS SDK Event Capture (`overlayobs_foozzee_telemetry.dll`):**
+  * Interception of gameplay events: traffic fines (`player.fine.offence`), tollgates (`player.tollgate.paid`), ferries (`player.use.ferry`), trains (`player.use.train`), job delivered (`job.delivered`), and job cancelled (`job.cancelled`).
+  * Full dictionary of rare SCS SDK offences: `illegal_trailer`, `damaged_vehicle`, `illegal_border_crossing`, `hard_shoulder_violation`, `generic` with unique SVG vector icons and sounds.
+* **🛠️ Telemetry & Fleet Detectors:**
+  * **Cargo & Chassis Damage:** Real-time monitoring of cargo damage delta (`>= 1%`) and chassis impact (`>= 3%`), red warning toast with cracked crate icon and blunt thud + computer beep audio.
+  * **Service Station Complete:** Automated repair detection at speed < 1 km/h when wear drops to 0%, emerald toast with wrench icon and pneumatic impact wrench sound.
+  * **Low Fuel Reserve:** Single alert per tank refill when fuel drops below 12% capacity, amber warning toast with fuel pump icon and Scania/Volvo warning chime.
+  * **DLC Coaches Tours:** Support for passenger stops (`bus_stop`) with pneumatic door hiss + Ding-Dong chime, and passenger comfort drop alert (`bus_comfort`).
+* **📊 Stream Session Statistics & Expanded Delivery Summary:**
+  * Persistent tracking of jobs completed, km driven, maximum speed, total revenue, fines tally, and driver safety score.
+  * Expanded 7.0s delivery summary card featuring route, distance, revenue, XP, trip fines, and viewer bet winners.
+* **💬 Interactive Twitch Chat Commands (`ets2-chat.js`):**
+  * `!honk` / `!гудок`: VIP, Sub, Mod, Broadcaster access, cooldown throttled, triggers loud pneumatic air horn and purple toast.
+  * `!cb <message>` / `!рация <текст>`: Follower access, URL sanitizer, 70-char limit, triggers CB channel 15 toast with squelch and Roger Beep.
+  * Info cards: `!route` / `!рейс`, `!stats` / `!стата`, `!truck` / `!тягач`, `!driver` / `!водитель`.
+  * Trip Delivery Bet: `!bet clean` / `!ставка чистый` vs `!bet fine` / `!ставка штраф` with automatic payout announcement on delivery.
+* **🧪 Test Tools & Demo Mode:**
+  * `window.testTelemetryEvent()`, `window.testChatCommand()`, and `window.demoAllTelemetryEvents()` for full live demonstration of all cards and sound effects.
 
 ---
 
@@ -155,10 +187,42 @@
 ## 🇷🇺 Русская история версий
 
 ### 📌 Навигация по версиям (RU)
+* [v1.2.0 (2026-11-16) — Всплывающие уведомления о событиях, SVG-иконки и Web Audio API синтезатор звуков](#120---2026-11-16-ru)
 * [v1.1.3 (2026-11-15) — Стабильность телеметрии, переименование плагина и 100% двуязычный HUD](#113---2026-11-15-ru)
 * [v1.1.2 (2026-11-15) — Автономная проверка обновлений Pip-Boy 3000, 100% двуязычная локализация и DLC Coaches](#112---2026-11-15-ru)
 * [v1.1.0 (2026-11-15) — Поддержка ETS2 DLC Coaches, непрозрачная торпеда и новые каналы SCS SDK](#110---2026-11-15-ru)
 * [v1.0.0 (2026-11-12) — Первый публичный релиз (Нативный плагин SCS SDK 1.16 и приборный HUD)](#100---2026-11-12-ru)
+
+---
+
+<a id="120---2026-11-16-ru"></a>
+### [1.2.0] - 2026-11-16
+
+> [!IMPORTANT]
+> **Релиз v1.2.0** добавляет всплывающие игровые уведомления о событиях телеметрии в верхней зоне лобового стекла (14% сверху, уровень ~150px), 100% локализацию бейджей карточек без англицизмов, полный словарь редких штрафов SCS SDK, процедурный синтезатор звуков Web Audio API, сквозную статистику сессии стрима и интерактивные команды Twitch-чата (`!гудок`, `!рация`, `!рейс`, `!стата`, `!тягач`, `!водитель`, `!ставка`).
+
+#### 🚀 Добавлено
+* **🔔 Всплывающие уведомления в верхней части экрана (`.telemetry-event-toast`):**
+  * Позиционирование в верхней зоне лобового стекла (`top: 14%; left: 50%`) с плотным непрозрачным фоном (`#0e131b`), акцентными рамками, показом 4.5 с и последовательной FIFO-очередью.
+  * 100% чистота русской локализации: полностью русские бейджи (`ШТРАФ`, `ОПЛАТА`, `АЗС`, `ПАРОМ`, `ПОЕЗД`, `КОНТРАКТ`, `ОТМЕНА`, `ГРУЗ`, `СТО`, `РЕЗЕРВ`, `АВТОБУС`, `КОМФОРТ`, `СИГНАЛ`, `РАЦИЯ`, `СТАТИСТИКА`, `ПОБЕДИТЕЛИ`).
+* **⚡ Захват игровых событий в плагине (`overlayobs_foozzee_telemetry.dll`):**
+  * Перехват игровых событий `SCS_TELEMETRY_EVENT_gameplay`: штрафы за нарушения ПДД (`player.fine.offence`), оплата проезда по платным дорогам (`player.tollgate.paid`), паромная переправа (`player.use.ferry`), ж/д переправа (`player.use.train`), доставка груза (`job.delivered`) и отмена рейса (`job.cancelled`).
+  * Полный словарь редких штрафов SCS SDK: `illegal_trailer` (неразрешённый прицеп), `damaged_vehicle` (критическая неисправность ТС), `illegal_border_crossing` (нарушение госграницы), `hard_shoulder_violation` (движение по обочине) и `generic` с уникальными векторными SVG-иконками и звуками.
+* **🛠️ Телеметрические детекторы автопарка:**
+  * **Урон груза и тягача:** отслеживание скачка урона груза (`>= 1%`) или удара тягача (`>= 3%`), красный тост с треснувшим ящиком и глухим ударом + тревожным писком компьютера.
+  * **Техобслуживание на СТО:** автоматическое обнаружение ремонта на стоянке при сбросе износа до 0%, изумрудный тост с ключом и звуком пневмогайковёрта.
+  * **Резерв топлива:** одиночное предупреждение за заправку при остатке топлива ниже 12%, янтарный тост с колонкой и предупреждающим сигналом Scania/Volvo.
+  * **Рейсы пассажирских туров DLC Coaches:** фиксация остановок (`bus_stop`) со звуком пневмодверей и колокольчиком, а также предупреждение о дискомфорте пассажиров (`bus_comfort`).
+* **📊 Статистика сессии стрима и расширенная карточка сдачи рейса:**
+  * Сквозной учёт завершённых контрактов, пройденных километров, рекорда скорости, заработка, штрафов и индекса безопасности вождения.
+  * Расширенная карточка сдачи груза (удержание 7.0 с) с отображением маршрута, километров, дохода, опыта, штрафов за поездку и победителей зрительских ставок.
+* **💬 Интерактивные команды Twitch-чата (`ets2-chat.js`):**
+  * `!гудок` / `!фафа` / `!honk`: доступ для VIP, подписчиков, модераторов и стримера, ролевой кулдаун, басовитый пневмогудок тягача.
+  * `!рация <текст>` / `!сиби <текст>` / `!cb <текст>`: доступ для фолловеров, фильтрация ссылок, лимит 70 символов, карточка 15 канала со звуком squelch и Roger Beep.
+  * Инфо-карточки: `!рейс`, `!стата`, `!тягач`, `!водитель`.
+  * Тотализатор рейса: тихий приём ставок `!ставка чистый` / `!ставка штраф` с выводом победителей при сдаче груза.
+* **🧪 Тестовые инструменты и демо-режим:**
+  * Функции `window.testTelemetryEvent()`, `window.testChatCommand()` и `window.demoAllTelemetryEvents()` для интерактивной демонстрации всех уведомлений и звуков в браузере.
 
 ---
 
