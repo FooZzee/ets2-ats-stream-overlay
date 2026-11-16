@@ -6,7 +6,7 @@
 
 [![Keep a Changelog](https://img.shields.io/badge/Changelog-Keep%20a%20Changelog%201.1.1-orange?style=for-the-badge&logo=git)](https://keepachangelog.com/)
 [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-blue?style=for-the-badge&logo=semver)](https://semver.org/)
-[![Latest Release](https://img.shields.io/badge/Latest-v1.1.3-green?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.1.3)
+[![Latest Release](https://img.shields.io/badge/Latest-v1.2.0-green?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.2.0)
 [![License](https://img.shields.io/badge/License-MIT-purple?style=for-the-badge)](./LICENSE)
 
 ---
@@ -352,6 +352,7 @@
 * **Telegram:** [@foozzeestream](https://t.me/foozzeestream)
 * **VK:** [vk.ru/gtfun](https://vk.ru/gtfun)
 
+[1.2.0]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.3...v1.2.0
 [1.1.3]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.0...v1.1.2
 [1.1.0]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.0.0...v1.1.0

@@ -54,7 +54,7 @@ flowchart LR
 ```
 
 ### ⚡ Quick Start
-1. Download **`ETS2-ATS-Stream-Overlay-v1.1.3.zip`** from [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
+1. Download **`ETS2-ATS-Stream-Overlay-v1.2.0.zip`** from [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
 2. Extract the archive into any folder (e.g. `C:\ETS2-ATS-Stream-Overlay`).
 3. Run **`Install-Overlay.bat`**, enter your Twitch username and DonationAlerts token, and click **Install**.
 4. Double-click the **`ETS2-ATS Overlay Bridge`** Desktop shortcut before streaming.

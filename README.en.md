@@ -131,7 +131,7 @@ flowchart LR
 
 ## ⚡ 1-Click GUI Installation
 
-1. Download the latest release archive **`ETS2-ATS-Stream-Overlay-v1.1.3.zip`** from [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
+1. Download the latest release archive **`ETS2-ATS-Stream-Overlay-v1.2.0.zip`** from [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
 2. Extract the archive into any permanent folder (e.g., `C:\ETS2-ATS-Stream-Overlay`).
 3. Run **`Install-Overlay.bat`**:
    * Choose **`English (EN)`** or **`Русский (RU)`** in the top-right corner.
