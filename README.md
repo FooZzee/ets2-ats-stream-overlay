@@ -19,7 +19,7 @@
 [![Changelog](https://img.shields.io/badge/Changelog-v1.2.0-10b981?style=flat-square&logo=github)](./CHANGELOG.md)
 [![Commands](https://img.shields.io/badge/Commands-Reference-9333ea?style=flat-square&logo=gitbook)](./commands.md)
 
-*Standalone files:* [English (README.en.md)](./README.en.md) • [Русский (README.ru.md)](./README.ru.md) • [Commands Reference (commands.md)](./commands.md)
+*Standalone files:* [English (README.en.md)](./README.en.md) • [Русский (README.ru.md)](./README.ru.md) • [Commands (commands.md)](./commands.md) • [Commands EN (commands.en.md)](./commands.en.md) • [Справочник команд RU (commands.ru.md)](./commands.ru.md)
 
 ---
 
@@ -28,7 +28,9 @@
 
 **ETS2 / ATS Cockpit Telemetry Stream Overlay** is an ultra-low latency, broadcast-grade telemetry HUD designed specifically for live streamers on Twitch, YouTube, and TikTok. Built around realistic amber/ice cockpit ergonomics, it provides comprehensive driving, vehicle, and trip telemetry while keeping the driver's windshield, mirrors, and in-game GPS completely unobstructed.
 
-### ✨ Key Highlights & v1.1.3 Features
+### ✨ Key Highlights & v1.2.0 Features
+* 🚨 **Native SCS Gameplay Event Toasts & Sound Engine:** Real-time HUD toast alerts anchored in the upper windshield view (`top: 14%`) for traffic fines, tollgates, ferry voyages, train shuttles, and contract deliveries, powered by a zero-dependency procedural Web Audio synthesizer.
+* 💬 **Twitch IRC Chat & Interactive Viewer Commands:** Built-in direct WebSocket IRC connection with audience commands (`!job`, `!truck`, `!stats`, `!driver`, `!cb <text>`, `!honk`, `!bet`). Documented in full in [commands.en.md](./commands.en.md) and [commands.ru.md](./commands.ru.md).
 * 🗺️ **Primary HUD Route & Trip Integration:** Active cargo name and tonnage or passenger coach route now render directly inside the primary dashboard module (`#route-value` and `#lt-cargo`), with live passenger comfort rating (**`SATISFACTION: XX%`**).
 * 🌐 **100% Strict Bilingual Separation (EN / RU):** Pure English and Russian modes without cross-lingual leakage, powered by the comprehensive `CITIES_DB` geographic dictionary and phonetic transliteration.
 * ⚡ **Ultra-Stable Telemetry Bridge & Plugin:** Powered by `overlayobs_foozzee_telemetry.dll` with `NULL DACL` Win32 Shared Memory architecture (`Local\FooZzeeSCSTelemetry`) and fixed high-speed PowerShell HTTP bridge (`:30002`).
@@ -73,7 +75,9 @@ flowchart LR
 
 **Cockpit Telemetry Stream Overlay** — это высокопроизводительный приборный комплекс для стримеров Euro Truck Simulator 2 и American Truck Simulator. Оверлей разработан с акцентом на реалистичность, отсутствие визуального мусора в лобовом стекле и нулевую задержку передачи телеметрии.
 
-### ✨ Ключевые возможности и релиз v1.1.3
+### ✨ Ключевые возможности и релиз v1.2.0
+* 🚨 **Всплывающие игровые уведомления HUD и процедурный звук:** Анимированные уведомления в верхней зоне лобового стекла (`top: 14%`) о штрафах, пунктах оплаты, паромах, поездах и сдаче рейса с процедурным звуковым движком Web Audio API без внешних аудиофайлов.
+* 💬 **Интерактивные команды Twitch-чата:** Прямое подключение по WebSocket к Twitch IRC и поддержка команд взаимодействия (`!рейс`, `!тягач`, `!стата`, `!водитель`, `!рация <текст>`, `!гудок`, `!ставка`). Полный справочник приведён в [commands.ru.md](./commands.ru.md) и [commands.en.md](./commands.en.md).
 * 🗺️ **Интеграция рейса в основной блок HUD:** Реальный перевозимый груз и тоннаж либо маршрут автобуса отображаются напрямую в центральном модуле кабины (`#route-value` и `#lt-cargo`), включая комфорт пассажиров (**`КОМФОРТ: XX%`**).
 * 🌐 **100% строгое разделение языков (RU / EN):** Полная изоляция русской и английской локализаций без смешения языков на базе встроенного географического словаря `CITIES_DB` и транслитерации.
 * ⚡ **Сверхстабильный мост телеметрии и нативный плагин:** Библиотека `overlayobs_foozzee_telemetry.dll` с архитектурой `NULL DACL` для разделяемой памяти `Local\FooZzeeSCSTelemetry` и исправленным скоростным PowerShell HTTP-мостом (`:30002`).
@@ -87,7 +91,7 @@ flowchart LR
 * ⚡ **1-клик графический установщик (`Install-Overlay.bat`):** Автоматический поиск игр в Steam, установка плагина, очистка устаревших файлов, защищённое поле токена DonationAlerts и ярлык на Рабочем столе.
 
 ### ⚡ Быстрый старт
-1. Скачайте архив **`ETS2-ATS-Stream-Overlay-v1.1.3.zip`** из раздела [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
+1. Скачайте архив **`ETS2-ATS-Stream-Overlay-v1.2.0.zip`** из раздела [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
 2. Распакуйте архив в удобную папку (например, `C:\ETS2-ATS-Stream-Overlay`).
 3. Запустите **`Install-Overlay.bat`**, введите никнейм Twitch и токен DonationAlerts, затем нажмите **Установить**.
 4. Перед началом стрима запустите ярлык на Рабочем столе: **`ETS2-ATS Overlay Bridge`**.
