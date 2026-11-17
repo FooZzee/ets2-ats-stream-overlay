@@ -26,6 +26,55 @@
 
 ---
 
+## [1.2.2] - 2026-11-17
+
+> [!IMPORTANT]
+> **Release v1.2.2** delivers a complete transition to a unified desktop Cockpit HUD layout, resolves bus and truck job completion/cancellation state handling, revamps the in-game telemetry toast card design and kinematics, introduces an in-OBS auto-update notification with CRT animations and Web Audio sound effects, and completely redesigns the GUI Setup Wizard and standalone Pip-Boy 3000 update terminal with native WPF architecture.
+
+### 🚀 Added
+* **🔔 In-OBS Auto-Update Notification (`assets/js/ets2-telemetry.js`, `assets/css/ets2-base.css`):**
+  * Autonomous update check in OBS preview with GitHub API rate-limit protection (`HTTP 403` cache in `localStorage` with a 3-hour TTL).
+  * Authentic Pip-Boy 3000 green phosphor aesthetic (`#22c55e`, `#15803d`, background `#070b09`, CRT scanlines).
+  * CRT Power-On and Power-Off beam expansion/collapse animations (`crtPowerOn`, `crtPowerOff`).
+  * Smooth 22ms teletype typewriter text printing with blinking green terminal cursor `▌` and min-height container.
+  * Real-time Web Audio API sound synthesis: power relay click, high-voltage 15.6 kHz flyback transformer sweep, CRT degauss coil hum, and mechanical terminal keystroke clicks.
+  * Interactive console test commands: `window.testTelemetryEvent('update')` and `window.testTelemetryEvent('update', 'v1.2.3')`.
+* **🛠️ Standalone Pip-Boy 3000 Update Terminal (`Update-Overlay.bat` & `scripts/updater.ps1`):**
+  * Native WPF terminal running in `-STA` (Single-Threaded Apartment) mode with enforced TLS 1.2 protocol.
+  * Resilient network handling with 5-second timeout and graceful rate-limit fallback messages without crashing.
+  * Full bilingual localization (`RU` / `EN`) with instant language switching and changelog viewer.
+* **🚚 Graphical Setup Wizard Redesign (`Install-Overlay.bat` & `scripts/installer.ps1`):**
+  * Complete overhaul in ETS2 / ATS Cockpit HUD style (`#0d1117`, `#151b24`, `#2a3444`, amber gold `#f59e0b`, cyan `#38bdf8`).
+  * Standardized button control templates with `CornerRadius="8"`, hover gradient, and pressed state translation.
+  * Silent launch and operation: complete removal of synthesized audio loops and beep tones.
+  * Enhanced Steam library auto-detection (`HKCU`/`HKLM`, `libraryfolders.vdf`, drive scans, and Steam app manifests `appmanifest_227300.acf` & `appmanifest_270880.acf`).
+  * Default installation directory set to `C:\OverlayOBS_FooZzee` with manual browse option.
+  * Desktop shortcut creation option for Update Terminal Pip-Boy 3000 (`ETS2-ATS Overlay Update.lnk`).
+  * Integrated dark WPF modal windows for Changelog and Commands without opening external notepad.exe.
+  * Compact full-height layout (`Width="740"`, `SizeToContent="Height"`, `ResizeMode="CanMinimize"` without vertical scrollbars).
+  * Dedicated GitHub Star and DonationAlerts support cards with vector SVG icons.
+  * Automatic package version display (`v1.2.2`) in window title, header badge, and footer status line.
+* **🎯 Vector HUD Speed Limit Signs (30–130 km/h):**
+  * Full vector speed limit sign coverage from 30 km/h to 130 km/h in 10 km/h increments with crisp typography and high-contrast red border.
+* **😊 Dynamic Passenger Comfort Emojis (`busSat`):**
+  * Added high-contrast vector SVG emojis for passenger satisfaction tiers (ecstatic, happy, neutral, unhappy, furious) with delta comfort change alerts.
+
+### 🔄 Changed
+* **🖥️ Single Desktop HUD Architecture:**
+  * Complete removal of `ets2-vertical.html` and dead vertical layout code; all resources and documentation now focus purely on the streamlined desktop HUD (`1920×1080` — `ets2-desktop.html`).
+* **🎨 Toast Card Redesign & Kinematics:**
+  * Increased toast card scale by +10% for enhanced legibility on high-resolution streams.
+  * New kinematics: smooth slide-in from top to windscreen zone followed by stationary in-place fade out.
+  * Unified Cockpit HUD dark chassis (`#0e131b`) with solid opacity and border status lights.
+
+### 🐛 Fixed
+* **🛑 Job Completion & Cancellation Fallbacks (`plugin.cpp`, `ets2-telemetry.js`):**
+  * Added interception for all SCS SDK job delivery and cancellation gameplay event IDs (including `job.delivered`, `job.cancelled`, `bus_job.*`, and `car_job.*`).
+  * Blocked false «-100% comfort drop» alerts caused by SCS SDK resetting passenger satisfaction to 0 upon coach trip completion.
+  * Implemented state-based fallback detection for trip finish when game telemetry resets job active flags.
+
+---
+
 ## [1.2.1] - 2026-11-16
 
 > [!IMPORTANT]

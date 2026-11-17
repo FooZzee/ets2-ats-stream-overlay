@@ -21,85 +21,35 @@ if ([System.Threading.Thread]::CurrentThread.GetApartmentState() -ne [System.Thr
 # 2. Инициализация современных протоколов TLS 1.2
 [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12 -bor [System.Net.SecurityProtocolType]::Tls11 -bor [System.Net.SecurityProtocolType]::Tls
 
-# 3. Подключение сборок WPF
+# 3. Подключение сборок WPF и Forms (для диалогов выбора папок)
 Add-Type -AssemblyName PresentationFramework
 Add-Type -AssemblyName PresentationCore
 Add-Type -AssemblyName WindowsBase
-Add-Type -AssemblyName System.Drawing
+Add-Type -AssemblyName System.Windows.Forms
 
-# 4. Встроенный C#-генератор компактной 8-bit фоновой музыки
-Add-Type -TypeDefinition @"
-using System;
-using System.IO;
-using System.Text;
-
-public static class CockpitSoundSynth {
-    public static byte[] CreateLoopWav() {
-        int sampleRate = 22050;
-        int[] notes = new int[] { 262, 330, 392, 523, 392, 330, 294, 349, 440, 523, 440, 349, 262, 330, 392, 494 };
-        double noteDurationSec = 0.38;
-        int samplesPerNote = (int)(sampleRate * noteDurationSec);
-        int totalSamples = samplesPerNote * notes.Length;
-        int dataSize = totalSamples * 2;
-        int fileSize = 44 + dataSize;
-        
-        byte[] buffer = new byte[fileSize];
-        using (var ms = new MemoryStream(buffer))
-        using (var bw = new BinaryWriter(ms)) {
-            bw.Write(Encoding.ASCII.GetBytes("RIFF"));
-            bw.Write(fileSize - 8);
-            bw.Write(Encoding.ASCII.GetBytes("WAVE"));
-            bw.Write(Encoding.ASCII.GetBytes("fmt "));
-            bw.Write(16);
-            bw.Write((short)1); // PCM
-            bw.Write((short)1); // Mono
-            bw.Write(sampleRate);
-            bw.Write(sampleRate * 2);
-            bw.Write((short)2);
-            bw.Write((short)16);
-            bw.Write(Encoding.ASCII.GetBytes("data"));
-            bw.Write(dataSize);
-            
-            short amp = 5600; // ~17% volume
-            for (int n = 0; n < notes.Length; n++) {
-                int freq = notes[n];
-                for (int i = 0; i < samplesPerNote; i++) {
-                    double env = 1.0;
-                    if (i < samplesPerNote * 0.05) env = i / (samplesPerNote * 0.05);
-                    else if (i > samplesPerNote * 0.85) env = (samplesPerNote - i) / (samplesPerNote * 0.15);
-                    
-                    double phase = (i * (double)freq / sampleRate) % 1.0;
-                    double val = 0.0;
-                    if (phase < 0.25) val = 4.0 * phase;
-                    else if (phase < 0.75) val = 2.0 - 4.0 * phase;
-                    else val = 4.0 * phase - 4.0;
-                    
-                    short sample = (short)(val * amp * env);
-                    bw.Write(sample);
-                }
-            }
-        }
-        return buffer;
-    }
+# 4. Пути и версии проекта
+$ScriptRoot = if ($PSScriptRoot) {
+    $PSScriptRoot
+} elseif ($MyInvocation.MyCommand.Definition) {
+    Split-Path -Parent $MyInvocation.MyCommand.Definition
+} else {
+    (Get-Location).Path
 }
-"@
 
-# 5. Пути и версии
-$ScriptRoot = if ($PSScriptRoot) { $PSScriptRoot } elseif ($MyInvocation.MyCommand.Definition) { Split-Path -Parent $MyInvocation.MyCommand.Definition } else { (Get-Location).Path }
 $SourceRoot = Split-Path -Parent $ScriptRoot
 if (-not (Test-Path (Join-Path $SourceRoot 'ets2-desktop.html'))) {
     if (Test-Path (Join-Path (Get-Location).Path 'ets2-desktop.html')) {
         $SourceRoot = (Get-Location).Path
     }
 }
-$RedistDll = Join-Path $SourceRoot 'redist\overlayobs_foozzee_telemetry.dll'
+$RedistDll  = Join-Path $SourceRoot 'redist\overlayobs_foozzee_telemetry.dll'
 $TARGET_VER = '1.2.2'
 
-# 6. Язык по умолчанию
+# 5. Определение языка системы по умолчанию
 $DefaultLang = if ([System.Globalization.CultureInfo]::CurrentUICulture.TwoLetterISOLanguageName -eq 'ru') { 'ru' } else { 'en' }
 $script:CurrentLang = $DefaultLang
 
-# 7. Двуязычный словарь строк
+# 6. Двуязычный словарь локализации
 $Strings = @{
     en = @{
         WindowTitle       = "ETS2 / ATS Stream Overlay — Setup Wizard v$TARGET_VER"
@@ -107,14 +57,13 @@ $Strings = @{
         HeaderSubtitle    = "2-Row Cockpit HUD • Native SCS SDK 1.16 Telemetry • Twitch Chat & Alerts"
         BadgeVersion      = "v$TARGET_VER"
         LangBtn           = "Русский (RU)"
-        MusicTooltip      = "Toggle 8-bit Background Music"
         GrpInstallDir     = "1. Overlay Installation Folder"
         BrowseBtn         = "Browse..."
         GrpPlugins        = "2. Native SCS Telemetry Plugin (overlayobs_foozzee_telemetry.dll)"
         ChkEts2           = "Install native telemetry plugin for Euro Truck Simulator 2"
         ChkAts            = "Install native telemetry plugin for American Truck Simulator"
         PluginFound       = "Detected automatically"
-        PluginMissing     = "Not detected automatically — check & browse if installed"
+        PluginMissing     = "Not detected automatically — browse if installed"
         DllMissingNote    = "Warning: redist\overlayobs_foozzee_telemetry.dll not found in installer package."
         ThirdPartyNote    = "Notice: Third-party rtrucksim_telemetry.dll will remain untouched."
         GrpProfile        = "3. Streamer Profile (written to config.js)"
@@ -126,6 +75,7 @@ $Strings = @{
         BtnHideToken      = "Hide"
         GrpOptions        = "4. Shortcuts & Finish Options"
         ChkShortcut       = "Create Desktop Shortcut ('ETS2-ATS Overlay Bridge')"
+        ChkUpdateShortcut = "Create Update Checker (Pip-Boy 3000) shortcut on Desktop"
         ChkOpenFolder     = "Open installation folder after setup"
         StarCardText      = "Enjoying the overlay? Please give the project a Star on GitHub — it really helps!"
         BtnStar           = "⭐ STAR ON GITHUB"
@@ -155,16 +105,17 @@ $Strings = @{
         DoneEts2Line      = "ETS2 Plugin:"
         DoneAtsLine       = "ATS Plugin:"
         DoneShortcutLine  = "Desktop Shortcut:"
+        DoneUpdateScLine  = "Update Checker Shortcut:"
         DoneDaLine        = "DonationAlerts:"
         StatusDaOk        = "Configured [OK]"
         StatusDaSkipped   = "Skipped (can be added later in config.js)"
         DoneObsHeader     = "OBS STUDIO CONFIGURATION & LAUNCH"
         DoneObsBody       = "• Desktop Browser Source: 1920x1080 -> ets2-desktop.html`r`n• Webcam Source (16:9): 346x195 px | left: 24 | top: 180 (layer below overlay)`r`n• Launch 'ETS2-ATS Overlay Bridge' (start-telemetry.bat) before starting your stream."
         BtnFinishClose    = "Finish & Close"
-        BtnReadReadme     = "Open README"
         DocChangelogTitle = "ETS2 / ATS Stream Overlay — Version History"
         DocCommandsTitle  = "ETS2 / ATS Stream Overlay — Commands Reference"
         ShortcutDesc      = "Launch ETS2 / ATS Native SCS SDK Telemetry Bridge for OBS"
+        UpdateShortcutDesc= "Check ETS2 / ATS Overlay Updates via Pip-Boy 3000 Terminal"
         SetupErrorTitle   = "Installation Error"
     }
     ru = @{
@@ -173,14 +124,13 @@ $Strings = @{
         HeaderSubtitle    = "2-рядная торпеда • Прямой SCS SDK 1.16 • Чат и алерты Twitch"
         BadgeVersion      = "v$TARGET_VER"
         LangBtn           = "English (EN)"
-        MusicTooltip      = "Вкл/Выкл 8-bit фоновую музыку"
         GrpInstallDir     = "1. Папка установки оверлея"
         BrowseBtn         = "Обзор..."
         GrpPlugins        = "2. Установка нативного плагина телеметрии (overlayobs_foozzee_telemetry.dll)"
         ChkEts2           = "Установить плагин телеметрии для Euro Truck Simulator 2"
         ChkAts            = "Установить плагин телеметрии для American Truck Simulator"
         PluginFound       = "Найдено автоматически"
-        PluginMissing     = "Не найдено автоматически — отметьте и укажите папку при необходимости"
+        PluginMissing     = "Не найдено автоматически — укажите папку вручную"
         DllMissingNote    = "Внимание: файл redist\overlayobs_foozzee_telemetry.dll отсутствует в сборке."
         ThirdPartyNote    = "Напоминание: сторонний rtrucksim_telemetry.dll строго не затрагивается."
         GrpProfile        = "3. Профиль стримера (записывается в config.js)"
@@ -192,6 +142,7 @@ $Strings = @{
         BtnHideToken      = "Скрыть"
         GrpOptions        = "4. Ярлыки и параметры"
         ChkShortcut       = "Создать ярлык на Рабочем столе ('ETS2-ATS Overlay Bridge')"
+        ChkUpdateShortcut = "Создать ярлык проверки обновлений (Pip-Boy 3000) на Рабочем столе"
         ChkOpenFolder     = "Открыть папку установки после завершения"
         StarCardText      = "Нравится оверлей? Поддержите проект звездой на GitHub — это очень помогает развитию!"
         BtnStar           = "⭐ ПОСТАВИТЬ ЗВЕЗДУ НА GITHUB"
@@ -221,16 +172,17 @@ $Strings = @{
         DoneEts2Line      = "Плагин ETS2:"
         DoneAtsLine       = "Плагин ATS:"
         DoneShortcutLine  = "Ярлык на Рабочем столе:"
+        DoneUpdateScLine  = "Ярлык обновления (Pip-Boy):"
         DoneDaLine        = "DonationAlerts:"
         StatusDaOk        = "Настроено [OK]"
         StatusDaSkipped   = "Пропущено (можно добавить позже в config.js)"
         DoneObsHeader     = "ПАРАМЕТРЫ OBS STUDIO И ЗАПУСК"
         DoneObsBody       = "• Desktop-сцена: 1920x1080 -> ets2-desktop.html`r`n• Веб-камера (16:9): 346x195 px | left: 24 | top: 180 (слой ниже оверлея)`r`n• Перед стримом запустите ярлык 'ETS2-ATS Overlay Bridge' (start-telemetry.bat)."
         BtnFinishClose    = "Готово"
-        BtnReadReadme     = "Открыть инструкцию README"
         DocChangelogTitle = "ETS2 / ATS Stream Overlay — История изменений"
         DocCommandsTitle  = "ETS2 / ATS Stream Overlay — Справочник команд"
         ShortcutDesc      = "Запуск прямого HTTP-моста телеметрии ETS2 / ATS (SCS SDK 1.16) для OBS"
+        UpdateShortcutDesc= "Проверка обновлений оверлея ETS2 / ATS через терминал Pip-Boy 3000"
         SetupErrorTitle   = "Ошибка установки"
     }
 }
@@ -239,7 +191,7 @@ function Get-Text([string]$key) {
     return $Strings[$script:CurrentLang][$key]
 }
 
-# 8. Поиск библиотек Steam и путей игр ETS2 / ATS
+# 7. Комплексный поиск библиотек Steam и путей игр ETS2 / ATS
 function Get-SteamLibraryPaths {
     $libs = [System.Collections.Generic.List[string]]::new()
     $candidates = @(
@@ -254,7 +206,7 @@ function Get-SteamLibraryPaths {
             if (Test-Path -LiteralPath $c.Path) {
                 $val = (Get-ItemProperty -LiteralPath $c.Path -ErrorAction SilentlyContinue).($c.Name)
                 if (-not [string]::IsNullOrWhiteSpace($val)) {
-                    $norm = $val.Replace('/', '').TrimEnd('')
+                    $norm = $val.Replace('/', '\\').TrimEnd('\\')
                     if (Test-Path -LiteralPath $norm) {
                         $steamRoot = $norm
                         if (-not $libs.Contains($norm)) { [void]$libs.Add($norm) }
@@ -272,25 +224,67 @@ function Get-SteamLibraryPaths {
                 $vdfLines = Get-Content -LiteralPath $vdfPath -Encoding UTF8
                 foreach ($line in $vdfLines) {
                     if ($line -match '^\s*"path"\s+"([^"]+)"') {
-                        $p = $Matches[1].Replace('\', '').Replace('/', '').TrimEnd('')
+                        $p = $Matches[1].Replace('\\', '\').Replace('/', '\').TrimEnd('\')
                         if ((Test-Path -LiteralPath $p) -and -not $libs.Contains($p)) { [void]$libs.Add($p) }
-                    } elseif ($line -match '^\s*"\d+"\s+"([A-Za-z]:\[^"]+)"') {
-                        $p = $Matches[1].Replace('\', '').Replace('/', '').TrimEnd('')
+                    } elseif ($line -match '^\s*"\d+"\s+"([A-Za-z]:\\[^"]+)"') {
+                        $p = $Matches[1].Replace('\\', '\').Replace('/', '\').TrimEnd('\')
                         if ((Test-Path -LiteralPath $p) -and -not $libs.Contains($p)) { [void]$libs.Add($p) }
                     }
                 }
             } catch {}
         }
     }
+
+    # Сканирование всех доступных логических дисков системы (C: - Z:)
+    foreach ($drive in [System.IO.DriveInfo]::GetDrives()) {
+        try {
+            if ($drive.IsReady) {
+                $root = $drive.RootDirectory.FullName
+                $stdPaths = @(
+                    (Join-Path $root 'SteamLibrary'),
+                    (Join-Path $root 'Steam'),
+                    (Join-Path $root 'Program Files (x86)\Steam'),
+                    (Join-Path $root 'Program Files\Steam'),
+                    (Join-Path $root 'Games\Steam'),
+                    (Join-Path $root 'Games\SteamLibrary')
+                )
+                foreach ($sp in $stdPaths) {
+                    if ((Test-Path -LiteralPath $sp) -and -not $libs.Contains($sp)) {
+                        [void]$libs.Add($sp)
+                    }
+                }
+            }
+        } catch {}
+    }
+
     return $libs
 }
 
 function Find-TruckSimInstall {
-    param([string[]]$LibraryPaths, [string]$FolderName)
+    param(
+        [string[]]$LibraryPaths,
+        [string]$FolderName,
+        [string]$AppManifestName
+    )
+
     foreach ($lib in $LibraryPaths) {
-        $commonPath = Join-Path $lib ("steamapps\common" + $FolderName)
+        $commonPath = Join-Path $lib ("steamapps\common\" + $FolderName)
         if (Test-Path -LiteralPath $commonPath) {
             return $commonPath
+        }
+        if ($AppManifestName) {
+            $acfPath = Join-Path $lib ("steamapps\" + $AppManifestName)
+            if (Test-Path -LiteralPath $acfPath) {
+                try {
+                    $acfRaw = Get-Content -LiteralPath $acfPath -Raw -Encoding UTF8
+                    if ($acfRaw -match '"installdir"\s+"([^"]+)"') {
+                        $altPath = Join-Path $lib ("steamapps\common\" + $Matches[1])
+                        if (Test-Path -LiteralPath $altPath) {
+                            return $altPath
+                        }
+                    }
+                } catch {}
+            }
         }
     }
     return ''
@@ -298,7 +292,7 @@ function Find-TruckSimInstall {
 
 function Resolve-TruckPluginDir {
     param([string]$SelectedPath)
-    $clean = ([string]$SelectedPath).Trim().Trim('"').TrimEnd('', '/')
+    $clean = ([string]$SelectedPath).Trim().Trim('"').TrimEnd('\', '/')
     if ([string]::IsNullOrWhiteSpace($clean)) { return $null }
 
     $leaf = Split-Path -Leaf $clean
@@ -318,13 +312,13 @@ function Resolve-TruckPluginDir {
 
 function Escape-JsSingleQuote {
     param([string]$Value)
-    return ([string]$Value).Replace('', '\').Replace("'", "'").Replace("`r", '').Replace("`n", '')
+    return ([string]$Value).Replace('\', '\\').Replace("'", "\'").Replace("`r", '').Replace("`n", '')
 }
 
 function Copy-OverlayDirectory {
     param([string]$SrcDir, [string]$DstDir)
-    $srcFull = [System.IO.Path]::GetFullPath($SrcDir).TrimEnd('')
-    $dstFull = [System.IO.Path]::GetFullPath($DstDir).TrimEnd('')
+    $srcFull = [System.IO.Path]::GetFullPath($SrcDir).TrimEnd('\')
+    $dstFull = [System.IO.Path]::GetFullPath($DstDir).TrimEnd('\')
     if ($srcFull -ieq $dstFull) { return }
 
     New-Item -ItemType Directory -Force -Path $dstFull | Out-Null
@@ -334,9 +328,17 @@ function Copy-OverlayDirectory {
         'start-telemetry.bat',
         'Install-Overlay.bat',
         'Update-Overlay.bat',
+        'build-and-install-plugin.bat',
         'README.md',
         'README.en.md',
         'README.ru.md',
+        'CHANGELOG.md',
+        'CHANGELOG.en.md',
+        'CHANGELOG.ru.md',
+        'commands.md',
+        'commands.en.md',
+        'commands.ru.md',
+        'RELEASE_NOTES_v1.2.2.md',
         'LICENSE',
         '.gitignore'
     )
@@ -499,27 +501,26 @@ function Install-NativePluginToGame {
     return $targetDll
 }
 
-# 9. Разметка WPF XAML
+# 8. Разметка WPF XAML — Компактная форма без вертикального скролла
 $xaml = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="ETS2 / ATS Stream Overlay — Setup Wizard"
-        Height="760" Width="890"
-        MinHeight="700" MinWidth="840"
+        Width="740" SizeToContent="Height"
         Background="#0d1117" Foreground="#f1f5f9"
         WindowStartupLocation="CenterScreen"
         FontFamily="Segoe UI, -apple-system, sans-serif"
-        ResizeMode="CanResizeWithGrip">
+        ResizeMode="CanMinimize">
     <Window.Resources>
-        <!-- Базовый шаблон кнопки со скруглением CornerRadius 8 и сдвигом при нажатии -->
+        <!-- Базовый стиль кнопок с тактильным сдвигом и скруглением 8px -->
         <Style TargetType="Button" x:Key="BtnBase">
             <Setter Property="Background" Value="#1f2937"/>
             <Setter Property="Foreground" Value="#f1f5f9"/>
             <Setter Property="BorderBrush" Value="#374151"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="FontSize" Value="12.5"/>
-            <Setter Property="Padding" Value="14,7"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="10,5"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -553,7 +554,7 @@ $xaml = @"
             </Setter>
         </Style>
 
-        <!-- Главная кнопка Установки (Янтарный градиент ETS2/ATS) -->
+        <!-- Главная кнопка Установки (Янтарный градиент) -->
         <Style TargetType="Button" x:Key="BtnPrimary" BasedOn="{StaticResource BtnBase}">
             <Setter Property="Background">
                 <Setter.Value>
@@ -566,8 +567,8 @@ $xaml = @"
             <Setter Property="Foreground" Value="#0f172a"/>
             <Setter Property="BorderBrush" Value="#fbbf24"/>
             <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="FontSize" Value="13.5"/>
-            <Setter Property="Padding" Value="24,9"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="20,7"/>
         </Style>
 
         <!-- Центральная кнопка ПОДДЕРЖАТЬ ПРОЕКТ (CornerRadius 10, градиент #ff5e5b -> #e11d48) -->
@@ -584,8 +585,8 @@ $xaml = @"
             <Setter Property="BorderBrush" Value="#fda4af"/>
             <Setter Property="BorderThickness" Value="1.5"/>
             <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="FontSize" Value="13.5"/>
-            <Setter Property="Padding" Value="28,10"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="24,8"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -627,8 +628,8 @@ $xaml = @"
             <Setter Property="Foreground" Value="#f59e0b"/>
             <Setter Property="BorderBrush" Value="#f59e0b"/>
             <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="FontSize" Value="12.5"/>
-            <Setter Property="Padding" Value="18,7"/>
+            <Setter Property="FontSize" Value="11.5"/>
+            <Setter Property="Padding" Value="14,5"/>
         </Style>
 
         <!-- Поля ввода -->
@@ -637,8 +638,8 @@ $xaml = @"
             <Setter Property="Foreground" Value="#f1f5f9"/>
             <Setter Property="BorderBrush" Value="#2a3444"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="8,5"/>
-            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
 
@@ -647,28 +648,28 @@ $xaml = @"
             <Setter Property="Foreground" Value="#f1f5f9"/>
             <Setter Property="BorderBrush" Value="#2a3444"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="8,5"/>
-            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
 
         <Style TargetType="CheckBox">
             <Setter Property="Foreground" Value="#f1f5f9"/>
-            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="FontSize" Value="11.5"/>
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
     </Window.Resources>
 
-    <Grid Margin="18">
+    <Grid Margin="14,10,14,10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- ШАПКА МАСТЕРА УСТАНОВКИ -->
-        <Border Grid.Row="0" Background="#151b24" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="10" Padding="16,12" Margin="0,0,0,12">
+        <Border Grid.Row="0" Background="#151b24" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="8" Padding="14,8" Margin="0,0,0,7">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -677,206 +678,208 @@ $xaml = @"
 
                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock x:Name="txtHeaderTitle" Text="ETS2 / ATS STREAM OVERLAY" FontWeight="Bold" FontSize="16" Foreground="#f59e0b" VerticalAlignment="Center"/>
-                        <Border Background="#2a1d08" BorderBrush="#f59e0b" BorderThickness="1" CornerRadius="6" Padding="8,2" Margin="12,0,0,0" VerticalAlignment="Center">
-                            <TextBlock x:Name="txtBadgeVer" Text="v1.2.2" FontWeight="Bold" FontSize="11.5" Foreground="#fbbf24"/>
+                        <TextBlock x:Name="txtHeaderTitle" Text="ETS2 / ATS STREAM OVERLAY" FontWeight="Bold" FontSize="15" Foreground="#f59e0b" VerticalAlignment="Center"/>
+                        <Border Background="#2a1d08" BorderBrush="#f59e0b" BorderThickness="1" CornerRadius="6" Padding="6,1" Margin="10,0,0,0" VerticalAlignment="Center">
+                            <TextBlock x:Name="txtBadgeVer" Text="v1.2.2" FontWeight="Bold" FontSize="11" Foreground="#fbbf24"/>
                         </Border>
                     </StackPanel>
-                    <TextBlock x:Name="txtHeaderSub" Text="2-Row Cockpit HUD • Native SCS SDK 1.16 Telemetry • Twitch Chat &amp; Alerts" FontSize="11.5" Foreground="#94a3b8" Margin="0,3,0,0"/>
+                    <TextBlock x:Name="txtHeaderSub" Text="2-Row Cockpit HUD • Native SCS SDK 1.16 Telemetry • Twitch Chat &amp; Alerts" FontSize="11" Foreground="#94a3b8" Margin="0,2,0,0"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <!-- Кнопка 8-bit Музыки -->
-                    <Button x:Name="btnMusic" Style="{StaticResource BtnBase}" Width="38" Height="34" Padding="0" Margin="0,0,8,0" ToolTip="Toggle 8-bit Background Music">
-                        <Path x:Name="pathSpeaker" Width="18" Height="18" Stretch="Uniform" Fill="#38bdf8"
-                              Data="M3,9H7L12,4V20L7,15H3V9M16.5,12A4.5,4.5 0 0,0 14,7.97V16.03C15.5,15.04 16.5,13.64 16.5,12M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.85 14,18.71V20.77C18.03,19.86 21,16.28 21,12C21,7.72 18.03,4.14 14,3.23Z"/>
-                    </Button>
-                    <!-- Кнопка языка -->
-                    <Button x:Name="btnLang" Style="{StaticResource BtnBase}" Content="English (EN)" Height="34" Padding="12,4"/>
+                    <Button x:Name="btnLang" Style="{StaticResource BtnBase}" Content="English (EN)" Height="28" Padding="10,2"/>
                 </StackPanel>
             </Grid>
         </Border>
 
-        <!-- ТЕЛО С НАСТРОЙКАМИ (СКРОЛЛИРУЕМОЕ) -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0">
-            <StackPanel>
-                <!-- 1. Папка установки оверлея -->
-                <Border Background="#151b24" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="10" Padding="16,12" Margin="0,0,0,10">
-                    <StackPanel>
-                        <TextBlock x:Name="lblInstallDir" Text="1. Папка установки оверлея" FontWeight="Bold" FontSize="13" Foreground="#f59e0b" Margin="0,0,0,8"/>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBox x:Name="txtInstallDir" Grid.Column="0" Height="32"/>
-                            <Button x:Name="btnBrowseInstall" Style="{StaticResource BtnBase}" Grid.Column="1" Content="Обзор..." Margin="8,0,0,0" Height="32"/>
-                        </Grid>
-                    </StackPanel>
-                </Border>
+        <!-- МОДУЛЬНЫЕ СЕКЦИИ УСТАНОВКИ (КОМПАКТНЫЙ ЛАЙАУТ БЕЗ СКРОЛЛА) -->
+        <StackPanel Grid.Row="1">
+            <!-- 1. Папка установки оверлея (По умолчанию C:\OverlayOBS_FooZzee) -->
+            <Border Background="#151b24" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="8" Padding="12,7" Margin="0,0,0,6">
+                <StackPanel>
+                    <TextBlock x:Name="lblInstallDir" Text="1. Папка установки оверлея" FontWeight="Bold" FontSize="12" Foreground="#f59e0b" Margin="0,0,0,4"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="txtInstallDir" Grid.Column="0" Height="26" Text="C:\OverlayOBS_FooZzee"/>
+                        <Button x:Name="btnBrowseInstall" Style="{StaticResource BtnBase}" Grid.Column="1" Content="Обзор..." Margin="6,0,0,0" Height="26"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
 
-                <!-- 2. Плагин телеметрии SCS SDK -->
-                <Border Background="#151b24" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="10" Padding="16,12" Margin="0,0,0,10">
-                    <StackPanel>
-                        <TextBlock x:Name="lblPlugins" Text="2. Установка нативного плагина телеметрии (overlayobs_foozzee_telemetry.dll)" FontWeight="Bold" FontSize="13" Foreground="#f59e0b" Margin="0,0,0,8"/>
-                        
-                        <!-- ETS2 -->
-                        <CheckBox x:Name="chkEts2" Content="Установить плагин телеметрии для Euro Truck Simulator 2" Margin="0,0,0,4" IsChecked="True"/>
-                        <Grid Margin="20,0,0,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBox x:Name="txtEts2Path" Grid.Column="0" Height="28" FontSize="11.5"/>
-                            <Button x:Name="btnBrowseEts2" Style="{StaticResource BtnBase}" Grid.Column="1" Content="Обзор..." Margin="6,0,0,0" Height="28" Padding="10,2"/>
-                        </Grid>
-                        <TextBlock x:Name="lblEts2Status" Text="Найдено автоматически" FontSize="11" Foreground="#38bdf8" Margin="20,0,0,10"/>
+            <!-- 2. Плагин телеметрии SCS SDK -->
+            <Border Background="#151b24" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="8" Padding="12,7" Margin="0,0,0,6">
+                <StackPanel>
+                    <TextBlock x:Name="lblPlugins" Text="2. Установка нативного плагина телеметрии (overlayobs_foozzee_telemetry.dll)" FontWeight="Bold" FontSize="12" Foreground="#f59e0b" Margin="0,0,0,5"/>
+                    
+                    <!-- ETS2 -->
+                    <Grid Margin="0,0,0,3">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <CheckBox x:Name="chkEts2" Grid.Column="0" Content="ETS2:" VerticalAlignment="Center" Margin="0,0,8,0" IsChecked="True"/>
+                        <TextBox x:Name="txtEts2Path" Grid.Column="1" Height="24" FontSize="11"/>
+                        <Button x:Name="btnBrowseEts2" Style="{StaticResource BtnBase}" Grid.Column="2" Content="Обзор..." Margin="6,0,0,0" Height="24" Padding="8,1"/>
+                    </Grid>
+                    <TextBlock x:Name="lblEts2Status" Text="Найдено автоматически" FontSize="10.5" Foreground="#38bdf8" Margin="20,0,0,4"/>
 
-                        <!-- ATS -->
-                        <CheckBox x:Name="chkAts" Content="Установить плагин телеметрии для American Truck Simulator" Margin="0,0,0,4" IsChecked="True"/>
-                        <Grid Margin="20,0,0,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBox x:Name="txtAtsPath" Grid.Column="0" Height="28" FontSize="11.5"/>
-                            <Button x:Name="btnBrowseAts" Style="{StaticResource BtnBase}" Grid.Column="1" Content="Обзор..." Margin="6,0,0,0" Height="28" Padding="10,2"/>
-                        </Grid>
-                        <TextBlock x:Name="lblAtsStatus" Text="Найдено автоматически" FontSize="11" Foreground="#38bdf8" Margin="20,0,0,8"/>
+                    <!-- ATS -->
+                    <Grid Margin="0,0,0,3">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <CheckBox x:Name="chkAts" Grid.Column="0" Content="ATS: " VerticalAlignment="Center" Margin="0,0,8,0" IsChecked="True"/>
+                        <TextBox x:Name="txtAtsPath" Grid.Column="1" Height="24" FontSize="11"/>
+                        <Button x:Name="btnBrowseAts" Style="{StaticResource BtnBase}" Grid.Column="2" Content="Обзор..." Margin="6,0,0,0" Height="24" Padding="8,1"/>
+                    </Grid>
+                    <TextBlock x:Name="lblAtsStatus" Text="Найдено автоматически" FontSize="10.5" Foreground="#38bdf8" Margin="20,0,0,4"/>
 
-                        <TextBlock x:Name="lblThirdPartyNote" Text="Напоминание: сторонний rtrucksim_telemetry.dll строго не затрагивается." FontSize="11" Foreground="#64748b"/>
-                    </StackPanel>
-                </Border>
+                    <TextBlock x:Name="lblThirdPartyNote" Text="Напоминание: сторонний rtrucksim_telemetry.dll строго не затрагивается." FontSize="10.5" Foreground="#64748b"/>
+                </StackPanel>
+            </Border>
 
-                <!-- 3. Профиль стримера -->
-                <Border Background="#151b24" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="10" Padding="16,12" Margin="0,0,0,10">
-                    <StackPanel>
-                        <TextBlock x:Name="lblProfile" Text="3. Профиль стримера (записывается в config.js)" FontWeight="Bold" FontSize="13" Foreground="#f59e0b" Margin="0,0,0,8"/>
-                        <Grid Margin="0,0,0,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="14"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0">
-                                <TextBlock x:Name="lblDriver" Text="Никнейм стримера:" FontSize="12" Foreground="#94a3b8" Margin="0,0,0,4"/>
-                                <TextBox x:Name="txtDriver" Text="STREAMER" Height="30"/>
-                            </StackPanel>
-                            <StackPanel Grid.Column="2">
-                                <TextBlock x:Name="lblTwitch" Text="Канал Twitch:" FontSize="12" Foreground="#94a3b8" Margin="0,0,0,4"/>
-                                <TextBox x:Name="txtTwitch" Text="" Height="30"/>
-                            </StackPanel>
-                        </Grid>
+            <!-- 3. Профиль стримера -->
+            <Border Background="#151b24" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="8" Padding="12,7" Margin="0,0,0,6">
+                <StackPanel>
+                    <TextBlock x:Name="lblProfile" Text="3. Профиль стримера (записывается в config.js)" FontWeight="Bold" FontSize="12" Foreground="#f59e0b" Margin="0,0,0,4"/>
+                    <Grid Margin="0,0,0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="12"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock x:Name="lblDriver" Text="Никнейм стримера:" FontSize="11" Foreground="#94a3b8" Margin="0,0,0,2"/>
+                            <TextBox x:Name="txtDriver" Text="STREAMER" Height="25"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock x:Name="lblTwitch" Text="Канал Twitch:" FontSize="11" Foreground="#94a3b8" Margin="0,0,0,2"/>
+                            <TextBox x:Name="txtTwitch" Text="" Height="25"/>
+                        </StackPanel>
+                    </Grid>
 
-                        <TextBlock x:Name="lblDaToken" Text="Секретный токен DonationAlerts (необязательно):" FontSize="12" Foreground="#94a3b8" Margin="0,0,0,4"/>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <PasswordBox x:Name="pwdDaToken" Grid.Column="0" Height="30"/>
-                            <TextBox x:Name="txtDaToken" Grid.Column="0" Height="30" Visibility="Collapsed"/>
-                            <Button x:Name="btnToggleToken" Style="{StaticResource BtnBase}" Grid.Column="1" Content="Показать" Margin="8,0,0,0" Height="30" Padding="12,2"/>
-                        </Grid>
-                        <TextBlock x:Name="hintDaToken" Text="Для показа донатов на торпеде (DonationAlerts -> Настройки аккаунта -> Секретный токен)" FontSize="11" Foreground="#64748b" Margin="0,4,0,0"/>
-                    </StackPanel>
-                </Border>
+                    <TextBlock x:Name="lblDaToken" Text="Секретный токен DonationAlerts (необязательно):" FontSize="11" Foreground="#94a3b8" Margin="0,0,0,2"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <PasswordBox x:Name="pwdDaToken" Grid.Column="0" Height="25"/>
+                        <TextBox x:Name="txtDaToken" Grid.Column="0" Height="25" Visibility="Collapsed"/>
+                        <Button x:Name="btnToggleToken" Style="{StaticResource BtnBase}" Grid.Column="1" Content="Показать" Margin="6,0,0,0" Height="25" Padding="10,1"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
 
-                <!-- 4. Ярлыки и завершение -->
-                <Border Background="#151b24" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="10" Padding="16,12" Margin="0,0,0,10">
-                    <StackPanel>
-                        <TextBlock x:Name="lblOptions" Text="4. Ярлыки и параметры" FontWeight="Bold" FontSize="13" Foreground="#f59e0b" Margin="0,0,0,8"/>
-                        <CheckBox x:Name="chkShortcut" Content="Создать ярлык на Рабочем столе ('ETS2-ATS Overlay Bridge')" IsChecked="True" Margin="0,0,0,6"/>
-                        <CheckBox x:Name="chkOpenFolder" Content="Открыть папку установки после завершения" IsChecked="True"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- 5. КАРТОЧКА GITHUB STAR И ПОДДЕРЖКИ ПРОЕКТА -->
-                <Border Background="#121820" BorderBrush="#f59e0b" BorderThickness="1" CornerRadius="10" Padding="16,14" Margin="0,0,0,6">
+            <!-- 4. Ярлыки и параметры (Включая ярлык Pip-Boy 3000) -->
+            <Border Background="#151b24" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="8" Padding="12,7" Margin="0,0,0,6">
+                <StackPanel>
+                    <TextBlock x:Name="lblOptions" Text="4. Ярлыки и параметры" FontWeight="Bold" FontSize="12" Foreground="#f59e0b" Margin="0,0,0,4"/>
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <CheckBox x:Name="chkShortcut" Grid.Row="0" Grid.Column="0" Content="Ярлык телеметрии на Рабочем столе" IsChecked="True" Margin="0,0,0,4"/>
+                        <CheckBox x:Name="chkUpdateShortcut" Grid.Row="0" Grid.Column="1" Content="Ярлык обновления (Pip-Boy) на Рабочем столе" IsChecked="True" Margin="0,0,0,4"/>
+                        <CheckBox x:Name="chkOpenFolder" Grid.Row="1" Grid.ColumnSpan="2" Content="Открыть папку установки после завершения" IsChecked="True"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
 
-                        <!-- Блок GitHub Star -->
-                        <Grid Grid.Row="0" Margin="0,0,0,14">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
-                                <TextBlock x:Name="txtStarTitle" Text="Нравится оверлей? Поддержите проект звездой на GitHub — это очень помогает развитию!"
-                                           FontSize="12" Foreground="#e2e8f0" TextWrapping="Wrap"/>
+            <!-- 5. КАРТОЧКА GITHUB STAR И ЦЕНТРАЛЬНАЯ КНОПКА ПОДДЕРЖКИ -->
+            <Border Background="#121820" BorderBrush="#f59e0b" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,0,6">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Блок GitHub Star -->
+                    <Grid Grid.Row="0" Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="txtStarTitle" Grid.Column="0" Text="Нравится оверлей? Поддержите проект звездой на GitHub — это очень помогает развитию!"
+                                   FontSize="11.5" Foreground="#e2e8f0" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <Button x:Name="btnStar" Style="{StaticResource BtnStar}" Grid.Column="1" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Path Width="14" Height="14" Stretch="Uniform" Fill="#f59e0b" Margin="0,0,6,0" VerticalAlignment="Center"
+                                      Data="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"/>
+                                <TextBlock x:Name="txtStarBtn" Text="ПОСТАВИТЬ ЗВЕЗДУ НА GITHUB" FontWeight="Bold" VerticalAlignment="Center"/>
                             </StackPanel>
-                            <Button x:Name="btnStar" Style="{StaticResource BtnStar}" Grid.Column="1" VerticalAlignment="Center">
+                        </Button>
+                    </Grid>
+
+                    <!-- ЦЕНТРАЛЬНАЯ КНОПКА ПОДДЕРЖАТЬ ПРОЕКТ -->
+                    <Border Grid.Row="1" BorderBrush="#2a3444" BorderThickness="0,1,0,0" Padding="0,8,0,0">
+                        <StackPanel HorizontalAlignment="Center">
+                            <Button x:Name="btnSupport" Style="{StaticResource BtnSupport}">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Path Width="16" Height="16" Stretch="Uniform" Fill="#f59e0b" Margin="0,0,8,0" VerticalAlignment="Center"
-                                          Data="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"/>
-                                    <TextBlock x:Name="txtStarBtn" Text="ПОСТАВИТЬ ЗВЕЗДУ НА GITHUB" FontWeight="Bold" VerticalAlignment="Center"/>
+                                    <Path Width="16" Height="16" Stretch="Uniform" Fill="#ffffff" Margin="0,0,8,0" VerticalAlignment="Center"
+                                          Data="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"/>
+                                    <TextBlock x:Name="txtSupportBtn" Text="ПОДДЕРЖАТЬ ПРОЕКТ" FontWeight="Bold" FontSize="13" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
-                        </Grid>
-
-                        <!-- ЦЕНТРАЛЬНАЯ КНОПКА ПОДДЕРЖАТЬ ПРОЕКТ -->
-                        <Border Grid.Row="1" BorderBrush="#2a3444" BorderThickness="0,1,0,0" Padding="0,12,0,0">
-                            <StackPanel HorizontalAlignment="Center">
-                                <Button x:Name="btnSupport" Style="{StaticResource BtnSupport}">
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <Path Width="18" Height="18" Stretch="Uniform" Fill="#ffffff" Margin="0,0,10,0" VerticalAlignment="Center"
-                                              Data="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"/>
-                                        <TextBlock x:Name="txtSupportBtn" Text="ПОДДЕРЖАТЬ ПРОЕКТ" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                </Button>
-                            </StackPanel>
-                        </Border>
-                    </Grid>
-                </Border>
-            </StackPanel>
-        </ScrollViewer>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+        </StackPanel>
 
         <!-- ПАНЕЛЬ ДЕЙСТВИЙ И ССЫЛОК АВТОРА -->
-        <Border Grid.Row="2" Background="#151b24" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="10" Padding="16,10" Margin="0,10,0,8">
+        <Border Grid.Row="2" Background="#151b24" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,0,6">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Ссылки автора и документация -->
+                <!-- Ссылки автора и встроенный просмотр документации -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="FooZzee:" FontSize="11.5" Foreground="#64748b" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                    <Button x:Name="linkWeb" Style="{StaticResource BtnBase}" Content="foozzee.ru" Padding="6,2" FontSize="11" Margin="0,0,4,0"/>
-                    <Button x:Name="linkTwitch" Style="{StaticResource BtnBase}" Content="Twitch" Padding="6,2" FontSize="11" Margin="0,0,4,0"/>
-                    <Button x:Name="linkYt" Style="{StaticResource BtnBase}" Content="YouTube" Padding="6,2" FontSize="11" Margin="0,0,4,0"/>
-                    <Button x:Name="linkTg" Style="{StaticResource BtnBase}" Content="Telegram" Padding="6,2" FontSize="11" Margin="0,0,4,0"/>
-                    <Button x:Name="linkVk" Style="{StaticResource BtnBase}" Content="VK" Padding="6,2" FontSize="11" Margin="0,0,8,0"/>
-                    <Button x:Name="btnChangelog" Style="{StaticResource BtnBase}" Content="📜 Changelog" Padding="8,2" FontSize="11" Margin="0,0,4,0"/>
-                    <Button x:Name="btnCommands" Style="{StaticResource BtnBase}" Content="📖 Commands" Padding="8,2" FontSize="11"/>
+                    <TextBlock Text="FooZzee:" FontSize="11" Foreground="#64748b" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <Button x:Name="linkWeb" Style="{StaticResource BtnBase}" Content="foozzee.ru" Padding="5,2" FontSize="10.5" Margin="0,0,3,0"/>
+                    <Button x:Name="linkTwitch" Style="{StaticResource BtnBase}" Content="Twitch" Padding="5,2" FontSize="10.5" Margin="0,0,3,0"/>
+                    <Button x:Name="linkYt" Style="{StaticResource BtnBase}" Content="YouTube" Padding="5,2" FontSize="10.5" Margin="0,0,3,0"/>
+                    <Button x:Name="linkTg" Style="{StaticResource BtnBase}" Content="Telegram" Padding="5,2" FontSize="10.5" Margin="0,0,3,0"/>
+                    <Button x:Name="linkVk" Style="{StaticResource BtnBase}" Content="VK" Padding="5,2" FontSize="10.5" Margin="0,0,6,0"/>
+                    <Button x:Name="btnChangelog" Style="{StaticResource BtnBase}" Content="📜 Changelog" Padding="7,2" FontSize="10.5" Margin="0,0,3,0"/>
+                    <Button x:Name="btnCommands" Style="{StaticResource BtnBase}" Content="📖 Commands" Padding="7,2" FontSize="10.5"/>
                 </StackPanel>
 
                 <!-- Кнопки Закрыть и Установить -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button x:Name="btnCancel" Style="{StaticResource BtnBase}" Content="Закрыть" Margin="0,0,8,0" Height="36"/>
-                    <Button x:Name="btnInstall" Style="{StaticResource BtnPrimary}" Content="🚀 УСТАНОВИТЬ ОВЕРЛЕЙ" Height="36"/>
+                    <Button x:Name="btnCancel" Style="{StaticResource BtnBase}" Content="Закрыть" Margin="0,0,6,0" Height="32"/>
+                    <Button x:Name="btnInstall" Style="{StaticResource BtnPrimary}" Content="🚀 УСТАНОВИТЬ ОВЕРЛЕЙ" Height="32"/>
                 </StackPanel>
             </Grid>
         </Border>
 
         <!-- СТАТУСНАЯ СТРОКА В ФУТЕРЕ (ВЕРСИЯ ПАКЕТА И ПОДСКАЗКА OBS) -->
-        <Grid Grid.Row="3" Margin="4,0,4,0">
+        <Grid Grid.Row="3" Margin="2,0,2,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBlock x:Name="txtFooterVer" Grid.Column="0" Text="Версия пакета: v1.2.2" FontSize="11" Foreground="#f59e0b"/>
-            <TextBlock x:Name="txtFooterObs" Grid.Column="1" Text="OBS Desktop: 1920x1080 (ets2-desktop.html) • Камера: 346x195 px" FontSize="11" Foreground="#64748b"/>
+            <TextBlock x:Name="txtFooterVer" Grid.Column="0" Text="Версия пакета: v1.2.2" FontSize="10.5" Foreground="#f59e0b"/>
+            <TextBlock x:Name="txtFooterObs" Grid.Column="1" Text="OBS Desktop: 1920x1080 (ets2-desktop.html) • Камера: 346x195 px" FontSize="10.5" Foreground="#64748b"/>
         </Grid>
     </Grid>
 </Window>
 "@
 
-# 10. Загрузка разметки окна
+# 9. Инициализация окна WPF
 try {
     $reader = New-Object System.Xml.XmlNodeReader ([xml]$xaml)
     $win = [System.Windows.Markup.XamlReader]::Load($reader)
@@ -889,8 +892,6 @@ try {
 $txtHeaderTitle   = $win.FindName('txtHeaderTitle')
 $txtHeaderSub     = $win.FindName('txtHeaderSub')
 $txtBadgeVer      = $win.FindName('txtBadgeVer')
-$btnMusic         = $win.FindName('btnMusic')
-$pathSpeaker      = $win.FindName('pathSpeaker')
 $btnLang          = $win.FindName('btnLang')
 $lblInstallDir    = $win.FindName('lblInstallDir')
 $txtInstallDir    = $win.FindName('txtInstallDir')
@@ -914,9 +915,9 @@ $lblDaToken       = $win.FindName('lblDaToken')
 $pwdDaToken       = $win.FindName('pwdDaToken')
 $txtDaToken       = $win.FindName('txtDaToken')
 $btnToggleToken   = $win.FindName('btnToggleToken')
-$hintDaToken      = $win.FindName('hintDaToken')
 $lblOptions       = $win.FindName('lblOptions')
 $chkShortcut      = $win.FindName('chkShortcut')
+$chkUpdateShortcut= $win.FindName('chkUpdateShortcut')
 $chkOpenFolder    = $win.FindName('chkOpenFolder')
 $txtStarTitle     = $win.FindName('txtStarTitle')
 $btnStar          = $win.FindName('btnStar')
@@ -935,55 +936,38 @@ $btnInstall       = $win.FindName('btnInstall')
 $txtFooterVer     = $win.FindName('txtFooterVer')
 $txtFooterObs     = $win.FindName('txtFooterObs')
 
-# 11. Инициализация фоновой музыки 8-bit
-$script:SoundPlayer = $null
-$script:MusicPlaying = $true
-$speakerOnPath = "M3,9H7L12,4V20L7,15H3V9M16.5,12A4.5,4.5 0 0,0 14,7.97V16.03C15.5,15.04 16.5,13.64 16.5,12M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.85 14,18.71V20.77C18.03,19.86 21,16.28 21,12C21,7.72 18.03,4.14 14,3.23Z"
-$speakerOffPath = "M3,9H7L12,4V20L7,15H3V9M16.5,12C16.5,10.23 15.5,8.71 14,7.97V10.18L16.45,12.63C16.48,12.43 16.5,12.22 16.5,12M19,12C19,12.94 18.8,13.82 18.46,14.64L19.97,16.15C20.62,14.91 21,13.5 21,12C21,7.72 18.03,4.14 14,3.23V5.29C16.89,6.15 19,8.83 19,12M4.27,3L3,4.27L7.73,9H3V15H7L12,20V13.27L16.25,17.53C15.58,18.04 14.83,18.46 14,18.7V20.77C15.38,20.45 16.63,19.82 17.68,18.96L19.73,21L21,19.73L4.27,3Z"
-
-try {
-    $wavBytes = [CockpitSoundSynth]::CreateLoopWav()
-    $script:AudioStream = New-Object System.IO.MemoryStream(,$wavBytes)
-    $script:SoundPlayer = New-Object System.Media.SoundPlayer($script:AudioStream)
-} catch {
-    $script:SoundPlayer = $null
-}
-
-# 12. Функция обновления локализации интерфейса
+# 10. Функция обновления локализации интерфейса
 function Update-Localization {
-    $win.Title            = Get-Text 'WindowTitle'
-    $txtHeaderTitle.Text  = Get-Text 'HeaderTitle'
-    $txtHeaderSub.Text    = Get-Text 'HeaderSubtitle'
-    $txtBadgeVer.Text     = Get-Text 'BadgeVersion'
-    $btnLang.Content      = Get-Text 'LangBtn'
-    $lblInstallDir.Text   = Get-Text 'GrpInstallDir'
+    $win.Title                = Get-Text 'WindowTitle'
+    $txtHeaderTitle.Text      = Get-Text 'HeaderTitle'
+    $txtHeaderSub.Text        = Get-Text 'HeaderSubtitle'
+    $txtBadgeVer.Text         = Get-Text 'BadgeVersion'
+    $btnLang.Content          = Get-Text 'LangBtn'
+    $lblInstallDir.Text       = Get-Text 'GrpInstallDir'
     $btnBrowseInstall.Content = Get-Text 'BrowseBtn'
-    $lblPlugins.Text      = Get-Text 'GrpPlugins'
-    $chkEts2.Content      = Get-Text 'ChkEts2'
-    $btnBrowseEts2.Content= Get-Text 'BrowseBtn'
-    $chkAts.Content       = Get-Text 'ChkAts'
-    $btnBrowseAts.Content = Get-Text 'BrowseBtn'
-    $lblThirdPartyNote.Text = Get-Text 'ThirdPartyNote'
-    $lblProfile.Text      = Get-Text 'GrpProfile'
-    $lblDriver.Text       = Get-Text 'LblDriver'
-    $lblTwitch.Text       = Get-Text 'LblTwitch'
-    $lblDaToken.Text      = Get-Text 'LblDaToken'
-    $hintDaToken.Text     = Get-Text 'HintDaToken'
-    $btnToggleToken.Content = if ($pwdDaToken.Visibility -eq [System.Windows.Visibility]::Visible) { Get-Text 'BtnShowToken' } else { Get-Text 'BtnHideToken' }
-    $lblOptions.Text      = Get-Text 'GrpOptions'
-    $chkShortcut.Content  = Get-Text 'ChkShortcut'
-    $chkOpenFolder.Content= Get-Text 'ChkOpenFolder'
-    $txtStarTitle.Text    = Get-Text 'StarCardText'
-    $txtStarBtn.Text      = Get-Text 'BtnStar'
-    $txtSupportBtn.Text   = Get-Text 'BtnSupport'
-    $btnChangelog.Content = Get-Text 'BtnChangelog'
-    $btnCommands.Content  = Get-Text 'BtnCommands'
-    $btnCancel.Content    = Get-Text 'BtnCancel'
-    $btnInstall.Content   = Get-Text 'BtnInstall'
-    $txtFooterVer.Text    = Get-Text 'FooterPkgVer'
-    $txtFooterObs.Text    = Get-Text 'FooterObsHint'
+    $lblPlugins.Text          = Get-Text 'GrpPlugins'
+    $btnBrowseEts2.Content    = Get-Text 'BrowseBtn'
+    $btnBrowseAts.Content     = Get-Text 'BrowseBtn'
+    $lblThirdPartyNote.Text   = Get-Text 'ThirdPartyNote'
+    $lblProfile.Text          = Get-Text 'GrpProfile'
+    $lblDriver.Text           = Get-Text 'LblDriver'
+    $lblTwitch.Text           = Get-Text 'LblTwitch'
+    $lblDaToken.Text          = Get-Text 'LblDaToken'
+    $btnToggleToken.Content   = if ($pwdDaToken.Visibility -eq [System.Windows.Visibility]::Visible) { Get-Text 'BtnShowToken' } else { Get-Text 'BtnHideToken' }
+    $lblOptions.Text          = Get-Text 'GrpOptions'
+    $chkShortcut.Content      = Get-Text 'ChkShortcut'
+    $chkUpdateShortcut.Content= Get-Text 'ChkUpdateShortcut'
+    $chkOpenFolder.Content    = Get-Text 'ChkOpenFolder'
+    $txtStarTitle.Text        = Get-Text 'StarCardText'
+    $txtStarBtn.Text          = Get-Text 'BtnStar'
+    $txtSupportBtn.Text       = Get-Text 'BtnSupport'
+    $btnChangelog.Content     = Get-Text 'BtnChangelog'
+    $btnCommands.Content      = Get-Text 'BtnCommands'
+    $btnCancel.Content        = Get-Text 'BtnCancel'
+    $btnInstall.Content       = Get-Text 'BtnInstall'
+    $txtFooterVer.Text        = Get-Text 'FooterPkgVer'
+    $txtFooterObs.Text        = Get-Text 'FooterObsHint'
 
-    # Обновление статусов плагинов
     if ($txtEts2Path.Text) {
         $lblEts2Status.Text = Get-Text 'PluginFound'
         $lblEts2Status.Foreground = [System.Windows.Media.Brushes]::CornflowerBlue
@@ -1000,20 +984,19 @@ function Update-Localization {
     }
 }
 
-# 13. Автопоиск папок ETS2 и ATS
+# 11. Автопоиск путей к играм ETS2 и ATS
 $steamLibs = Get-SteamLibraryPaths
-$ets2Found = Find-TruckSimInstall -LibraryPaths $steamLibs -FolderName 'Euro Truck Simulator 2'
-$atsFound  = Find-TruckSimInstall -LibraryPaths $steamLibs -FolderName 'American Truck Simulator'
+$detectedEts2 = Find-TruckSimInstall -LibraryPaths $steamLibs -FolderName 'Euro Truck Simulator 2' -AppManifestName 'appmanifest_227300.acf'
+$detectedAts  = Find-TruckSimInstall -LibraryPaths $steamLibs -FolderName 'American Truck Simulator' -AppManifestName 'appmanifest_270880.acf'
 
-$txtInstallDir.Text = $SourceRoot
-if ($ets2Found) {
-    $txtEts2Path.Text = $ets2Found
+if ($detectedEts2) {
+    $txtEts2Path.Text = $detectedEts2
     $chkEts2.IsChecked = $true
 } else {
     $chkEts2.IsChecked = $false
 }
-if ($atsFound) {
-    $txtAtsPath.Text = $atsFound
+if ($detectedAts) {
+    $txtAtsPath.Text = $detectedAts
     $chkAts.IsChecked = $true
 } else {
     $chkAts.IsChecked = $false
@@ -1021,22 +1004,107 @@ if ($atsFound) {
 
 Update-Localization
 
-# 14. Обработчики событий кнопок
+# 12. Встроенные модальные WPF-окна для документации (БЕЗ Блокнота)
+function Show-WpfDocModal([string]$docTitle, [string]$docFileName) {
+    $searchDirs = @(
+        $SourceRoot,
+        $PSScriptRoot,
+        (Split-Path -Parent $PSScriptRoot),
+        $txtInstallDir.Text,
+        [System.IO.Directory]::GetCurrentDirectory()
+    )
 
-# Переключение фоновой музыки 8-bit
-$btnMusic.Add_Click({
-    if ($script:MusicPlaying) {
-        if ($script:SoundPlayer) { $script:SoundPlayer.Stop() }
-        $script:MusicPlaying = $false
-        $pathSpeaker.Data = [System.Windows.Media.Geometry]::Parse($speakerOffPath)
-        $pathSpeaker.Fill = [System.Windows.Media.Brushes]::Gray
-    } else {
-        if ($script:SoundPlayer) { $script:SoundPlayer.PlayLooping() }
-        $script:MusicPlaying = $true
-        $pathSpeaker.Data = [System.Windows.Media.Geometry]::Parse($speakerOnPath)
-        $pathSpeaker.Fill = [System.Windows.Media.Brushes]::CornflowerBlue
+    $resolvedPath = $null
+    foreach ($dir in $searchDirs) {
+        if (-not [string]::IsNullOrWhiteSpace($dir)) {
+            $candidate = Join-Path $dir $docFileName
+            if (Test-Path -LiteralPath $candidate) {
+                $resolvedPath = $candidate
+                break
+            }
+        }
     }
-})
+
+    $fileContent = ''
+    if ($resolvedPath -and (Test-Path -LiteralPath $resolvedPath)) {
+        try {
+            $fileContent = [System.IO.File]::ReadAllText($resolvedPath, [System.Text.Encoding]::UTF8)
+        } catch {
+            $fileContent = "Error reading file: $($_.Exception.Message)"
+        }
+    } else {
+        $fileContent = if ($script:CurrentLang -eq 'ru') {
+            "Файл документации [$docFileName] не найден в каталоге установщика.`r`nПожалуйста, убедитесь, что архив релиза распакован полностью."
+        } else {
+            "Documentation file [$docFileName] not found in installer directory.`r`nPlease ensure the release archive is fully extracted."
+        }
+    }
+
+    $modalXaml = @"
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="$docTitle"
+        Height="540" Width="720"
+        MinHeight="400" MinWidth="550"
+        Background="#0d1117" Foreground="#f1f5f9"
+        WindowStartupLocation="CenterOwner"
+        FontFamily="Segoe UI, -apple-system, sans-serif"
+        ResizeMode="CanResizeWithGrip">
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="#151b24" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,0,8">
+            <TextBlock Text="$docTitle" FontWeight="Bold" FontSize="13.5" Foreground="#f59e0b"/>
+        </Border>
+
+        <Border Grid.Row="1" Background="#0b0f14" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="8" Padding="4">
+            <TextBox x:Name="txtDocContent" Background="Transparent" Foreground="#e2e8f0"
+                     BorderThickness="0" FontFamily="Consolas, 'Courier New', monospace"
+                     FontSize="12" IsReadOnly="True" TextWrapping="Wrap"
+                     VerticalScrollBarVisibility="Auto" Padding="8"/>
+        </Border>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+            <Button x:Name="btnDocClose" Content="$(if ($script:CurrentLang -eq 'ru') { 'Закрыть' } else { 'Close' })"
+                    Background="#1f2937" Foreground="#f1f5f9" BorderBrush="#374151" BorderThickness="1"
+                    FontWeight="SemiBold" FontSize="12" Padding="18,6" Cursor="Hand" Height="30">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="6"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>
+"@
+    try {
+        $mReader = New-Object System.Xml.XmlNodeReader ([xml]$modalXaml)
+        $mWin = [System.Windows.Markup.XamlReader]::Load($mReader)
+        $mWin.Owner = $win
+
+        $txtBox = $mWin.FindName('txtDocContent')
+        if ($txtBox) {
+            $txtBox.Text = $fileContent
+            $txtBox.ScrollToHome()
+        }
+
+        $mCloseBtn = $mWin.FindName('btnDocClose')
+        if ($mCloseBtn) {
+            $mCloseBtn.Add_Click({ $mWin.Close() })
+        }
+
+        $mWin.ShowDialog() | Out-Null
+    } catch {
+        [System.Windows.MessageBox]::Show($fileContent, $docTitle, [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information)
+    }
+}
+
+# 13. Обработчики событий элементов интерфейса
 
 # Переключение языка
 $btnLang.Add_Click({
@@ -1080,7 +1148,7 @@ $btnBrowseAts.Add_Click({
     }
 })
 
-# Показать / Скрыть токен DonationAlerts
+# Показать / скрыть токен DonationAlerts
 $btnToggleToken.Add_Click({
     if ($pwdDaToken.Visibility -eq [System.Windows.Visibility]::Visible) {
         $txtDaToken.Text = $pwdDaToken.Password
@@ -1095,7 +1163,7 @@ $btnToggleToken.Add_Click({
     }
 })
 
-# Ссылки автора и проект
+# Поддержка и звезда
 $btnStar.Add_Click({
     [System.Diagnostics.Process]::Start('https://github.com/FooZzee/ets2-ats-stream-overlay')
 })
@@ -1108,33 +1176,21 @@ $linkYt.Add_Click({ [System.Diagnostics.Process]::Start('https://youtube.com/@fo
 $linkTg.Add_Click({ [System.Diagnostics.Process]::Start('https://t.me/foozzee_stream') })
 $linkVk.Add_Click({ [System.Diagnostics.Process]::Start('https://vk.com/foozzee') })
 
-# Показ документации Changelog и Commands
-function Show-DocViewer([string]$fileName, [string]$docTitle) {
-    $cand = Join-Path $SourceRoot $fileName
-    if (-not (Test-Path $cand)) {
-        $cand = Join-Path (Split-Path -Parent $PSScriptRoot) $fileName
-    }
-    if (Test-Path $cand) {
-        [System.Diagnostics.Process]::Start('notepad.exe', $cand)
-    } else {
-        [System.Windows.MessageBox]::Show("File not found: $fileName", $docTitle, [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning)
-    }
-}
-
+# Вызов модальных окон документации (строго без Блокнота)
 $btnChangelog.Add_Click({
     $docFile = if ($script:CurrentLang -eq 'ru') { 'CHANGELOG.ru.md' } else { 'CHANGELOG.en.md' }
-    Show-DocViewer $docFile (Get-Text 'DocChangelogTitle')
+    Show-WpfDocModal (Get-Text 'DocChangelogTitle') $docFile
 })
 $btnCommands.Add_Click({
     $docFile = if ($script:CurrentLang -eq 'ru') { 'commands.ru.md' } else { 'commands.en.md' }
-    Show-DocViewer $docFile (Get-Text 'DocCommandsTitle')
+    Show-WpfDocModal (Get-Text 'DocCommandsTitle') $docFile
 })
 
 $btnCancel.Add_Click({
     $win.Close()
 })
 
-# 15. Процесс установки
+# 14. Выполнение установки
 $btnInstall.Add_Click({
     $instDir = $txtInstallDir.Text.Trim()
     if ([string]::IsNullOrWhiteSpace($instDir)) {
@@ -1151,22 +1207,23 @@ $btnInstall.Add_Click({
         return
     }
 
-    # Получаем токен DA
     $daTokenValue = if ($pwdDaToken.Visibility -eq [System.Windows.Visibility]::Visible) { $pwdDaToken.Password } else { $txtDaToken.Text }
 
     try {
-        # Копирование файлов оверлея
+        # Копирование файлов оверлея в выбранную папку
         Copy-OverlayDirectory -SrcDir $SourceRoot -DstDir $instDir
 
-        # Генерация config.js
-        $cfgContent = Build-ConfigJsContent -SelectedLang $script:CurrentLang -DriverName $txtDriver.Text -TwitchName $txtTwitch.Text -DonationAlertsToken $daTokenValue
+        # Генерация config.js (только если файла ещё нет в целевой папке, чтобы защитить пользовательские настройки)
         $cfgPath = Join-Path $instDir 'config.js'
-        [System.IO.File]::WriteAllText($cfgPath, $cfgContent, [System.Text.Encoding]::UTF8)
+        if (-not (Test-Path -LiteralPath $cfgPath)) {
+            $cfgContent = Build-ConfigJsContent -SelectedLang $script:CurrentLang -DriverName $txtDriver.Text -TwitchName $txtTwitch.Text -DonationAlertsToken $daTokenValue
+            [System.IO.File]::WriteAllText($cfgPath, $cfgContent, [System.Text.Encoding]::UTF8)
+        }
 
         $ets2StatusText = Get-Text 'StatusOk'
         $atsStatusText  = Get-Text 'StatusOk'
 
-        # Установка плагина в ETS2
+        # Установка нативного плагина в ETS2
         if ($chkEts2.IsChecked) {
             if (Test-Path $RedistDll) {
                 $target = Install-NativePluginToGame -GamePath $txtEts2Path.Text -SourceDll $RedistDll
@@ -1178,7 +1235,7 @@ $btnInstall.Add_Click({
             $ets2StatusText = "-"
         }
 
-        # Установка плагина в ATS
+        # Установка нативного плагина в ATS
         if ($chkAts.IsChecked) {
             if (Test-Path $RedistDll) {
                 $target = Install-NativePluginToGame -GamePath $txtAtsPath.Text -SourceDll $RedistDll
@@ -1190,11 +1247,13 @@ $btnInstall.Add_Click({
             $atsStatusText = "-"
         }
 
-        # Создание ярлыка
+        # Создание ярлыков на Рабочем столе
+        $desktopDir = [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::DesktopDirectory)
+        $wsh = New-Object -ComObject WScript.Shell
+
+        # Ярлык телеметрии
         if ($chkShortcut.IsChecked) {
-            $desktopDir = [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::DesktopDirectory)
             $scPath = Join-Path $desktopDir "ETS2-ATS Overlay Bridge.lnk"
-            $wsh = New-Object -ComObject WScript.Shell
             $sc = $wsh.CreateShortcut($scPath)
             $sc.TargetPath = Join-Path $instDir 'start-telemetry.bat'
             $sc.WorkingDirectory = $instDir
@@ -1202,12 +1261,22 @@ $btnInstall.Add_Click({
             $sc.Save()
         }
 
-        # Открытие папки
+        # Ярлык проверки обновлений (Pip-Boy 3000)
+        if ($chkUpdateShortcut.IsChecked) {
+            $upScPath = Join-Path $desktopDir "ETS2-ATS Overlay Update.lnk"
+            $upSc = $wsh.CreateShortcut($upScPath)
+            $upSc.TargetPath = Join-Path $instDir 'Update-Overlay.bat'
+            $upSc.WorkingDirectory = $instDir
+            $upSc.Description = Get-Text 'UpdateShortcutDesc'
+            $upSc.Save()
+        }
+
+        # Открытие целевой папки
         if ($chkOpenFolder.IsChecked) {
             [System.Diagnostics.Process]::Start('explorer.exe', $instDir)
         }
 
-        # Результат установки
+        # Отчёт об успешной установке
         $resMsg = @"
 $([string](Get-Text 'DoneHeader'))
 $([string](Get-Text 'DoneSub'))
@@ -1216,6 +1285,7 @@ $([string](Get-Text 'DoneSub'))
 • $([string](Get-Text 'DoneEts2Line')) $ets2StatusText
 • $([string](Get-Text 'DoneAtsLine')) $atsStatusText
 • $([string](Get-Text 'DoneShortcutLine')) $(if ($chkShortcut.IsChecked) { '[OK]' } else { '-' })
+• $([string](Get-Text 'DoneUpdateScLine')) $(if ($chkUpdateShortcut.IsChecked) { '[OK]' } else { '-' })
 • $([string](Get-Text 'DoneDaLine')) $(if ([string]::IsNullOrWhiteSpace($daTokenValue)) { Get-Text 'StatusDaSkipped' } else { Get-Text 'StatusDaOk' })
 
 ----------------------------------------------------------------------
@@ -1229,24 +1299,5 @@ $([string](Get-Text 'DoneObsBody'))
     }
 })
 
-# Запуск музыки при открытии и остановка при закрытии
-$win.Add_Loaded({
-    if ($script:SoundPlayer) {
-        try { $script:SoundPlayer.PlayLooping() } catch {}
-    }
-})
-
-$win.Add_Closed({
-    if ($script:SoundPlayer) {
-        try {
-            $script:SoundPlayer.Stop()
-            $script:SoundPlayer.Dispose()
-        } catch {}
-    }
-    if ($script:AudioStream) {
-        try { $script:AudioStream.Dispose() } catch {}
-    }
-})
-
-# Показ окна
+# Запуск GUI приложения
 $win.ShowDialog() | Out-Null

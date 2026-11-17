@@ -39,7 +39,7 @@
 ### [1.2.2] - 2026-11-17
 
 > [!IMPORTANT]
-> **Release v1.2.2** delivers a complete transition to a unified desktop Cockpit HUD layout, resolves bus and truck job completion/cancellation state handling, revamps the in-game telemetry toast card design and kinematics, introduces an in-OBS auto-update notification with CRT animations and Web Audio sound effects, and completely redesigns the GUI Setup Wizard and standalone Pip-Boy 3000 update terminal with native WPF architecture and retro 8-bit audio.
+> **Release v1.2.2** delivers a complete transition to a unified desktop Cockpit HUD layout, resolves bus and truck job completion/cancellation state handling, revamps the in-game telemetry toast card design and kinematics, introduces an in-OBS auto-update notification with CRT animations and Web Audio sound effects, and completely redesigns the GUI Setup Wizard and standalone Pip-Boy 3000 update terminal with native WPF architecture and native WPF architecture.
 
 #### 🚀 Added
 * **🔔 In-OBS Auto-Update Notification (`assets/js/ets2-telemetry.js`, `assets/css/ets2-base.css`):**
@@ -58,7 +58,7 @@
   * Standardized button control templates with `CornerRadius="8"`, hover gradient, and pressed state translation.
   * Prominent centered «SUPPORT PROJECT» button (`CornerRadius="10"`, `#ff5e5b` → `#e11d48`) with vector Material Design Heart path linking to DonationAlerts.
   * Dedicated GitHub Star card with vector Star path and direct repository link.
-  * Compact in-memory 8-bit sound loop (268 KB, 22050 Hz Mono) generated in 6 ms via C# synthesis with header pause/resume speaker toggle.
+  * Silent launch and operation: complete removal of synthesized audio loops and beep tones.
   * Automatic package version display (`v1.2.2`) in window title, header badge, and footer status line.
 * **🎯 Vector HUD Speed Limit Signs (30–130 km/h):**
   * Full vector speed limit sign coverage from 30 km/h to 130 km/h in 10 km/h increments with crisp typography and high-contrast red border.
@@ -264,7 +264,7 @@
 ### [1.2.2] - 2026-11-17
 
 > [!IMPORTANT]
-> **Релиз v1.2.2** обеспечивает полный переход на единую десктопную архитектуру Cockpit HUD, устраняет сбои завершения и отмены рейсов на автобусах и грузовиках, обновляет кинематику и дизайн карточек уведомлений, добавляет автоуведомление об обновлениях в предпросмотре OBS с ЭЛТ-анимацией и Web Audio эффектами, а также полностью перерабатывает графический установщик и терминал Pip-Boy 3000 на нативный WPF со встроенной 8-bit музыкой.
+> **Релиз v1.2.2** обеспечивает полный переход на единую десктопную архитектуру Cockpit HUD, устраняет сбои завершения и отмены рейсов на автобусах и грузовиках, обновляет кинематику и дизайн карточек уведомлений, добавляет автоуведомление об обновлениях в предпросмотре OBS с ЭЛТ-анимацией и Web Audio эффектами, а также полностью перерабатывает графический установщик и терминал Pip-Boy 3000 на нативный WPF на нативный WPF.
 
 #### 🚀 Добавлено
 * **🔔 Автоуведомление об обновлении в предпросмотре OBS (`assets/js/ets2-telemetry.js`, `assets/css/ets2-base.css`):**
@@ -283,7 +283,7 @@
   * Премиальные шаблоны кнопок со скруглением `CornerRadius="8"`, сменой градиента при наведении и тактильным сдвигом при клике.
   * Центральная кнопка «ПОДДЕРЖАТЬ ПРОЕКТ» (`CornerRadius="10"`, градиент `#ff5e5b` → `#e11d48`) с проверенной векторной иконкой сердца Material Design со ссылкой на DonationAlerts.
   * Блок «Поставить звезду на GitHub» с векторной иконкой звезды и прямым переходом в репозиторий.
-  * Компактный 8-bit аудиолуп в памяти (268 КБ, 22050 Гц Mono), генерируемый через встроенный C#-код за 6 мс, с кнопкой паузы/воспроизведения в шапке.
+  * Бесшумный запуск и работа: полное удаление синтезатора 8-битного звука и звуковых сигналов.
   * Отображение актуальной версии пакета `v1.2.2` в заголовке окна, бейдже шапки и статусной строке футера.
 * **🎯 Векторные знаки ограничения скорости (30–130 км/ч):**
   * Полный набор векторных знаков скорости с шагом 10 км/ч (30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130) с контрастной красной каймой и чётким шрифтом.
