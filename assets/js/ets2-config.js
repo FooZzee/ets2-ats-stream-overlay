@@ -8,6 +8,7 @@
   const DEFAULT_CONFIG = {
     lang: 'ru',
     debug: true,
+    checkUpdates: true,
     channels: {
       twitch: { enabled: true, channelName: 'foozzee', oauthToken: '', clientId: '' },
       vk: { enabled: true, channelUrl: 'https://live.vkvideo.ru/foozzee', token: '' },

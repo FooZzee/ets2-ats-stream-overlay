@@ -2,12 +2,14 @@
 
 > **Профессиональный приборный HUD-оверлей для OBS Studio на базе нативного SCS Telemetry SDK 1.16**
 
-[![Релиз](https://img.shields.io/badge/Релиз-v1.2.1-orange?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases)
-[![Платформа](https://img.shields.io/badge/Платформа-Windows%20x64-blue?style=for-the-badge&logo=windows)](https://www.microsoft.com/windows)
-[![SCS SDK](https://img.shields.io/badge/SCS%20SDK-v1.16%20Native-yellow?style=for-the-badge)](https://modding.scssoft.com/wiki/Documentation/Tools/Telemetry_server)
-[![DLC Coaches](https://img.shields.io/badge/ETS2-DLC%20Coaches%20Поддерживается-green?style=for-the-badge)](https://scssoft.com/)
-[![OBS Studio](https://img.shields.io/badge/OBS%20Studio-Browser%20Source-purple?style=for-the-badge&logo=obsstudio)](https://obsproject.com/)
-[![Лицензия](https://img.shields.io/badge/Лицензия-MIT-success?style=for-the-badge)](./LICENSE)
+[![Релиз](https://img.shields.io/badge/Релиз-v1.2.2-blue?style=flat&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases)
+[![Платформа](https://img.shields.io/badge/Платформа-Windows%20x64-blue?style=flat&logo=windows)](https://www.microsoft.com/windows)
+[![SCS SDK](https://img.shields.io/badge/SCS%20SDK-v1.16%20Native-yellow?style=flat)](https://modding.scssoft.com/wiki/Documentation/Tools/Telemetry_server)
+[![DLC Coaches](https://img.shields.io/badge/ETS2-DLC%20Coaches-green?style=flat)](https://scssoft.com/)
+[![OBS Studio](https://img.shields.io/badge/OBS%20Studio-Browser%20Source-purple?style=flat&logo=obsstudio)](https://obsproject.com/)
+[![Лицензия](https://img.shields.io/badge/Лицензия-MIT-success?style=flat)](./LICENSE)
+
+[![Поддержать проект](https://img.shields.io/badge/Поддержать_проект-FF5E5B?style=for-the-badge&logo=heart&logoColor=white)](https://www.donationalerts.com/r/foozzee)
 
 ---
 
@@ -36,7 +38,7 @@
 
 * ⚡ **Прямой доступ к памяти (Shared Memory):** Скомпилированный C++ плагин (`overlayobs_foozzee_telemetry.dll`) считывает телеметрию симулятора напрямую через SCS Telemetry SDK 1.16 без сторонних утилит, серверов node.js или эмуляторов.
 * 🖥️ **Двухрядная приборная панель («Торпеда»):** Расположена в нижней части экрана (`1920×1080`), оставляя зеркала, навигатор F2 и лобовое стекло на 100% свободными.
-* 📱 **Адаптация под вертикальные стримы:** Отдельная сцена (`1080×1920`) для TikTok Live, YouTube Shorts и Reels с учётом зон перекрытия интерфейсом соцсетей.
+* 🖥️ **Десктопный HUD 1080p:** 2-рядная приборная панель (`1920×1080`) для OBS Studio с прозрачной рабочей зоной лобового стекла и плотной подложкой приборов.
 * ⏱️ **Расчёт реального времени прибытия (Real ETA):** Динамически конвертирует игровое навигационное время симулятора с учётом масштаба карты (`1:19` трасса, `1:3` город, `1:10` Великобритания) в реальные часы и минуты до конца рейса.
 * 💬 **Интерактив со зрителями:** Встроенный чат Twitch IRC и анимированные FIFO-оповещения (`donate`, `sub`, `follow`, `raid`) с поддержкой DonationAlerts.
 * 🌐 **Полная двуязычность:** Мгновенное переключение всего интерфейса между русским и английским языками (`RU` / `EN`).
@@ -103,7 +105,7 @@
 flowchart LR
     A["Euro Truck Simulator 2 / ATS\n(64-битный движок игры)"] -->|"SCS Telemetry SDK 1.16"| B["overlayobs_foozzee_telemetry.dll\n(Нативный C++ Release плагин)"]
     B -->|"Shared Memory\nLocal\\FooZzeeSCSTelemetry"| C["udp-bridge.ps1\n(Локальный HTTP/JSON сервер :30002)"]
-    C -->|"JSON Polling (30-60 FPS)\n/telemetry"| D["OBS Studio Browser Source\n(ets2-desktop.html / ets2-vertical.html)"]
+    C -->|"JSON Polling (30-60 FPS)\n/telemetry"| D["OBS Studio Browser Source\n(ets2-desktop.html)"]
     E["Twitch IRC и DonationAlerts"] -->|"WebSockets\n(Алерты и живой чат)"| D
     F["GitHub Releases API"] -->|"Периодическая проверка (Pip-Boy 3000)"| D
 ```
@@ -115,7 +117,6 @@ flowchart LR
 | `assets/js/ets2-updater.js` | Автономный терминал обновлений Pip-Boy 3000 | ES6 JavaScript, WebAudio API, GitHub REST API |
 | `assets/css/ets2-pipboy.css` | Люминофорное свечение, скан-линии и CRT-анимации | Pure CSS3, Keyframe Animations, Flexbox |
 | `ets2-desktop.html` | 2-рядный приборный комплекс Desktop (`1920×1080`) | HTML5, CSS Grid, Canvas, Vanilla JS |
-| `ets2-vertical.html` | Вертикальная мобильная сцена (`1080×1920`) | HTML5, Mobile UI Safe Zones, CSS3 |
 | `scripts/installer.ps1` | 1-клик графический установщик (`Install-Overlay.bat`) | PowerShell WinForms, UTF-8 с BOM |
 
 ---
@@ -196,8 +197,7 @@ window.OVERLAY_CONFIG = {
      > Оверлей необходимо добавлять исключительно через строку **«Ссылка» (URL)**. Если оставить галочку «Локальный файл», OBS изолирует страницу в строгой локальной песочнице: **интерактивные кнопки торпеды, окно Pip-Boy и внешние ссылки работать НЕ БУДУТ**.
    * В строку **«Ссылка» (URL)** вставьте полный путь к файлу оверлея:  
      `D:\html\Overlay\ets2-desktop.html` *(или `C:\ETS2-ATS-Stream-Overlay\ets2-desktop.html`)*  
-     *(для вертикальной мобильной сцены: путь к `ets2-vertical.html`)*.
-   * **Разрешение:** Ширина **`1920`**, Высота **`1080`** *(для вертикальной: **`1080`** × **`1920`**)*.
+     * **Разрешение:** Ширина **`1920`**, Высота **`1080`**, Частота кадров: **`60`** fps.
    * Отметьте пункты: **«Обновлять браузер, когда сцена становится активной»** и **«Закрывать источник, когда он невидим»**.
    * **Взаимодействие с кнопками:** Чтобы нажимать на кнопки оверлея (например, кнопки обновления Pip-Boy или ссылки соцсетей), нажмите правой кнопкой мыши по источнику браузера в OBS и выберите **«Взаимодействовать» (Interact)**.
 3. **Размещение веб-камеры (Сцена Desktop):**

@@ -3,9 +3,9 @@
 > **ETS2 / ATS Cockpit Telemetry Stream Overlay**  
 > Complete technical reference for interactive Twitch chat commands, telemetry event triggers, and developer console testing methods.
 
-[![Documentation](https://img.shields.io/badge/Documentation-Commands_Reference-blue?style=for-the-badge&logo=gitbook)](./commands.en.md)
-[![Status](https://img.shields.io/badge/Status-Production_Ready-success?style=for-the-badge)](./README.en.md)
-[![License](https://img.shields.io/badge/License-MIT-purple?style=for-the-badge)](./LICENSE)
+[![Documentation](https://img.shields.io/badge/Documentation-Commands_Reference-blue?style=flat&logo=gitbook)](./commands.en.md)
+[![Status](https://img.shields.io/badge/Status-Production_Ready-success?style=flat)](./README.en.md)
+[![License](https://img.shields.io/badge/License-MIT-purple?style=flat)](./LICENSE)
 
 ---
 
@@ -52,6 +52,7 @@ window.demoAllTelemetryEvents();
 // Syntax: window.testTelemetryEvent(type, subTypeOrOffence, customAmount)
 
 // Traffic Fines (SCS Telemetry SDK gameplay offences)
+window.testTelemetryEvent('update', 'v1.2.3');                      // Firmware update alert (CRT Power-On / Typewriter / Web Audio)
 window.testTelemetryEvent('fine', 'speeding', 550);                 // Speeding violation
 window.testTelemetryEvent('fine', 'speeding_camera', 550);          // Speed enforcement camera
 window.testTelemetryEvent('fine', 'red_signal', 350);              // Red light infraction

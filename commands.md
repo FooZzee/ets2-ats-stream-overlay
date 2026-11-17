@@ -4,9 +4,9 @@
 > Complete technical reference for interactive Twitch chat commands and browser developer console testing methods.  
 > Полное техническое руководство по интерактивным командам Twitch-чата и консольным методам тестирования оверлея.
 
-[![Documentation](https://img.shields.io/badge/Documentation-Commands_Reference-blue?style=for-the-badge&logo=gitbook)](./commands.md)
-[![Status](https://img.shields.io/badge/Status-Production_Ready-success?style=for-the-badge)](./README.md)
-[![License](https://img.shields.io/badge/License-MIT-purple?style=for-the-badge)](./LICENSE)
+[![Documentation](https://img.shields.io/badge/Documentation-Commands_Reference-blue?style=flat&logo=gitbook)](./commands.md)
+[![Status](https://img.shields.io/badge/Status-Production_Ready-success?style=flat)](./README.md)
+[![License](https://img.shields.io/badge/License-MIT-purple?style=flat)](./LICENSE)
 
 ---
 
@@ -61,6 +61,7 @@ window.demoAllTelemetryEvents();
 // Syntax: window.testTelemetryEvent(type, subTypeOrOffence, customAmount)
 
 // Traffic Fines (SCS Telemetry SDK gameplay offences)
+window.testTelemetryEvent('update', 'v1.2.3');                      // Firmware update alert (CRT Power-On / Typewriter / Web Audio)
 window.testTelemetryEvent('fine', 'speeding', 550);                 // Speeding violation
 window.testTelemetryEvent('fine', 'speeding_camera', 550);          // Speed enforcement camera
 window.testTelemetryEvent('fine', 'red_signal', 350);              // Red light infraction
@@ -173,6 +174,7 @@ window.demoAllTelemetryEvents();
 // Синтаксис: window.testTelemetryEvent(тип, подтипИлиНарушение, суммаИлиЗначение)
 
 // Штрафы за нарушения ПДД (события SCS SDK)
+window.testTelemetryEvent('update', 'v1.2.3');                      // Firmware update alert (CRT Power-On / Typewriter / Web Audio)
 window.testTelemetryEvent('fine', 'speeding', 550);                 // Превышение скорости
 window.testTelemetryEvent('fine', 'speeding_camera', 550);          // Камера контроля скорости
 window.testTelemetryEvent('fine', 'red_signal', 350);              // Проезд на запрещающий сигнал

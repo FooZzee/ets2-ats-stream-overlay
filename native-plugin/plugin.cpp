@@ -716,6 +716,11 @@ SCSAPI_VOID OnGameplayEvent(const scs_event_t, const void* const event_info, con
   DumpEventAttributes("GAMEPLAY", info->id, info->attributes);
 
   const char* eventId = info->id;
+  std::string lowerEventId;
+  for (const char* p = eventId; *p; ++p) {
+    lowerEventId += static_cast<char>(std::tolower(static_cast<unsigned char>(*p)));
+  }
+
   std::string eventType;
   int64_t     eventAmount = 0;
   std::string eventOffence;
@@ -724,9 +729,64 @@ SCSAPI_VOID OnGameplayEvent(const scs_event_t, const void* const event_info, con
   int32_t     eventXp = 0;
   bool        handled = false;
 
-  if (std::strcmp(eventId, SCS_TELEMETRY_GAMEPLAY_EVENT_player_fined) == 0 ||
-      std::strcmp(eventId, "player.fine.offence") == 0 ||
-      std::strcmp(eventId, "player.fine") == 0) {
+  const bool isFine =
+      (std::strcmp(eventId, SCS_TELEMETRY_GAMEPLAY_EVENT_player_fined) == 0) ||
+      (lowerEventId == "player.fine.offence") ||
+      (lowerEventId == "player.fine") ||
+      (lowerEventId.find("fine") != std::string::npos);
+
+  const bool isToll =
+      (std::strcmp(eventId, SCS_TELEMETRY_GAMEPLAY_EVENT_player_tollgate_paid) == 0) ||
+      (lowerEventId == "tollgate.paid") ||
+      (lowerEventId.find("tollgate") != std::string::npos);
+
+  const bool isFerry =
+      (std::strcmp(eventId, SCS_TELEMETRY_GAMEPLAY_EVENT_player_use_ferry) == 0) ||
+      (lowerEventId == "use.ferry") ||
+      (lowerEventId.find("ferry") != std::string::npos);
+
+  const bool isTrain =
+      (std::strcmp(eventId, SCS_TELEMETRY_GAMEPLAY_EVENT_player_use_train) == 0) ||
+      (lowerEventId == "use.train") ||
+      (lowerEventId.find("train") != std::string::npos);
+
+  const bool isDelivered =
+      (std::strcmp(eventId, SCS_TELEMETRY_GAMEPLAY_EVENT_job_delivered) == 0) ||
+      (std::strcmp(eventId, SCS_TELEMETRY_GAMEPLAY_EVENT_car_job_delivered) == 0) ||
+      (lowerEventId == "job.delivered") ||
+      (lowerEventId == "job_delivered") ||
+      (lowerEventId == "bus_job.delivered") ||
+      (lowerEventId == "bus_job_delivered") ||
+      (lowerEventId == "bus.delivered") ||
+      (lowerEventId == "bus_job.finished") ||
+      (lowerEventId == "bus_job_finished") ||
+      (lowerEventId == "bus.finished") ||
+      (lowerEventId == "job.finished") ||
+      (lowerEventId == "job_finished") ||
+      (lowerEventId == "car_job.delivered") ||
+      (lowerEventId == "car_job_delivered") ||
+      (lowerEventId.find("delivered") != std::string::npos) ||
+      (lowerEventId.find("finished") != std::string::npos);
+
+  const bool isCancelled =
+      (std::strcmp(eventId, SCS_TELEMETRY_GAMEPLAY_EVENT_job_cancelled) == 0) ||
+      (std::strcmp(eventId, SCS_TELEMETRY_GAMEPLAY_EVENT_car_job_cancelled) == 0) ||
+      (lowerEventId == "job.cancelled") ||
+      (lowerEventId == "job_cancelled") ||
+      (lowerEventId == "job.canceled") ||
+      (lowerEventId == "job_canceled") ||
+      (lowerEventId == "bus_job.cancelled") ||
+      (lowerEventId == "bus_job_cancelled") ||
+      (lowerEventId == "bus_job.canceled") ||
+      (lowerEventId == "bus_job_canceled") ||
+      (lowerEventId == "bus.cancelled") ||
+      (lowerEventId == "bus.canceled") ||
+      (lowerEventId == "car_job.cancelled") ||
+      (lowerEventId == "car_job_canceled") ||
+      (lowerEventId.find("cancelled") != std::string::npos) ||
+      (lowerEventId.find("canceled") != std::string::npos);
+
+  if (isFine) {
     eventType = "fine";
     handled = true;
     if (info->attributes) {
@@ -744,8 +804,7 @@ SCSAPI_VOID OnGameplayEvent(const scs_event_t, const void* const event_info, con
         }
       }
     }
-  } else if (std::strcmp(eventId, SCS_TELEMETRY_GAMEPLAY_EVENT_player_tollgate_paid) == 0 ||
-             std::strcmp(eventId, "tollgate.paid") == 0) {
+  } else if (isToll) {
     eventType = "tollgate";
     handled = true;
     if (info->attributes) {
@@ -757,8 +816,7 @@ SCSAPI_VOID OnGameplayEvent(const scs_event_t, const void* const event_info, con
         }
       }
     }
-  } else if (std::strcmp(eventId, SCS_TELEMETRY_GAMEPLAY_EVENT_player_use_ferry) == 0 ||
-             std::strcmp(eventId, "use.ferry") == 0) {
+  } else if (isFerry) {
     eventType = "ferry";
     handled = true;
     if (info->attributes) {
@@ -778,8 +836,7 @@ SCSAPI_VOID OnGameplayEvent(const scs_event_t, const void* const event_info, con
         }
       }
     }
-  } else if (std::strcmp(eventId, SCS_TELEMETRY_GAMEPLAY_EVENT_player_use_train) == 0 ||
-             std::strcmp(eventId, "use.train") == 0) {
+  } else if (isTrain) {
     eventType = "train";
     handled = true;
     if (info->attributes) {
@@ -799,36 +856,49 @@ SCSAPI_VOID OnGameplayEvent(const scs_event_t, const void* const event_info, con
         }
       }
     }
-  } else if (std::strcmp(eventId, SCS_TELEMETRY_GAMEPLAY_EVENT_job_delivered) == 0 ||
-             std::strcmp(eventId, SCS_TELEMETRY_GAMEPLAY_EVENT_car_job_delivered) == 0 ||
-             std::strcmp(eventId, "job.delivered") == 0) {
+  } else if (isDelivered) {
     eventType = "job_delivered";
     handled = true;
     if (info->attributes) {
       for (const scs_named_value_t* attr = info->attributes; attr->name != nullptr; ++attr) {
+        std::string attrLower;
+        for (const char* p = attr->name; *p; ++p) {
+          attrLower += static_cast<char>(std::tolower(static_cast<unsigned char>(*p)));
+        }
         if (std::strcmp(attr->name, SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_revenue) == 0 ||
             std::strcmp(attr->name, SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_pay_amount) == 0 ||
-            std::strcmp(attr->name, "pay_amount") == 0 ||
-            std::strcmp(attr->name, "amount") == 0) {
+            attrLower == "pay_amount" ||
+            attrLower == "revenue" ||
+            attrLower == "amount" ||
+            attrLower == "reward" ||
+            attrLower == "income" ||
+            attrLower == "earned_money" ||
+            attrLower.find("revenue") != std::string::npos ||
+            attrLower.find("reward") != std::string::npos) {
           TryGetAttrS64(attr, eventAmount);
         } else if (std::strcmp(attr->name, SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_earned_xp) == 0 ||
-                   std::strcmp(attr->name, "earned_xp") == 0 ||
-                   std::strcmp(attr->name, "xp") == 0) {
+                   attrLower == "earned_xp" ||
+                   attrLower == "xp" ||
+                   attrLower.find("xp") != std::string::npos) {
           TryGetAttrS32(attr, eventXp);
         }
       }
     }
-  } else if (std::strcmp(eventId, SCS_TELEMETRY_GAMEPLAY_EVENT_job_cancelled) == 0 ||
-             std::strcmp(eventId, SCS_TELEMETRY_GAMEPLAY_EVENT_car_job_cancelled) == 0 ||
-             std::strcmp(eventId, "job.cancelled") == 0) {
+  } else if (isCancelled) {
     eventType = "job_cancelled";
     handled = true;
     if (info->attributes) {
       for (const scs_named_value_t* attr = info->attributes; attr->name != nullptr; ++attr) {
+        std::string attrLower;
+        for (const char* p = attr->name; *p; ++p) {
+          attrLower += static_cast<char>(std::tolower(static_cast<unsigned char>(*p)));
+        }
         if (std::strcmp(attr->name, SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_cancel_penalty) == 0 ||
-            std::strcmp(attr->name, "cancel_penalty") == 0 ||
-            std::strcmp(attr->name, "penalty") == 0 ||
-            std::strcmp(attr->name, "amount") == 0) {
+            attrLower == "cancel_penalty" ||
+            attrLower == "penalty" ||
+            attrLower == "amount" ||
+            attrLower == "pay_amount" ||
+            attrLower.find("penalty") != std::string::npos) {
           TryGetAttrS64(attr, eventAmount);
         }
       }

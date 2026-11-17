@@ -3,9 +3,9 @@
 > **ETS2 / ATS Cockpit Telemetry Stream Overlay**  
 > Полное техническое руководство по интерактивным командам Twitch-чата, триггерам событий телеметрии и методам консольного тестирования оверлея.
 
-[![Документация](https://img.shields.io/badge/Документация-Справочник_команд-blue?style=for-the-badge&logo=gitbook)](./commands.ru.md)
-[![Статус](https://img.shields.io/badge/Статус-Готов_к_эфиру-success?style=for-the-badge)](./README.ru.md)
-[![Лицензия](https://img.shields.io/badge/Лицензия-MIT-purple?style=for-the-badge)](./LICENSE)
+[![Документация](https://img.shields.io/badge/Документация-Справочник_команд-blue?style=flat&logo=gitbook)](./commands.ru.md)
+[![Статус](https://img.shields.io/badge/Статус-Готов_к_эфиру-success?style=flat)](./README.ru.md)
+[![Лицензия](https://img.shields.io/badge/Лицензия-MIT-purple?style=flat)](./LICENSE)
 
 ---
 
@@ -52,6 +52,7 @@ window.demoAllTelemetryEvents();
 // Синтаксис: window.testTelemetryEvent(тип, подтипИлиНарушение, суммаИлиЗначение)
 
 // Штрафы за нарушения ПДД (события SCS SDK)
+window.testTelemetryEvent('update', 'v1.2.3');                      // Firmware update alert (CRT Power-On / Typewriter / Web Audio)
 window.testTelemetryEvent('fine', 'speeding', 550);                 // Превышение скорости
 window.testTelemetryEvent('fine', 'speeding_camera', 550);          // Камера контроля скорости
 window.testTelemetryEvent('fine', 'red_signal', 350);              // Проезд на запрещающий сигнал

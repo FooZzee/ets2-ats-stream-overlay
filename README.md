@@ -3,12 +3,15 @@
 > **Professional broadcast cockpit HUD for OBS Studio powered by native SCS Telemetry SDK 1.16**  
 > **Профессиональный бортовой HUD-оверлей для OBS Studio на базе нативного SCS Telemetry SDK 1.16**
 
-[![Release](https://img.shields.io/badge/Release-v1.2.1-orange?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases)
-[![Platform](https://img.shields.io/badge/Platform-Windows%20x64-blue?style=for-the-badge&logo=windows)](https://www.microsoft.com/windows)
-[![SCS SDK](https://img.shields.io/badge/SCS%20SDK-v1.16%20Native-yellow?style=for-the-badge)](https://modding.scssoft.com/wiki/Documentation/Tools/Telemetry_server)
-[![DLC Coaches](https://img.shields.io/badge/ETS2-DLC%20Coaches%20Supported-green?style=for-the-badge)](https://scssoft.com/)
-[![OBS Studio](https://img.shields.io/badge/OBS%20Studio-Browser%20Source-purple?style=for-the-badge&logo=obsstudio)](https://obsproject.com/)
-[![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge)](./LICENSE)
+[![Release](https://img.shields.io/badge/Release-v1.2.2-blue?style=flat&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20x64-blue?style=flat&logo=windows)](https://www.microsoft.com/windows)
+[![SCS SDK](https://img.shields.io/badge/SCS%20SDK-v1.16%20Native-yellow?style=flat)](https://modding.scssoft.com/wiki/Documentation/Tools/Telemetry_server)
+[![DLC Coaches](https://img.shields.io/badge/ETS2-DLC%20Coaches-green?style=flat)](https://scssoft.com/)
+[![OBS Studio](https://img.shields.io/badge/OBS%20Studio-Browser%20Source-purple?style=flat&logo=obsstudio)](https://obsproject.com/)
+[![License](https://img.shields.io/badge/License-MIT-success?style=flat)](./LICENSE)
+
+[![Support Project](https://img.shields.io/badge/Support_Project-FF5E5B?style=for-the-badge&logo=heart&logoColor=white)](https://www.donationalerts.com/r/foozzee)
+[![Поддержать проект](https://img.shields.io/badge/Поддержать_проект-FF5E5B?style=for-the-badge&logo=heart&logoColor=white)](https://www.donationalerts.com/r/foozzee)
 
 ---
 
@@ -16,7 +19,7 @@
 
 [![English Documentation](https://img.shields.io/badge/Documentation-English-2563eb?style=flat-square&logo=gitbook&logoColor=white)](#-english-documentation)
 [![Русская документация](https://img.shields.io/badge/Документация-Русский-dc2626?style=flat-square&logo=gitbook&logoColor=white)](#-русская-документация)
-[![Changelog](https://img.shields.io/badge/Changelog-v1.2.1-10b981?style=flat-square&logo=github)](./CHANGELOG.md)
+[![Changelog](https://img.shields.io/badge/Changelog-v1.2.2-10b981?style=flat-square&logo=github)](./CHANGELOG.md)
 [![Commands](https://img.shields.io/badge/Commands-Reference-9333ea?style=flat-square&logo=gitbook)](./commands.md)
 
 *Standalone files:* [English (README.en.md)](./README.en.md) • [Русский (README.ru.md)](./README.ru.md) • [Commands (commands.md)](./commands.md) • [Commands EN (commands.en.md)](./commands.en.md) • [Справочник команд RU (commands.ru.md)](./commands.ru.md)
@@ -38,7 +41,7 @@
 * 💖 **Project Support Integration:** One-click «💖 SUPPORT PROJECT» button in the GUI installer linking directly to DonationAlerts.
 * 🚌 **Full ETS2 DLC Coaches Support:** Native coach passenger job detection (`bus_job`), stop-to-stop routing (`source_stop.*` ➔ `destination_stop.*`), and live passenger satisfaction rating.
 * 🎛️ **100% Solid Opacity Lower Cockpit HUD (`1920×1080` — `ets2-desktop.html`):** Opaque dashboard background eliminates road texture bleed-through in OBS Studio while keeping webcam, chat, and alert popups transparent.
-* 📱 **Mobile Vertical Layout (`1080×1920` — `ets2-vertical.html`):** Native layout optimized for TikTok Live, YouTube Shorts, and Reels with UI safe zones.
+* 🖥️ **Full HD Desktop Cockpit HUD (`1920×1080` — `ets2-desktop.html`):** Broadcast-grade 2-row dashboard optimized for standard 16:9 streams with integrated webcam cutout, live chat, and audio alerts.
 * ⏱️ **Real-World ETA (`real-eta-panel`):** Automatically detects active map scale (`1:19` highways, `1:3` cities, `1:10` UK) to compute real-world time remaining.
 * 💬 **Twitch IRC Chat & FIFO Alerts:** Built-in sequential alert queue (`donate`, `sub`, `follow`, `raid`) with stream-safe DonationAlerts token configuration.
 * ⚡ **1-Click GUI Wizard (`Install-Overlay.bat`):** Auto-detects Steam libraries, installs the C++ plugin, cleans legacy files, and creates a Desktop shortcut.
@@ -48,7 +51,7 @@
 flowchart LR
     A["Euro Truck Simulator 2 / ATS\n(64-bit Game Engine)"] -->|"SCS Telemetry SDK 1.16"| B["overlayobs_foozzee_telemetry.dll\n(Native C++ Release Plugin)"]
     B -->|"Shared Memory\nLocal\\FooZzeeSCSTelemetry"| C["udp-bridge.ps1\n(Local HTTP/JSON Server :30002)"]
-    C -->|"JSON Polling (30-60 FPS)\n/telemetry"| D["OBS Studio Browser Source\n(ets2-desktop.html / ets2-vertical.html)"]
+    C -->|"JSON Polling (30-60 FPS)\n/telemetry"| D["OBS Studio Browser Source\n(ets2-desktop.html)"]
     E["Twitch IRC & DonationAlerts"] -->|"WebSockets\n(Alerts & Live Chat)"| D
     F["GitHub Releases API"] -->|"Periodic Check (Pip-Boy 3000)"| D
 ```
@@ -85,7 +88,7 @@ flowchart LR
 * 💖 **Поддержка проекта:** Интерактивная кнопка «💖 ПОДДЕРЖАТЬ ПРОЕКТ» в мастере установки со ссылкой на DonationAlerts автора.
 * 🚌 **Полная поддержка ETS2 DLC Coaches:** Нативное распознавание автобусных рейсов (`bus_job`), остановок отправления и назначения (`source_stop.*` ➔ `destination_stop.*`) и вывод комфорта пассажиров.
 * 🎛️ **100% непрозрачный фон приборной панели («торпеды»):** Фон нижней панели в `ets2-desktop.html` сделан полностью непрозрачным (`alpha = 1`), исключая просвечивание текстур асфальта под приборами в OBS Studio.
-* 📱 **Вертикальная сцена (`1080×1920` — `ets2-vertical.html`):** Адаптирована под безопасные зоны мобильных стримов TikTok Live, YouTube Shorts, Reels.
+* 🖥️ **Полноэкранная десктопная сцена (`1920×1080` — `ets2-desktop.html`):** Профессиональный 2-рядный HUD-оверлей для стандартных стримов 16:9 со встроенным вырезом под веб-камеру, чатом и звуковыми алертами.
 * ⏱️ **Реальное время в пути (`real-eta-panel`):** Конвертирует навигационное время симулятора с учётом масштаба карты (`1:19`, `1:3`, `1:10`) в реальные минуты до цели.
 * 💬 **Чат Twitch IRC и FIFO-алерты:** Всплывающие карточки оповещений (`donate`, `sub`, `follow`, `raid`) с поддержкой DonationAlerts.
 * ⚡ **1-клик графический установщик (`Install-Overlay.bat`):** Автоматический поиск игр в Steam, установка плагина, очистка устаревших файлов, защищённое поле токена DonationAlerts и ярлык на Рабочем столе.

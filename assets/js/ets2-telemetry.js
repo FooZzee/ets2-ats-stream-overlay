@@ -11,6 +11,10 @@
   const { config, isTestMode, showGuides, escapeHtml, log } = app;
   const lang = app.lang === 'en' ? 'en' : 'ru';
 
+  const OVERLAY_VERSION = 'v1.2.2';
+  const UPDATE_CACHE_KEY = 'obs_overlay_update_cache';
+  const UPDATE_CACHE_TTL_MS = 10800000; // 3 часа между запросами к GitHub API
+
   const I18N = {
     ru: {
       days: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'],
@@ -121,7 +125,8 @@
       eventCategoryBusStop: 'ПАССАЖИРСКИЙ РЕЙС',
       eventBusStopTitle: 'Остановка // Посадка пассажиров',
       eventCategoryBusComfort: 'КОМФОРТ ПАССАЖИРОВ',
-      eventBusComfortTitle: 'Резкое снижение комфорта',
+      eventBusComfortTitle: 'Резкое падение комфорта',
+      eventBusComfortUpTitle: 'Комфорт пассажиров повышен',
       eventCategoryChatHonk: 'ИНТЕРАКТИВНЫЙ КЛАКСОН',
       eventChatHonkTitle: 'Приветственный гудок',
       eventChatHonkValue: 'Пневмосигнал тягача',
@@ -130,6 +135,10 @@
       eventCategoryChatStats: 'СТАТИСТИКА СТРИМА',
       eventCategoryChatTruck: 'ТЯГАЧ // СОСТАВ',
       eventCategoryChatDriver: 'ВОДИТЕЛЬ // ДОСЬЕ',
+      eventCategoryUpdate: 'СИСТЕМА // ОБНОВЛЕНИЕ',
+      eventUpdateTitle: 'ДОСТУПНА ВЕРСИЯ',
+      eventUpdateDesc: 'Запустите Update-Overlay.bat для установки',
+      eventUpdateCurrent: 'Текущая версия:',
       eventSummaryRoute: 'Маршрут:',
       eventSummaryDistance: 'Пройдено:',
       eventSummaryRevenue: 'Оплата:',
@@ -149,6 +158,8 @@
       badgeLowFuel: 'РЕЗЕРВ',
       badgeCoach: 'АВТОБУС',
       badgeComfort: 'КОМФОРТ',
+      badgeComfortDown: '-КОМФОРТ',
+      badgeComfortUp: '+КОМФОРТ',
       badgeHonk: 'СИГНАЛ',
       badgeRadio: 'РАЦИЯ',
       badgeChat: 'ЧАТ',
@@ -176,7 +187,9 @@
       eventFerryTitle: 'Паромная переправа',
       eventTrainTitle: 'Железнодорожная переправа',
       eventJobDeliveredTitle: 'Груз успешно доставлен',
-      eventJobCancelledTitle: 'Контракт аннулирован'
+      eventJobCancelledTitle: 'Контракт аннулирован',
+      eventBusJobDeliveredTitle: 'Пассажирский рейс завершён',
+      eventBusJobCancelledTitle: 'Пассажирский рейс отменён'
     },
     en: {
       days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
@@ -288,6 +301,7 @@
       eventBusStopTitle: 'Bus Stop // Boarding',
       eventCategoryBusComfort: 'PASSENGER COMFORT',
       eventBusComfortTitle: 'Comfort Rating Drop',
+      eventBusComfortUpTitle: 'Passenger Comfort Increased',
       eventCategoryChatHonk: 'INTERACTIVE AIR HORN',
       eventChatHonkTitle: 'Horn Greeting',
       eventChatHonkValue: 'Truck Pneumatic Horn',
@@ -296,6 +310,10 @@
       eventCategoryChatStats: 'STREAM SESSION STATS',
       eventCategoryChatTruck: 'TRUCK // FLEET',
       eventCategoryChatDriver: 'DRIVER // DOSSIER',
+      eventCategoryUpdate: 'SYSTEM // FIRMWARE',
+      eventUpdateTitle: 'UPDATE AVAILABLE',
+      eventUpdateDesc: 'Run Update-Overlay.bat to install latest version',
+      eventUpdateCurrent: 'Current version:',
       eventSummaryRoute: 'Route:',
       eventSummaryDistance: 'Distance:',
       eventSummaryRevenue: 'Payment:',
@@ -315,6 +333,8 @@
       badgeLowFuel: 'RESERVE',
       badgeCoach: 'COACH',
       badgeComfort: 'COMFORT',
+      badgeComfortDown: '-COMFORT',
+      badgeComfortUp: '+COMFORT',
       badgeHonk: 'HORN',
       badgeRadio: 'CB RADIO',
       badgeChat: 'CHAT',
@@ -342,7 +362,9 @@
       eventFerryTitle: 'Ferry Transit',
       eventTrainTitle: 'Train Transit',
       eventJobDeliveredTitle: 'Cargo Delivered',
-      eventJobCancelledTitle: 'Contract Cancelled'
+      eventJobCancelledTitle: 'Contract Cancelled',
+      eventBusJobDeliveredTitle: 'Bus Tour Completed',
+      eventBusJobCancelledTitle: 'Bus Tour Cancelled'
     }
   };
 
@@ -2539,10 +2561,13 @@
       isCoach: isBusJob,
       isGpsRoute,
       text: routeText,
+      routeText,
       meta: routeMeta,
+      distanceText: routeMeta,
       tag: routeTag,
       massKg,
       plannedKm,
+      income,
       incomeText,
       companiesText,
       jobTypeText
@@ -2776,253 +2801,595 @@
   /* ==========================================================================
      МОДУЛЬ ИГРОВЫХ СОБЫТИЙ, ЗВУКОВОГО СИНТЕЗАТОРА И ТОСТ-УВЕДОМЛЕНИЙ
      ========================================================================== */
+  const SPEED_LIMIT_STEPS = [30, 50, 60, 70, 80, 90, 110, 130];
+  let lastValidSpeedLimit = 80;
+
+  function snapToSpeedLimit(rawVal) {
+    const val = Number(rawVal);
+    if (!Number.isFinite(val) || val <= 0) return 80;
+    let closest = SPEED_LIMIT_STEPS[0];
+    let minDiff = Math.abs(val - closest);
+    for (let i = 1; i < SPEED_LIMIT_STEPS.length; ++i) {
+      const diff = Math.abs(val - SPEED_LIMIT_STEPS[i]);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closest = SPEED_LIMIT_STEPS[i];
+      }
+    }
+    return minDiff <= 5 ? closest : Math.round(val);
+  }
+
+    function generateSpeedLimitSignSvg(limit, isCamera = false) {
+    const num = snapToSpeedLimit(limit);
+    const isThreeDigit = num >= 100;
+    const fontSize = isThreeDigit ? 16 : 22;
+    const letterSpacing = isThreeDigit ? '-1.2px' : '0';
+    const textY = isThreeDigit ? 38.5 : 39.5;
+
+    const cameraAperture = isCamera ? `
+      <!-- Camera radar optic badge -->
+      <g transform="translate(36, 0)">
+        <rect x="0" y="2" width="24" height="20" rx="4.5" fill="#0f172a" stroke="#f59e0b" stroke-width="2"/>
+        <circle cx="12" cy="12" r="5.5" fill="#1e293b" stroke="#fbbf24" stroke-width="1.6"/>
+        <circle cx="12" cy="12" r="2.5" fill="#38bdf8"/>
+        <circle cx="19" cy="6.5" r="1.6" fill="#ef4444"/>
+        <path d="M21 0 L25 4 M25 0 L21 4" stroke="#fbbf24" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M3 0 L7 4" stroke="#fbbf24" stroke-width="1.6" stroke-linecap="round"/>
+      </g>
+    ` : '';
+
+    return `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="slRimGrad" cx="35%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="#64748b"/>
+          <stop offset="60%" stop-color="#334155"/>
+          <stop offset="100%" stop-color="#0f172a"/>
+        </radialGradient>
+        <radialGradient id="slRedGrad" cx="32%" cy="28%" r="72%">
+          <stop offset="0%" stop-color="#f87171"/>
+          <stop offset="35%" stop-color="#ef4444"/>
+          <stop offset="85%" stop-color="#dc2626"/>
+          <stop offset="100%" stop-color="#991b1b"/>
+        </radialGradient>
+        <radialGradient id="slWhiteGrad" cx="35%" cy="30%" r="65%">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="75%" stop-color="#f8fafc"/>
+          <stop offset="100%" stop-color="#e2e8f0"/>
+        </radialGradient>
+      </defs>
+      <!-- Beveled outer rim -->
+      <circle cx="32" cy="32" r="30" fill="url(#slRimGrad)"/>
+      <!-- Saturated red speed circle -->
+      <circle cx="32" cy="32" r="28" fill="url(#slRedGrad)"/>
+      <!-- Crisp white inner core with subtle depth -->
+      <circle cx="32" cy="32" r="22.5" fill="url(#slWhiteGrad)"/>
+      <circle cx="32" cy="32" r="22.5" stroke="#cbd5e1" stroke-width="0.8" opacity="0.6"/>
+      <!-- High contrast speed number -->
+      <text x="32" y="${textY}" font-family="'Tektur', 'Inter', sans-serif" font-weight="900" font-size="${fontSize}" letter-spacing="${letterSpacing}" fill="#0f172a" text-anchor="middle">${num}</text>
+      ${cameraAperture}
+    </svg>`;
+  }
+
   const EVENT_SVG_ICONS = {
-    speeding: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="28" cy="28" r="25" fill="#f8fafc" stroke="#ef4444" stroke-width="5"/>
-      <text x="28" y="35" font-family="'Tektur', sans-serif" font-weight="900" font-size="20" fill="#0f172a" text-anchor="middle">80</text>
-      <path d="M42 10 L48 4 M46 14 L52 14 M38 6 L42 2" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
-      <circle cx="43" cy="11" r="3" fill="#f59e0b"/>
+    speeding: generateSpeedLimitSignSvg(80, false),
+
+    speeding_camera: generateSpeedLimitSignSvg(90, true),
+
+    red_signal: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="rsGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#ef4444" stop-opacity="0.9"/>
+          <stop offset="60%" stop-color="#ef4444" stop-opacity="0.35"/>
+          <stop offset="100%" stop-color="#ef4444" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="rsRedBulb" cx="38%" cy="32%" r="65%">
+          <stop offset="0%" stop-color="#fca5a5"/>
+          <stop offset="30%" stop-color="#ef4444"/>
+          <stop offset="85%" stop-color="#dc2626"/>
+          <stop offset="100%" stop-color="#7f1d1d"/>
+        </radialGradient>
+        <linearGradient id="rsBody" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#1e293b"/>
+          <stop offset="100%" stop-color="#0f172a"/>
+        </linearGradient>
+      </defs>
+      <!-- Outer halo from red light -->
+      <circle cx="32" cy="18" r="16" fill="url(#rsGlow)"/>
+      <!-- Traffic light housing -->
+      <rect x="20" y="4" width="24" height="56" rx="8" fill="url(#rsBody)" stroke="#334155" stroke-width="2"/>
+      <!-- Hood visors over lamps -->
+      <path d="M19 14 C19 8 45 8 45 14" stroke="#475569" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <path d="M19 32 C19 26 45 26 45 32" stroke="#475569" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <path d="M19 50 C19 44 45 44 45 50" stroke="#475569" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <!-- Red light (ACTIVE) -->
+      <circle cx="32" cy="18" r="7.5" fill="url(#rsRedBulb)" stroke="#f87171" stroke-width="1.5"/>
+      <circle cx="30" cy="15.5" r="2.2" fill="#ffffff" opacity="0.85"/>
+      <!-- Amber light (DARK) -->
+      <circle cx="32" cy="36" r="6.5" fill="#2d2006" stroke="#78350f" stroke-width="1.5"/>
+      <circle cx="32" cy="36" r="4.5" fill="#451a03" opacity="0.6"/>
+      <!-- Green light (DARK) -->
+      <circle cx="32" cy="52" r="6.5" fill="#052418" stroke="#065f46" stroke-width="1.5"/>
+      <circle cx="32" cy="52" r="4.5" fill="#022c22" opacity="0.6"/>
     </svg>`,
 
-    speeding_camera: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="28" cy="28" r="25" fill="#f8fafc" stroke="#ef4444" stroke-width="5"/>
-      <text x="28" y="35" font-family="'Tektur', sans-serif" font-weight="900" font-size="20" fill="#0f172a" text-anchor="middle">90</text>
-      <path d="M42 10 L48 4 M46 14 L52 14 M38 6 L42 2" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
-      <circle cx="43" cy="11" r="3" fill="#f59e0b"/>
+    crash: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="crFlash" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#fef08a"/>
+          <stop offset="40%" stop-color="#f59e0b"/>
+          <stop offset="85%" stop-color="#ef4444"/>
+          <stop offset="100%" stop-color="#991b1b"/>
+        </radialGradient>
+        <linearGradient id="crMetal" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#94a3b8"/>
+          <stop offset="100%" stop-color="#475569"/>
+        </linearGradient>
+      </defs>
+      <!-- Sharp impact starburst -->
+      <path d="M32 4 L37 18 L51 12 L42 24 L56 30 L42 36 L49 48 L35 41 L32 58 L29 41 L15 48 L22 36 L8 30 L22 24 L13 12 L27 18 Z" fill="url(#crFlash)" stroke="#fef08a" stroke-width="1.5"/>
+      <!-- Inner impact core -->
+      <path d="M32 14 L35 23 L44 19 L38 27 L47 31 L38 35 L42 43 L34 38 L32 47 L30 38 L22 43 L26 35 L17 31 L26 27 L20 19 L29 23 Z" fill="#ffffff" opacity="0.95"/>
+      <!-- Crumpled vehicle body shards -->
+      <path d="M10 44 L20 44 L25 38 L16 36 Z" fill="#ef4444" stroke="#b91c1c" stroke-width="1"/>
+      <path d="M54 44 L44 44 L39 38 L48 36 Z" fill="url(#crMetal)" stroke="#334155" stroke-width="1"/>
+      <!-- Sparks -->
+      <circle cx="16" cy="16" r="1.8" fill="#fbbf24"/>
+      <circle cx="48" cy="18" r="1.8" fill="#fbbf24"/>
+      <circle cx="32" cy="6" r="1.5" fill="#fef08a"/>
     </svg>`,
 
-    red_signal: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="18" y="4" width="20" height="48" rx="8" fill="#1e293b" stroke="#334155" stroke-width="2"/>
-      <path d="M16 14 Q28 8 40 14" stroke="#475569" stroke-width="2" fill="none"/>
-      <path d="M16 28 Q28 22 40 28" stroke="#475569" stroke-width="2" fill="none"/>
-      <path d="M16 42 Q28 36 40 42" stroke="#475569" stroke-width="2" fill="none"/>
-      <circle cx="28" cy="14" r="8" fill="#ef4444" opacity="0.38"/>
-      <circle cx="28" cy="14" r="6" fill="#ef4444"/>
-      <circle cx="26" cy="12" r="2" fill="#fca5a5"/>
-      <circle cx="28" cy="28" r="5" fill="#332a15" stroke="#78350f" stroke-width="1"/>
-      <circle cx="28" cy="42" r="5" fill="#0f291e" stroke="#064e3b" stroke-width="1"/>
+    no_lights: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="nlBeam" x1="0%" y1="50%" x2="100%" y2="50%">
+          <stop offset="0%" stop-color="#64748b" stop-opacity="0.8"/>
+          <stop offset="100%" stop-color="#334155" stop-opacity="0.2"/>
+        </linearGradient>
+      </defs>
+      <!-- Automotive projector headlight silhouette -->
+      <path d="M14 20 C14 20 28 17 30 32 C28 47 14 44 14 44 Z" fill="#1e293b" stroke="#94a3b8" stroke-width="2.5"/>
+      <path d="M22 26 C25 28 25 36 22 38" stroke="#cbd5e1" stroke-width="2.2" stroke-linecap="round"/>
+      <!-- Turned off disabled beam lines -->
+      <line x1="36" y1="22" x2="50" y2="16" stroke="url(#nlBeam)" stroke-width="3" stroke-linecap="round"/>
+      <line x1="38" y1="32" x2="52" y2="32" stroke="url(#nlBeam)" stroke-width="3" stroke-linecap="round"/>
+      <line x1="36" y1="42" x2="50" y2="48" stroke="url(#nlBeam)" stroke-width="3" stroke-linecap="round"/>
+      <!-- Heavy duty prohibition ring & diagonal bar -->
+      <circle cx="32" cy="32" r="26" stroke="#ef4444" stroke-width="4.2" fill="none"/>
+      <line x1="14" y1="14" x2="50" y2="50" stroke="#ef4444" stroke-width="4.2" stroke-linecap="round"/>
     </svg>`,
 
-    crash: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M28 8 L32 20 L44 14 L36 24 L48 28 L36 32 L42 42 L30 35 L28 48 L24 35 L12 40 L18 30 L6 26 L19 23 L12 12 L24 20 Z" fill="#f59e0b" opacity="0.95"/>
-      <path d="M28 14 L30 22 L38 18 L33 25 L40 28 L33 30 L37 37 L30 32 L28 39 L25 32 L18 35 L22 29 L14 27 L22 24 L18 18 L25 22 Z" fill="#fef08a"/>
-      <path d="M6 38 L16 38 L21 33 L12 31 Z" fill="#ef4444"/>
-      <path d="M50 38 L40 38 L35 33 L44 31 Z" fill="#94a3b8"/>
+    avoid_sleeping: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="tachoGrad" cx="40%" cy="35%" r="65%">
+          <stop offset="0%" stop-color="#1e293b"/>
+          <stop offset="100%" stop-color="#0f172a"/>
+        </radialGradient>
+      </defs>
+      <!-- Tachograph / clock dial -->
+      <circle cx="30" cy="34" r="22" fill="url(#tachoGrad)" stroke="#38bdf8" stroke-width="2.5"/>
+      <!-- Warning arc in red for 9h+ overtime -->
+      <path d="M30 12 A22 22 0 0 1 52 34" stroke="#ef4444" stroke-width="3.5" fill="none"/>
+      <!-- Clock ticks -->
+      <line x1="30" y1="15" x2="30" y2="18" stroke="#94a3b8" stroke-width="2"/>
+      <line x1="48" y1="34" x2="51" y2="34" stroke="#94a3b8" stroke-width="2"/>
+      <line x1="30" y1="50" x2="30" y2="53" stroke="#94a3b8" stroke-width="2"/>
+      <line x1="9" y1="34" x2="12" y2="34" stroke="#94a3b8" stroke-width="2"/>
+      <!-- Clock hands pointing to overtime -->
+      <circle cx="30" cy="34" r="3" fill="#f8fafc"/>
+      <line x1="30" y1="34" x2="30" y2="20" stroke="#f8fafc" stroke-width="2.8" stroke-linecap="round"/>
+      <line x1="30" y1="34" x2="43" y2="38" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- Top stopwatch button -->
+      <rect x="27" y="7" width="6" height="5" rx="1.5" fill="#38bdf8"/>
+      <!-- Stylized floating luminous Zzz -->
+      <text x="48" y="20" font-family="'Tektur', sans-serif" font-weight="900" font-size="16" fill="#f59e0b">Z</text>
+      <text x="54" y="30" font-family="'Tektur', sans-serif" font-weight="900" font-size="12" fill="#fbbf24">z</text>
+      <text x="58" y="39" font-family="'Tektur', sans-serif" font-weight="900" font-size="9" fill="#fde68a">z</text>
     </svg>`,
 
-    no_lights: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M12 18 C12 18 24 16 26 28 C24 40 12 38 12 38 Z" fill="#334155" stroke="#94a3b8" stroke-width="2.5"/>
-      <path d="M20 23 C22 25 22 31 20 33" stroke="#cbd5e1" stroke-width="2"/>
-      <path d="M30 20 L44 14 M32 28 L46 28 M30 36 L44 42" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>
-      <circle cx="28" cy="28" r="22" stroke="#ef4444" stroke-width="3.5" fill="none"/>
-      <line x1="12" y1="12" x2="44" y2="44" stroke="#ef4444" stroke-width="3.5" stroke-linecap="round"/>
+    wrong_way: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="wwRed" cx="35%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="#f87171"/>
+          <stop offset="35%" stop-color="#ef4444"/>
+          <stop offset="85%" stop-color="#dc2626"/>
+          <stop offset="100%" stop-color="#7f1d1d"/>
+        </radialGradient>
+      </defs>
+      <!-- No entry circle sign -->
+      <circle cx="32" cy="32" r="28" fill="url(#wwRed)" stroke="#fee2e2" stroke-width="2"/>
+      <!-- Thick horizontal white bar -->
+      <rect x="11" y="26" width="42" height="12" rx="3" fill="#ffffff"/>
+      <!-- Opposing arrow chevrons -->
+      <path d="M32 8 L38 15 L26 15 Z" fill="#ffffff" opacity="0.9"/>
+      <path d="M32 56 L26 49 L38 49 Z" fill="#ffffff" opacity="0.9"/>
     </svg>`,
 
-    avoid_sleeping: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="26" cy="30" r="19" fill="#1e293b" stroke="#38bdf8" stroke-width="2.5"/>
-      <circle cx="26" cy="30" r="2.5" fill="#f8fafc"/>
-      <path d="M26 30 L26 18 M26 30 L35 34" stroke="#f8fafc" stroke-width="2.5" stroke-linecap="round"/>
-      <rect x="23" y="7" width="6" height="4" rx="1.5" fill="#38bdf8"/>
-      <text x="42" y="18" font-family="'Tektur', sans-serif" font-weight="900" font-size="14" fill="#f59e0b">Z</text>
-      <text x="47" y="27" font-family="'Tektur', sans-serif" font-weight="900" font-size="10" fill="#f59e0b">z</text>
-      <text x="50" y="35" font-family="'Tektur', sans-serif" font-weight="900" font-size="8" fill="#fbbf24">z</text>
+    avoid_weighing: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Weight platform base -->
+      <rect x="6" y="44" width="52" height="8" rx="2" fill="#1e293b" stroke="#64748b" stroke-width="2"/>
+      <rect x="14" y="52" width="8" height="5" fill="#475569"/>
+      <rect x="42" y="52" width="8" height="5" fill="#475569"/>
+      <!-- Truck silhouette over scales -->
+      <path d="M10 42 L10 26 L30 26 L40 33 L48 33 L48 42 Z" fill="#f59e0b" stroke="#d97706" stroke-width="1.8"/>
+      <circle cx="17" cy="42" r="4.5" fill="#0f172a" stroke="#cbd5e1" stroke-width="1.8"/>
+      <circle cx="41" cy="42" r="4.5" fill="#0f172a" stroke="#cbd5e1" stroke-width="1.8"/>
+      <!-- Warning beacon triangle -->
+      <polygon points="32,7 44,25 20,25" fill="#ef4444" stroke="#ffffff" stroke-width="2"/>
+      <text x="32" y="22" font-family="'Inter', sans-serif" font-weight="900" font-size="13" fill="#ffffff" text-anchor="middle">!</text>
     </svg>`,
 
-    wrong_way: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="28" cy="28" r="24" fill="#ef4444" stroke="#b91c1c" stroke-width="2"/>
-      <rect x="11" y="23" width="34" height="10" rx="2" fill="#ffffff"/>
-      <path d="M28 8 L33 14 L23 14 Z M28 48 L23 42 L33 42 Z" fill="#ffffff" opacity="0.8"/>
+    refuel: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="rfBody" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#1e293b"/>
+          <stop offset="100%" stop-color="#0f172a"/>
+        </linearGradient>
+        <radialGradient id="rfDrop" cx="35%" cy="30%" r="65%">
+          <stop offset="0%" stop-color="#6ee7b7"/>
+          <stop offset="70%" stop-color="#10b981"/>
+          <stop offset="100%" stop-color="#047857"/>
+        </radialGradient>
+      </defs>
+      <!-- Dispenser body -->
+      <rect x="8" y="10" width="30" height="46" rx="5" fill="url(#rfBody)" stroke="#10b981" stroke-width="2.5"/>
+      <!-- Digital counter display -->
+      <rect x="13" y="16" width="20" height="12" rx="2.5" fill="#064e3b" stroke="#34d399" stroke-width="1.2"/>
+      <text x="23" y="25" font-family="'Tektur', sans-serif" font-weight="700" font-size="8" fill="#34d399" text-anchor="middle">GAS</text>
+      <!-- Hose arching to right nozzle -->
+      <path d="M38 20 C48 20 50 30 50 38 C50 45 46 47 46 42 L46 28 L52 25" stroke="#34d399" stroke-width="3" stroke-linecap="round" fill="none"/>
+      <!-- Dispensing fuel droplet -->
+      <path d="M23 35 C23 35 30 43 30 47 C30 50.8 26.8 54 23 54 C19.2 54 16 50.8 16 47 C16 43 23 35 23 35 Z" fill="url(#rfDrop)" stroke="#a7f3d0" stroke-width="1"/>
+      <circle cx="21" cy="46" r="1.5" fill="#ffffff" opacity="0.8"/>
     </svg>`,
 
-    avoid_weighing: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="6" y="40" width="44" height="6" rx="2" fill="#334155" stroke="#64748b" stroke-width="1.5"/>
-      <rect x="14" y="46" width="6" height="4" fill="#475569"/>
-      <rect x="36" y="46" width="6" height="4" fill="#475569"/>
-      <path d="M10 38 L10 24 L28 24 L36 30 L42 30 L42 38 Z" fill="#f59e0b" stroke="#d97706" stroke-width="1.5"/>
-      <circle cx="16" cy="38" r="4" fill="#0f172a" stroke="#cbd5e1" stroke-width="1.5"/>
-      <circle cx="36" cy="38" r="4" fill="#0f172a" stroke="#cbd5e1" stroke-width="1.5"/>
-      <polygon points="28,6 38,22 18,22" fill="#ef4444" stroke="#ffffff" stroke-width="1.5"/>
-      <text x="28" y="20" font-family="'Inter', sans-serif" font-weight="900" font-size="12" fill="#ffffff" text-anchor="middle">!</text>
+    tollgate: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="tgCoin" cx="35%" cy="30%" r="65%">
+          <stop offset="0%" stop-color="#38bdf8"/>
+          <stop offset="70%" stop-color="#0284c7"/>
+          <stop offset="100%" stop-color="#0369a1"/>
+        </radialGradient>
+      </defs>
+      <!-- Toll barrier post -->
+      <rect x="8" y="22" width="12" height="34" rx="3" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+      <circle cx="14" cy="28" r="3.5" fill="#10b981"/>
+      <!-- Lifted striped boom barrier -->
+      <path d="M14 28 L56 16" stroke="#ef4444" stroke-width="5.5" stroke-linecap="round"/>
+      <path d="M14 28 L56 16" stroke="#ffffff" stroke-width="5.5" stroke-dasharray="8 8" stroke-linecap="round"/>
+      <!-- Electronic payment euro medallion -->
+      <circle cx="42" cy="42" r="14" fill="url(#tgCoin)" stroke="#7dd3fc" stroke-width="2.2"/>
+      <text x="42" y="49" font-family="'Tektur', sans-serif" font-weight="900" font-size="17" fill="#ffffff" text-anchor="middle">€</text>
+      <!-- Radio wave transponder arcs -->
+      <path d="M48 24 A22 22 0 0 1 54 30" stroke="#38bdf8" stroke-width="2" stroke-linecap="round"/>
+      <path d="M52 20 A28 28 0 0 1 60 27" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
     </svg>`,
 
-    refuel: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="8" y="10" width="26" height="38" rx="4" fill="#0f172a" stroke="#10b981" stroke-width="2.5"/>
-      <rect x="13" y="16" width="16" height="10" rx="2" fill="#064e3b" stroke="#34d399" stroke-width="1"/>
-      <text x="21" y="23" font-family="'Tektur', sans-serif" font-weight="700" font-size="6" fill="#34d399" text-anchor="middle">GAS</text>
-      <path d="M34 18 C42 18 44 26 44 32 C44 38 41 40 41 36 L41 24 L46 22" stroke="#34d399" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-      <path d="M21 32 C21 32 27 39 27 42 C27 45.3 24.3 48 21 48 C17.7 48 15 45.3 15 42 C15 39 21 32 21 32 Z" fill="#34d399"/>
+    ferry: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="frHull" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#fbbf24"/>
+          <stop offset="100%" stop-color="#d97706"/>
+        </linearGradient>
+      </defs>
+      <!-- Ship hull -->
+      <path d="M6 38 L14 50 L50 50 L58 38 L44 38 L44 26 L34 26 L34 18 L28 18 L28 26 L16 26 L16 38 Z" fill="url(#frHull)" stroke="#fef3c7" stroke-width="1.8"/>
+      <!-- Funnel & smoke -->
+      <rect x="29" y="14" width="6" height="6" fill="#ef4444" stroke="#b91c1c" stroke-width="1"/>
+      <circle cx="32" cy="9" r="2.5" fill="#94a3b8" opacity="0.7"/>
+      <circle cx="37" cy="6" r="3.2" fill="#94a3b8" opacity="0.5"/>
+      <!-- Portholes -->
+      <circle cx="20" cy="32" r="2" fill="#0f172a" stroke="#fbbf24" stroke-width="1"/>
+      <circle cx="27" cy="32" r="2" fill="#0f172a" stroke="#fbbf24" stroke-width="1"/>
+      <circle cx="34" cy="32" r="2" fill="#0f172a" stroke="#fbbf24" stroke-width="1"/>
+      <!-- Sea wave swells -->
+      <path d="M4 55 C9 52 14 52 19 55 C24 58 29 58 34 55 C39 52 44 52 49 55 C54 58 59 58 64 55" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
     </svg>`,
 
-    tollgate: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="8" y="20" width="10" height="28" rx="2" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
-      <circle cx="13" cy="24" r="3" fill="#38bdf8"/>
-      <path d="M13 24 L50 16" stroke="#ef4444" stroke-width="5" stroke-linecap="round"/>
-      <path d="M13 24 L50 16" stroke="#ffffff" stroke-width="5" stroke-dasharray="7 7" stroke-linecap="round"/>
-      <circle cx="36" cy="38" r="11" fill="#0284c7" stroke="#38bdf8" stroke-width="2"/>
-      <text x="36" y="44" font-family="'Tektur', sans-serif" font-weight="900" font-size="14" fill="#ffffff" text-anchor="middle">€</text>
+    train: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="trBody" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#1e293b"/>
+          <stop offset="100%" stop-color="#0f172a"/>
+        </linearGradient>
+      </defs>
+      <!-- Tunnel arch portal background -->
+      <path d="M10 52 L10 24 C10 12 20 6 32 6 C44 6 54 12 54 24 L54 52" stroke="#475569" stroke-width="2.5" fill="none"/>
+      <!-- Locomotive body -->
+      <rect x="14" y="12" width="36" height="38" rx="8" fill="url(#trBody)" stroke="#f59e0b" stroke-width="2.5"/>
+      <!-- Windshield -->
+      <rect x="20" y="18" width="24" height="13" rx="3.5" fill="#38bdf8" opacity="0.9" stroke="#0284c7" stroke-width="1"/>
+      <path d="M22 20 L30 29" stroke="#ffffff" stroke-width="1.5" opacity="0.6"/>
+      <!-- Twin bright headlights -->
+      <circle cx="21" cy="41" r="4" fill="#fef08a" stroke="#f59e0b" stroke-width="1.5"/>
+      <circle cx="43" cy="41" r="4" fill="#fef08a" stroke="#f59e0b" stroke-width="1.5"/>
+      <circle cx="32" cy="15" r="2.2" fill="#fef08a"/>
+      <!-- Rails & cross-ties -->
+      <line x1="8" y1="56" x2="56" y2="56" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
+      <line x1="14" y1="52" x2="50" y2="52" stroke="#64748b" stroke-width="2" stroke-linecap="round"/>
+      <line x1="18" y1="60" x2="46" y2="60" stroke="#64748b" stroke-width="2" stroke-linecap="round"/>
     </svg>`,
 
-    ferry: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M6 34 L12 44 L44 44 L50 34 L38 34 L38 24 L30 24 L30 18 L24 18 L24 24 L14 24 L14 34 Z" fill="#f59e0b" stroke="#fbbf24" stroke-width="1.5"/>
-      <rect x="25" y="14" width="5" height="5" fill="#ef4444"/>
-      <circle cx="28" cy="10" r="2" fill="#94a3b8" opacity="0.6"/>
-      <circle cx="32" cy="7" r="2.5" fill="#94a3b8" opacity="0.4"/>
-      <circle cx="18" cy="29" r="1.5" fill="#0f172a"/>
-      <circle cx="24" cy="29" r="1.5" fill="#0f172a"/>
-      <circle cx="30" cy="29" r="1.5" fill="#0f172a"/>
-      <path d="M4 48 C8 46 12 46 16 48 C20 50 24 50 28 48 C32 46 36 46 40 48 C44 50 48 50 52 48" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+    job_delivered: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="jdShield" cx="35%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="#22c55e"/>
+          <stop offset="60%" stop-color="#16a34a"/>
+          <stop offset="100%" stop-color="#14532d"/>
+        </radialGradient>
+      </defs>
+      <!-- Victory achievement shield -->
+      <path d="M32 4 L54 13 L54 32 C54 46 44 55 32 60 C20 55 10 46 10 32 L10 13 Z" fill="url(#jdShield)" stroke="#86efac" stroke-width="2.5"/>
+      <!-- Bold crisp checkmark -->
+      <path d="M21 32 L29 40 L44 23" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- Victory corner sparkle stars -->
+      <circle cx="16" cy="18" r="1.5" fill="#fde047"/>
+      <circle cx="48" cy="18" r="1.5" fill="#fde047"/>
     </svg>`,
 
-    train: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="12" y="8" width="32" height="36" rx="6" fill="#1e293b" stroke="#f59e0b" stroke-width="2.5"/>
-      <rect x="17" y="14" width="22" height="12" rx="3" fill="#38bdf8" opacity="0.85"/>
-      <circle cx="18" cy="36" r="3.5" fill="#fef08a" stroke="#f59e0b" stroke-width="1"/>
-      <circle cx="38" cy="36" r="3.5" fill="#fef08a" stroke="#f59e0b" stroke-width="1"/>
-      <circle cx="28" cy="11" r="2" fill="#fef08a"/>
-      <path d="M8 48 L48 48 M14 44 L42 44 M16 52 L40 52" stroke="#64748b" stroke-width="2" stroke-linecap="round"/>
+    job_cancelled: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="jcShield" cx="35%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="#ef4444"/>
+          <stop offset="65%" stop-color="#dc2626"/>
+          <stop offset="100%" stop-color="#7f1d1d"/>
+        </radialGradient>
+      </defs>
+      <!-- Cancellation shield -->
+      <path d="M32 4 L54 13 L54 32 C54 46 44 55 32 60 C20 55 10 46 10 32 L10 13 Z" fill="url(#jcShield)" stroke="#fca5a5" stroke-width="2.5"/>
+      <!-- Bold X cancellation cross -->
+      <path d="M23 23 L41 41 M41 23 L23 41" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
     </svg>`,
 
-    job_delivered: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M28 4 L48 12 L48 28 C48 40 38 48 28 52 C18 48 8 40 8 28 L8 12 Z" fill="#15803d" stroke="#22c55e" stroke-width="2.5"/>
-      <path d="M18 28 L25 35 L38 20" stroke="#f0fdf4" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+    generic_fine: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="gfRed" cx="35%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="#ef4444"/>
+          <stop offset="100%" stop-color="#991b1b"/>
+        </radialGradient>
+      </defs>
+      <circle cx="32" cy="32" r="28" fill="#1e293b" stroke="url(#gfRed)" stroke-width="3.5"/>
+      <polygon points="32,12 46,42 18,42" fill="url(#gfRed)" stroke="#ffffff" stroke-width="1.5"/>
+      <text x="32" y="38" font-family="'Inter', sans-serif" font-weight="900" font-size="19" fill="#ffffff" text-anchor="middle">!</text>
     </svg>`,
 
-    job_cancelled: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M28 4 L48 12 L48 28 C48 40 38 48 28 52 C18 48 8 40 8 28 L8 12 Z" fill="#991b1b" stroke="#ef4444" stroke-width="2.5"/>
-      <path d="M20 20 L36 36 M36 20 L20 36" stroke="#fef2f2" stroke-width="4.5" stroke-linecap="round"/>
+    illegal_trailer: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="18" width="36" height="26" rx="3.5" fill="#1e293b" stroke="#f59e0b" stroke-width="2.2"/>
+      <line x1="42" y1="31" x2="54" y2="31" stroke="#94a3b8" stroke-width="4.5"/>
+      <circle cx="16" cy="46" r="5" fill="#0f172a" stroke="#cbd5e1" stroke-width="2.2"/>
+      <circle cx="30" cy="46" r="5" fill="#0f172a" stroke="#cbd5e1" stroke-width="2.2"/>
+      <!-- Prohibition circle -->
+      <circle cx="46" cy="22" r="14" fill="#ef4444" stroke="#ffffff" stroke-width="2.5"/>
+      <line x1="36" y1="32" x2="56" y2="12" stroke="#ffffff" stroke-width="3.2" stroke-linecap="round"/>
     </svg>`,
 
-    generic_fine: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="28" cy="28" r="24" fill="#1e293b" stroke="#ef4444" stroke-width="3"/>
-      <polygon points="28,10 40,36 16,36" fill="#ef4444"/>
-      <text x="28" y="32" font-family="'Inter', sans-serif" font-weight="900" font-size="16" fill="#ffffff" text-anchor="middle">!</text>
+    damaged_vehicle: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Truck cabin -->
+      <rect x="8" y="16" width="34" height="30" rx="4" fill="#1e293b" stroke="#ef4444" stroke-width="2.5"/>
+      <!-- Cracked windshield -->
+      <path d="M12 20 L26 34 M26 20 L12 34" stroke="#fca5a5" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="17" cy="48" r="4.5" fill="#0f172a" stroke="#ef4444" stroke-width="2"/>
+      <circle cx="33" cy="48" r="4.5" fill="#0f172a" stroke="#ef4444" stroke-width="2"/>
+      <!-- Radiator steam -->
+      <path d="M38 16 C42 10 48 10 50 16 C53 12 57 16 55 22 C59 26 55 33 48 31" fill="#94a3b8" opacity="0.7"/>
+      <!-- Alert triangle -->
+      <polygon points="48,36 59,54 37,54" fill="#f59e0b" stroke="#ffffff" stroke-width="1.8"/>
+      <text x="48" y="51" font-family="'Inter', sans-serif" font-weight="900" font-size="12" fill="#000000" text-anchor="middle">!</text>
     </svg>`,
 
-    illegal_trailer: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="6" y="16" width="32" height="22" rx="3" fill="#1e293b" stroke="#f59e0b" stroke-width="2"/>
-      <line x1="38" y1="27" x2="48" y2="27" stroke="#94a3b8" stroke-width="4"/>
-      <circle cx="16" cy="40" r="4.5" fill="#0f172a" stroke="#cbd5e1" stroke-width="2"/>
-      <circle cx="28" cy="40" r="4.5" fill="#0f172a" stroke="#cbd5e1" stroke-width="2"/>
-      <circle cx="40" cy="20" r="13" fill="#ef4444" stroke="#ffffff" stroke-width="2.5"/>
-      <line x1="31" y1="29" x2="49" y2="11" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+    illegal_border_crossing: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="26" width="9" height="28" rx="2" fill="#334155" stroke="#64748b" stroke-width="2"/>
+      <rect x="49" y="26" width="9" height="28" rx="2" fill="#334155" stroke="#64748b" stroke-width="2"/>
+      <path d="M10 32 L54 32" stroke="#ef4444" stroke-width="7" stroke-linecap="round"/>
+      <path d="M10 32 L54 32" stroke="#ffffff" stroke-width="7" stroke-dasharray="7 7" stroke-linecap="round"/>
+      <circle cx="32" cy="15" r="11" fill="#dc2626" stroke="#ffffff" stroke-width="2.2"/>
+      <rect x="25" y="13" width="14" height="4.5" rx="1.5" fill="#ffffff"/>
     </svg>`,
 
-    damaged_vehicle: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="8" y="14" width="28" height="26" rx="4" fill="#1e293b" stroke="#ef4444" stroke-width="2"/>
-      <path d="M12 18 L24 30 M24 18 L12 30" stroke="#fca5a5" stroke-width="2"/>
-      <circle cx="15" cy="42" r="4" fill="#0f172a" stroke="#ef4444" stroke-width="2"/>
-      <circle cx="29" cy="42" r="4" fill="#0f172a" stroke="#ef4444" stroke-width="2"/>
-      <path d="M34 14 C38 8 44 8 46 14 C48 10 52 14 50 20 C54 24 50 30 44 28" fill="#94a3b8" opacity="0.65"/>
-      <polygon points="42,32 52,48 32,48" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5"/>
-      <text x="42" y="45" font-family="'Inter', sans-serif" font-weight="900" font-size="11" fill="#000000" text-anchor="middle">!</text>
+    hard_shoulder_violation: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="8" width="52" height="48" rx="7" fill="#1e293b" stroke="#475569" stroke-width="2.5"/>
+      <line x1="22" y1="8" x2="22" y2="56" stroke="#ffffff" stroke-width="3" stroke-dasharray="6 6"/>
+      <line x1="42" y1="8" x2="42" y2="56" stroke="#f59e0b" stroke-width="3.5"/>
+      <path d="M14 44 L14 30 L19 23 L24 23 L24 44 Z" fill="#38bdf8"/>
+      <path d="M24 30 C29 30 38 27 43 20" stroke="#ef4444" stroke-width="3" stroke-linecap="round" stroke-dasharray="3 4"/>
+      <polygon points="43,15 49,22 40,23" fill="#ef4444"/>
     </svg>`,
 
-    illegal_border_crossing: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="6" y="24" width="8" height="24" rx="2" fill="#334155" stroke="#64748b" stroke-width="1.5"/>
-      <rect x="42" y="24" width="8" height="24" rx="2" fill="#334155" stroke="#64748b" stroke-width="1.5"/>
-      <path d="M10 28 L46 28" stroke="#ef4444" stroke-width="6" stroke-linecap="round"/>
-      <path d="M10 28 L46 28" stroke="#ffffff" stroke-width="6" stroke-dasharray="6 6" stroke-linecap="round"/>
-      <circle cx="28" cy="14" r="10" fill="#dc2626" stroke="#ffffff" stroke-width="2"/>
-      <rect x="22" y="12" width="12" height="4" rx="1" fill="#ffffff"/>
+    cargo_damage: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="cdCrate" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#92400e"/>
+          <stop offset="100%" stop-color="#451a03"/>
+        </linearGradient>
+      </defs>
+      <!-- Freight cargo container -->
+      <rect x="8" y="14" width="48" height="42" rx="4" fill="url(#cdCrate)" stroke="#d97706" stroke-width="2.5"/>
+      <!-- Ribs -->
+      <line x1="8" y1="26" x2="56" y2="26" stroke="#b45309" stroke-width="2"/>
+      <line x1="32" y1="26" x2="32" y2="56" stroke="#b45309" stroke-width="2"/>
+      <!-- Jagged fracture crack -->
+      <path d="M24 14 L33 28 L26 38 L38 52" stroke="#ef4444" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- Warning badge -->
+      <polygon points="46,28 58,50 34,50" fill="#ef4444" stroke="#ffffff" stroke-width="1.8"/>
+      <text x="46" y="47" font-family="'Inter', sans-serif" font-weight="900" font-size="14" fill="#ffffff" text-anchor="middle">!</text>
     </svg>`,
 
-    hard_shoulder_violation: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="6" y="8" width="44" height="40" rx="6" fill="#1e293b" stroke="#475569" stroke-width="2"/>
-      <line x1="20" y1="8" x2="20" y2="48" stroke="#ffffff" stroke-width="2.5" stroke-dasharray="5 5"/>
-      <line x1="36" y1="8" x2="36" y2="48" stroke="#f59e0b" stroke-width="3"/>
-      <path d="M14 38 L14 26 L18 20 L22 20 L22 38 Z" fill="#38bdf8"/>
-      <path d="M22 26 C26 26 34 24 38 18" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="2 3"/>
-      <polygon points="38,14 43,20 35,21" fill="#ef4444"/>
+    service: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="svGrad" cx="35%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="#10b981"/>
+          <stop offset="70%" stop-color="#059669"/>
+          <stop offset="100%" stop-color="#064e3b"/>
+        </radialGradient>
+      </defs>
+      <circle cx="32" cy="32" r="26" fill="url(#svGrad)" stroke="#34d399" stroke-width="2.5"/>
+      <!-- Chrome wrench crossing gear -->
+      <path d="M20 44 L36 28 M31 23 L41 33 M39 18 C44 13 51 15 53 18 C55 20 57 27 53 31 L46 24" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="22" cy="42" r="4.5" fill="#34d399"/>
+      <!-- Precision gear teeth markers -->
+      <path d="M32 10 L34 15 M32 54 L34 49 M10 32 L15 34 M54 32 L49 34" stroke="#a7f3d0" stroke-width="2.5" stroke-linecap="round"/>
     </svg>`,
 
-    cargo_damage: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="8" y="12" width="40" height="36" rx="4" fill="#78350f" stroke="#b45309" stroke-width="2"/>
-      <path d="M8 22 L48 22 M28 22 L28 48" stroke="#92400e" stroke-width="2"/>
-      <path d="M22 12 L30 24 L24 32 L34 44" stroke="#ef4444" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-      <polygon points="40,24 52,44 28,44" fill="#ef4444" stroke="#ffffff" stroke-width="1.5"/>
-      <text x="40" y="41" font-family="'Inter', sans-serif" font-weight="900" font-size="13" fill="#ffffff" text-anchor="middle">!</text>
+    low_fuel: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="8" y="10" width="30" height="46" rx="5" fill="#1e293b" stroke="#f59e0b" stroke-width="2.5"/>
+      <rect x="13" y="16" width="20" height="12" rx="2.5" fill="#451a03" stroke="#f59e0b" stroke-width="1.2"/>
+      <text x="23" y="25" font-family="'Tektur', sans-serif" font-weight="700" font-size="7.5" fill="#fbbf24" text-anchor="middle">LOW</text>
+      <path d="M38 20 C48 20 50 30 50 38 C50 45 46 47 46 42 L46 28 L52 25" stroke="#f59e0b" stroke-width="3" stroke-linecap="round" fill="none"/>
+      <polygon points="23,34 31,48 15,48" fill="#ef4444"/>
+      <text x="23" y="46" font-family="'Inter', sans-serif" font-weight="900" font-size="11" fill="#ffffff" text-anchor="middle">!</text>
     </svg>`,
 
-    service: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="28" cy="28" r="22" fill="#064e3b" stroke="#10b981" stroke-width="2.5"/>
-      <path d="M18 38 L32 24 M28 20 L36 28 M34 16 C38 12 44 14 46 16 C48 18 50 24 46 28 L40 22" stroke="#34d399" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle cx="20" cy="36" r="4" fill="#10b981"/>
-      <path d="M28 10 L30 14 M28 46 L30 42 M10 28 L14 30 M46 28 L42 30" stroke="#6ee7b7" stroke-width="2" stroke-linecap="round"/>
+    bus_stop: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="bsGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#14b8a6"/>
+          <stop offset="100%" stop-color="#0f766e"/>
+        </linearGradient>
+      </defs>
+      <!-- Bus coach silhouette -->
+      <rect x="8" y="14" width="48" height="32" rx="6" fill="#134e4a" stroke="url(#bsGrad)" stroke-width="2.5"/>
+      <!-- Windows -->
+      <rect x="13" y="19" width="12" height="11" rx="2.5" fill="#2dd4bf" opacity="0.85"/>
+      <rect x="27" y="19" width="12" height="11" rx="2.5" fill="#2dd4bf" opacity="0.85"/>
+      <!-- Entrance door -->
+      <rect x="41" y="19" width="10" height="21" rx="1.5" fill="#0f766e" stroke="#5eead4" stroke-width="1.2"/>
+      <!-- Wheels -->
+      <circle cx="18" cy="48" r="5.5" fill="#0f172a" stroke="#2dd4bf" stroke-width="2.2"/>
+      <circle cx="44" cy="48" r="5.5" fill="#0f172a" stroke="#2dd4bf" stroke-width="2.2"/>
+      <!-- Platform stop curb -->
+      <line x1="4" y1="56" x2="60" y2="56" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>
     </svg>`,
 
-    low_fuel: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="8" y="10" width="26" height="38" rx="4" fill="#1e293b" stroke="#f59e0b" stroke-width="2.5"/>
-      <rect x="13" y="16" width="16" height="10" rx="2" fill="#451a03" stroke="#f59e0b" stroke-width="1"/>
-      <text x="21" y="23" font-family="'Tektur', sans-serif" font-weight="700" font-size="6" fill="#fbbf24" text-anchor="middle">LOW</text>
-      <path d="M34 18 C42 18 44 26 44 32 C44 38 41 40 41 36 L41 24 L46 22" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-      <polygon points="21,30 27,42 15,42" fill="#ef4444"/>
-      <text x="21" y="40" font-family="'Inter', sans-serif" font-weight="900" font-size="9" fill="#ffffff" text-anchor="middle">!</text>
+    bus_comfort: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="sadEmojiGrad64" cx="35%" cy="32%" r="65%">
+          <stop offset="0%" stop-color="#fb923c"/>
+          <stop offset="70%" stop-color="#ea580c"/>
+          <stop offset="100%" stop-color="#b91c1c"/>
+        </radialGradient>
+      </defs>
+      <circle cx="32" cy="32" r="28" fill="url(#sadEmojiGrad64)" stroke="#ef4444" stroke-width="2.8"/>
+      <ellipse cx="22" cy="27" rx="3.2" ry="4.4" fill="#18181b"/>
+      <ellipse cx="42" cy="27" rx="3.2" ry="4.4" fill="#18181b"/>
+      <circle cx="21" cy="25" r="1.3" fill="#ffffff"/>
+      <circle cx="41" cy="25" r="1.3" fill="#ffffff"/>
+      <!-- Sad eyebrows slanted up in center -->
+      <path d="M16 20 Q22 15 29 20" stroke="#450a0a" stroke-width="2.8" stroke-linecap="round" fill="none"/>
+      <path d="M48 20 Q42 15 35 20" stroke="#450a0a" stroke-width="2.8" stroke-linecap="round" fill="none"/>
+      <!-- Downturned sad mouth -->
+      <path d="M21 47 Q32 36 43 47" stroke="#450a0a" stroke-width="3.6" stroke-linecap="round" fill="none"/>
+      <!-- Teardrop -->
+      <path d="M46 32 C46 32 42.5 38 42.5 41 C42.5 43.5 44.2 45 46.5 45 C48.8 45 50.5 43.5 50.5 41 C50.5 38 46 32 46 32 Z" fill="#38bdf8"/>
+      <circle cx="45.5" cy="39.5" r="1" fill="#ffffff"/>
     </svg>`,
 
-    bus_stop: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="8" y="12" width="40" height="28" rx="5" fill="#134e4a" stroke="#14b8a6" stroke-width="2.5"/>
-      <rect x="12" y="16" width="10" height="10" rx="2" fill="#2dd4bf" opacity="0.8"/>
-      <rect x="24" y="16" width="10" height="10" rx="2" fill="#2dd4bf" opacity="0.8"/>
-      <rect x="36" y="16" width="8" height="18" rx="1" fill="#0f766e" stroke="#5eead4" stroke-width="1"/>
-      <circle cx="16" cy="42" r="4.5" fill="#0f172a" stroke="#2dd4bf" stroke-width="2"/>
-      <circle cx="38" cy="42" r="4.5" fill="#0f172a" stroke="#2dd4bf" stroke-width="2"/>
-      <line x1="4" y1="48" x2="52" y2="48" stroke="#64748b" stroke-width="2" stroke-linecap="round"/>
+    bus_comfort_up: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="happyEmojiGrad64" cx="35%" cy="32%" r="65%">
+          <stop offset="0%" stop-color="#6ee7b7"/>
+          <stop offset="68%" stop-color="#10b981"/>
+          <stop offset="100%" stop-color="#047857"/>
+        </radialGradient>
+      </defs>
+      <circle cx="32" cy="32" r="28" fill="url(#happyEmojiGrad64)" stroke="#34d399" stroke-width="2.8"/>
+      <!-- Squinting happy eyes arcs -->
+      <path d="M18 26 Q24 19 30 26" stroke="#064e3b" stroke-width="3.4" stroke-linecap="round" fill="none"/>
+      <path d="M34 26 Q40 19 46 26" stroke="#064e3b" stroke-width="3.4" stroke-linecap="round" fill="none"/>
+      <!-- Cheerful eyebrows -->
+      <path d="M17 18 Q23 13 30 17" stroke="#064e3b" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      <path d="M34 17 Q41 13 47 18" stroke="#064e3b" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      <!-- Wide smiling mouth with teeth -->
+      <path d="M19 35 Q32 54 45 35 Z" fill="#064e3b"/>
+      <path d="M21 35 Q32 44 43 35 Z" fill="#ffffff"/>
+      <!-- Cheeks blush -->
+      <ellipse cx="16" cy="32" rx="4" ry="2.4" fill="#fb7185" opacity="0.45"/>
+      <ellipse cx="48" cy="32" rx="4" ry="2.4" fill="#fb7185" opacity="0.45"/>
+      <!-- Sparkle star -->
+      <path d="M50 7 L51.5 11 L55.5 12.5 L51.5 14 L50 18 L48.5 14 L44.5 12.5 L48.5 11 Z" fill="#fbbf24"/>
     </svg>`,
 
-    bus_comfort: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="28" cy="28" r="23" fill="#1e293b" stroke="#f97316" stroke-width="2.5"/>
-      <path d="M20 16 C20 16 28 14 36 16 C36 24 34 32 34 36 L18 36 L18 20 Z" fill="#ea580c" opacity="0.4"/>
-      <path d="M16 36 L36 36 C38 36 40 38 40 40 L14 40 C14 38 15 36 16 36 Z" fill="#fdba74"/>
-      <path d="M22 16 C22 16 26 20 28 20 C30 20 34 16 34 16" stroke="#fed7aa" stroke-width="2" stroke-linecap="round"/>
-      <polygon points="38,8 48,24 28,24" fill="#f97316" stroke="#ffffff" stroke-width="1.5"/>
-      <text x="38" y="21" font-family="'Inter', sans-serif" font-weight="900" font-size="11" fill="#ffffff" text-anchor="middle">!</text>
+    chat_honk: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="hnkTrumpet" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#c084fc"/>
+          <stop offset="100%" stop-color="#7e22ce"/>
+        </linearGradient>
+      </defs>
+      <!-- Dual trumpet air horns -->
+      <path d="M8 24 L26 24 L42 13 L42 37 L26 26 L8 26 Z" fill="url(#hnkTrumpet)" stroke="#e9d5ff" stroke-width="2"/>
+      <path d="M8 36 L26 36 L42 27 L42 49 L26 38 L8 38 Z" fill="#9333ea" stroke="#e9d5ff" stroke-width="2"/>
+      <!-- Dynamic sound pressure shockwaves -->
+      <path d="M46 18 C51 23 51 41 46 46" stroke="#e9d5ff" stroke-width="3.5" stroke-linecap="round"/>
+      <path d="M52 12 C59 19 59 45 52 52" stroke="#f3e8ff" stroke-width="3.5" stroke-linecap="round"/>
     </svg>`,
 
-    chat_honk: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M8 22 L24 22 L38 12 L38 34 L24 24 L8 24 Z" fill="#a855f7" stroke="#c084fc" stroke-width="2"/>
-      <path d="M8 32 L24 32 L38 24 L38 44 L24 34 L8 34 Z" fill="#9333ea" stroke="#c084fc" stroke-width="2"/>
-      <path d="M42 16 C46 20 46 36 42 40" stroke="#e9d5ff" stroke-width="3" stroke-linecap="round"/>
-      <path d="M47 11 C53 17 53 39 47 45" stroke="#f3e8ff" stroke-width="3" stroke-linecap="round"/>
+    chat_cb: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Mic body -->
+      <rect x="18" y="10" width="28" height="34" rx="11" fill="#1e293b" stroke="#eab308" stroke-width="2.8"/>
+      <circle cx="32" cy="22" r="7" fill="#0f172a" stroke="#ca8a04" stroke-width="1.2"/>
+      <circle cx="32" cy="22" r="2.5" fill="#facc15"/>
+      <!-- PTT switch on left -->
+      <rect x="13" y="19" width="5" height="10" rx="2.5" fill="#eab308"/>
+      <!-- Coiled wire -->
+      <path d="M32 44 C32 50 27 52 32 56 C37 60 32 63 32 63" stroke="#facc15" stroke-width="3.2" stroke-linecap="round" fill="none"/>
     </svg>`,
 
-    chat_cb: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="16" y="8" width="24" height="30" rx="10" fill="#1e293b" stroke="#eab308" stroke-width="2.5"/>
-      <circle cx="28" cy="18" r="6" fill="#0f172a" stroke="#ca8a04" stroke-width="1"/>
-      <circle cx="28" cy="18" r="2" fill="#facc15"/>
-      <rect x="12" y="16" width="4" height="8" rx="2" fill="#eab308"/>
-      <path d="M28 38 C28 44 24 46 28 50 C32 54 28 56 28 56" stroke="#facc15" stroke-width="3" stroke-linecap="round" fill="none"/>
+    chat_route: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="8" y="8" width="48" height="48" rx="10" fill="#0c4a6e" stroke="#38bdf8" stroke-width="2.8"/>
+      <!-- GPS route curve with waypoints -->
+      <path d="M18 46 L27 32 L37 38 L46 20" stroke="#7dd3fc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <polygon points="46,15 51,24 42,22" fill="#38bdf8"/>
+      <circle cx="18" cy="46" r="3.5" fill="#38bdf8" stroke="#ffffff" stroke-width="1.5"/>
     </svg>`,
 
-    chat_route: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="8" y="8" width="40" height="40" rx="8" fill="#0c4a6e" stroke="#38bdf8" stroke-width="2.5"/>
-      <path d="M16 40 L24 28 L32 34 L40 18" stroke="#7dd3fc" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-      <polygon points="40,14 44,22 36,20" fill="#38bdf8"/>
-      <circle cx="16" cy="40" r="3" fill="#38bdf8"/>
+    chat_stats: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="8" width="52" height="48" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="2.5"/>
+      <!-- Columns -->
+      <line x1="16" y1="46" x2="16" y2="34" stroke="#38bdf8" stroke-width="4.5" stroke-linecap="round"/>
+      <line x1="27" y1="46" x2="27" y2="25" stroke="#38bdf8" stroke-width="4.5" stroke-linecap="round"/>
+      <line x1="38" y1="46" x2="38" y2="18" stroke="#4ade80" stroke-width="4.5" stroke-linecap="round"/>
+      <line x1="49" y1="46" x2="49" y2="30" stroke="#38bdf8" stroke-width="4.5" stroke-linecap="round"/>
+      <polygon points="32,7 34,12 40,12 35,15 37,20 32,17 27,20 29,15 24,12 30,12" fill="#facc15"/>
     </svg>`,
 
-    chat_stats: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="6" y="8" width="44" height="40" rx="6" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
-      <line x1="14" y1="40" x2="14" y2="30" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
-      <line x1="24" y1="40" x2="24" y2="22" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
-      <line x1="34" y1="40" x2="34" y2="16" stroke="#4ade80" stroke-width="4" stroke-linecap="round"/>
-      <line x1="44" y1="40" x2="44" y2="26" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
-      <polygon points="28,6 30,11 36,11 31,14 33,19 28,16 23,19 25,14 20,11 26,11" fill="#facc15"/>
+    chat_truck: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="14" y="8" width="36" height="42" rx="5" fill="#1e293b" stroke="#38bdf8" stroke-width="2.8"/>
+      <!-- Windshield -->
+      <rect x="18" y="13" width="28" height="14" rx="2.5" fill="#0284c7" opacity="0.85"/>
+      <!-- Main front grille -->
+      <rect x="20" y="32" width="24" height="12" rx="1.5" fill="#0f172a" stroke="#64748b" stroke-width="1.2"/>
+      <!-- Headlights -->
+      <circle cx="18" cy="44" r="3" fill="#fef08a"/>
+      <circle cx="46" cy="44" r="3" fill="#fef08a"/>
+      <line x1="10" y1="54" x2="54" y2="54" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
     </svg>`,
 
-    chat_truck: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="12" y="8" width="32" height="36" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="2.5"/>
-      <rect x="16" y="12" width="24" height="12" rx="2" fill="#0284c7" opacity="0.8"/>
-      <rect x="18" y="28" width="20" height="10" rx="1" fill="#0f172a" stroke="#64748b" stroke-width="1"/>
-      <circle cx="16" cy="38" r="2.5" fill="#fef08a"/>
-      <circle cx="40" cy="38" r="2.5" fill="#fef08a"/>
-      <line x1="8" y1="46" x2="48" y2="46" stroke="#64748b" stroke-width="2.5"/>
+    chat_driver: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Driver shield badge -->
+      <path d="M32 6 L52 13 L52 32 C52 44 43 53 32 58 C21 53 12 44 12 32 L12 13 Z" fill="#1e293b" stroke="#38bdf8" stroke-width="2.8"/>
+      <!-- Driver head & body -->
+      <circle cx="32" cy="25" r="7" fill="#38bdf8"/>
+      <path d="M20 42 C20 36 25 33 32 33 C39 33 44 36 44 42" fill="#38bdf8"/>
+      <polygon points="32,40 34,44 38,44 35,46 36,50 32,48 28,50 29,46 26,44 30,44" fill="#facc15"/>
     </svg>`,
 
-    chat_driver: `<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M28 6 L46 12 L46 28 C46 38 38 46 28 50 C18 46 10 38 10 28 L10 12 Z" fill="#1e293b" stroke="#38bdf8" stroke-width="2.5"/>
-      <circle cx="28" cy="22" r="6" fill="#38bdf8"/>
-      <path d="M18 36 C18 31 22 29 28 29 C34 29 38 31 38 36" fill="#38bdf8"/>
-      <polygon points="28,34 30,38 34,38 31,40 32,44 28,42 24,44 25,40 22,38 26,38" fill="#facc15"/>
+    update: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="updGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#22c55e" stop-opacity="0.45"/>
+          <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="updBg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#0f2918"/>
+          <stop offset="100%" stop-color="#05140b"/>
+        </linearGradient>
+      </defs>
+      <circle cx="32" cy="32" r="28" fill="url(#updBg)" stroke="#22c55e" stroke-width="2.6"/>
+      <circle cx="32" cy="32" r="23" stroke="#16a34a" stroke-width="1.2" stroke-dasharray="3 3"/>
+      <circle cx="32" cy="32" r="20" fill="url(#updGlow)"/>
+      <!-- Pip-Boy Vault-Tec Antenna / Arrow -->
+      <path d="M32 14 V38" stroke="#4ade80" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M22 28 L32 38 L42 28" stroke="#4ade80" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <line x1="18" y1="46" x2="46" y2="46" stroke="#22c55e" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="32" cy="46" r="2.2" fill="#86efac"/>
     </svg>`
   };
 
@@ -3052,681 +3419,925 @@
       return buffer;
     }
 
+    // 1. Камера скорости: реалистичный механический щелчок затвора зеркального фотоаппарата (без писка)
     function playSpeeding(vol) {
       const c = getAudioContext();
       if (!c) return;
       const t0 = c.currentTime + 0.01;
-      const masterGain = c.createGain();
-      masterGain.gain.setValueAtTime(vol * 0.9, t0);
-      masterGain.connect(c.destination);
+      const master = c.createGain();
+      master.gain.setValueAtTime(vol * 0.9, t0);
+      master.connect(c.destination);
 
-      const noiseBuf = createNoiseBuffer(c, 0.04);
-      const click1 = c.createBufferSource();
-      click1.buffer = noiseBuf;
+      const noise = createNoiseBuffer(c, 0.08);
+
+      // Первый импульс затвора (18 мс)
+      const src1 = c.createBufferSource();
+      src1.buffer = noise;
       const bpf1 = c.createBiquadFilter();
       bpf1.type = 'bandpass';
-      bpf1.frequency.setValueAtTime(2200, t0);
-      bpf1.Q.setValueAtTime(3.0, t0);
+      bpf1.frequency.setValueAtTime(1800, t0);
+      bpf1.Q.setValueAtTime(2.2, t0);
       const g1 = c.createGain();
-      g1.gain.setValueAtTime(0.8, t0);
-      g1.gain.exponentialRampToValueAtTime(0.001, t0 + 0.035);
-      click1.connect(bpf1);
+      g1.gain.setValueAtTime(0.85, t0);
+      g1.gain.exponentialRampToValueAtTime(0.001, t0 + 0.02);
+      src1.connect(bpf1);
       bpf1.connect(g1);
-      g1.connect(masterGain);
-      click1.start(t0);
+      g1.connect(master);
+      src1.start(t0);
 
-      const tClick2 = t0 + 0.055;
-      const click2 = c.createBufferSource();
-      click2.buffer = noiseBuf;
+      // Шелест шторок затвора
+      const srcFlutter = c.createBufferSource();
+      srcFlutter.buffer = noise;
+      const lpfFlutter = c.createBiquadFilter();
+      lpfFlutter.type = 'lowpass';
+      lpfFlutter.frequency.setValueAtTime(800, t0);
+      const gFlutter = c.createGain();
+      gFlutter.gain.setValueAtTime(0.001, t0);
+      gFlutter.gain.linearRampToValueAtTime(0.18, t0 + 0.012);
+      gFlutter.gain.exponentialRampToValueAtTime(0.001, t0 + 0.065);
+      srcFlutter.connect(lpfFlutter);
+      lpfFlutter.connect(gFlutter);
+      gFlutter.connect(master);
+      srcFlutter.start(t0);
+
+      // Второй импульс затвора (через 35 мс)
+      const tClick2 = t0 + 0.035;
+      const src2 = c.createBufferSource();
+      src2.buffer = noise;
       const bpf2 = c.createBiquadFilter();
       bpf2.type = 'bandpass';
-      bpf2.frequency.setValueAtTime(1600, tClick2);
-      bpf2.Q.setValueAtTime(2.5, tClick2);
+      bpf2.frequency.setValueAtTime(1400, tClick2);
+      bpf2.Q.setValueAtTime(2.0, tClick2);
       const g2 = c.createGain();
       g2.gain.setValueAtTime(0.9, tClick2);
-      g2.gain.exponentialRampToValueAtTime(0.001, tClick2 + 0.04);
-      click2.connect(bpf2);
+      g2.gain.exponentialRampToValueAtTime(0.001, tClick2 + 0.02);
+      src2.connect(bpf2);
       bpf2.connect(g2);
-      g2.connect(masterGain);
-      click2.start(tClick2);
-
-      const tFlash = t0 + 0.06;
-      const oscFlash = c.createOscillator();
-      oscFlash.type = 'sine';
-      oscFlash.frequency.setValueAtTime(3800, tFlash);
-      oscFlash.frequency.exponentialRampToValueAtTime(7400, tFlash + 0.16);
-      const gFlash = c.createGain();
-      gFlash.gain.setValueAtTime(0.12, tFlash);
-      gFlash.gain.exponentialRampToValueAtTime(0.001, tFlash + 0.22);
-      oscFlash.connect(gFlash);
-      gFlash.connect(masterGain);
-      oscFlash.start(tFlash);
-      oscFlash.stop(tFlash + 0.23);
+      g2.connect(master);
+      src2.start(tClick2);
     }
 
+    // 2. Проезд на красный: узнаваемый строгий двухтональный сигнал G5 -> D5
     function playRedSignal(vol) {
       const c = getAudioContext();
       if (!c) return;
       const t0 = c.currentTime + 0.01;
-      const masterGain = c.createGain();
-      masterGain.gain.setValueAtTime(vol * 0.85, t0);
-      masterGain.connect(c.destination);
+      const master = c.createGain();
+      master.gain.setValueAtTime(vol * 0.8, t0);
+      master.connect(c.destination);
 
       [
-        { start: t0, duration: 0.13 },
-        { start: t0 + 0.18, duration: 0.28 }
-      ].forEach((burst) => {
-        const carrier = c.createOscillator();
-        carrier.type = 'sine';
-        carrier.frequency.setValueAtTime(2950, burst.start);
-
-        const lfo = c.createOscillator();
-        lfo.type = 'triangle';
-        lfo.frequency.setValueAtTime(24, burst.start);
-        const lfoGain = c.createGain();
-        lfoGain.gain.setValueAtTime(280, burst.start);
-        lfo.connect(carrier.frequency);
-
-        const airOsc = c.createOscillator();
-        airOsc.type = 'sine';
-        airOsc.frequency.setValueAtTime(3320, burst.start);
-        const airGain = c.createGain();
-        airGain.gain.setValueAtTime(0.22, burst.start);
-
-        const bpf = c.createBiquadFilter();
-        bpf.type = 'bandpass';
-        bpf.frequency.setValueAtTime(3000, burst.start);
-        bpf.Q.setValueAtTime(4.0, burst.start);
-
-        const burstGain = c.createGain();
-        burstGain.gain.setValueAtTime(0.001, burst.start);
-        burstGain.gain.linearRampToValueAtTime(0.7, burst.start + 0.015);
-        burstGain.gain.setValueAtTime(0.7, burst.start + burst.duration - 0.02);
-        burstGain.gain.exponentialRampToValueAtTime(0.001, burst.start + burst.duration);
-
-        carrier.connect(bpf);
-        airOsc.connect(airGain);
-        airGain.connect(bpf);
-        bpf.connect(burstGain);
-        burstGain.connect(masterGain);
-
-        carrier.start(burst.start);
-        lfo.start(burst.start);
-        airOsc.start(burst.start);
-        carrier.stop(burst.start + burst.duration + 0.01);
-        lfo.stop(burst.start + burst.duration + 0.01);
-        airOsc.stop(burst.start + burst.duration + 0.01);
-      });
-    }
-
-    function playCrash(vol) {
-      const c = getAudioContext();
-      if (!c) return;
-      const t0 = c.currentTime + 0.01;
-      const masterGain = c.createGain();
-      masterGain.gain.setValueAtTime(vol * 0.9, t0);
-      masterGain.connect(c.destination);
-
-      [
-        { start: t0, duration: 0.12 },
-        { start: t0 + 0.16, duration: 0.14 }
-      ].forEach((chirp) => {
-        const osc = c.createOscillator();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(680, chirp.start);
-        osc.frequency.exponentialRampToValueAtTime(1620, chirp.start + chirp.duration);
-
-        const bpf = c.createBiquadFilter();
-        bpf.type = 'bandpass';
-        bpf.frequency.setValueAtTime(1100, chirp.start);
-        bpf.Q.setValueAtTime(1.8, chirp.start);
-
-        const g = c.createGain();
-        g.gain.setValueAtTime(0.001, chirp.start);
-        g.gain.linearRampToValueAtTime(0.65, chirp.start + 0.01);
-        g.gain.setValueAtTime(0.65, chirp.start + chirp.duration - 0.015);
-        g.gain.exponentialRampToValueAtTime(0.001, chirp.start + chirp.duration);
-
-        osc.connect(bpf);
-        bpf.connect(g);
-        g.connect(masterGain);
-
-        osc.start(chirp.start);
-        osc.stop(chirp.start + chirp.duration + 0.01);
-      });
-    }
-
-    function playNoLights(vol) {
-      const c = getAudioContext();
-      if (!c) return;
-      const t0 = c.currentTime + 0.01;
-      const masterGain = c.createGain();
-      masterGain.gain.setValueAtTime(vol * 0.75, t0);
-      masterGain.connect(c.destination);
-
-      [
-        { start: t0, duration: 0.10 },
-        { start: t0 + 0.15, duration: 0.10 }
-      ].forEach((pulse) => {
-        const osc = c.createOscillator();
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(460, pulse.start);
-
-        const lpf = c.createBiquadFilter();
-        lpf.type = 'lowpass';
-        lpf.frequency.setValueAtTime(1400, pulse.start);
-
-        const g = c.createGain();
-        g.gain.setValueAtTime(0.45, pulse.start);
-        g.gain.exponentialRampToValueAtTime(0.001, pulse.start + pulse.duration);
-
-        osc.connect(lpf);
-        lpf.connect(g);
-        g.connect(masterGain);
-
-        osc.start(pulse.start);
-        osc.stop(pulse.start + pulse.duration + 0.01);
-      });
-    }
-
-    function playTachograph(vol) {
-      const c = getAudioContext();
-      if (!c) return;
-      const t0 = c.currentTime + 0.01;
-      const masterGain = c.createGain();
-      masterGain.gain.setValueAtTime(vol * 0.7, t0);
-      masterGain.connect(c.destination);
-
-      [
-        { f: 880, start: t0, duration: 0.08 },
-        { f: 1100, start: t0 + 0.12, duration: 0.10 }
-      ].forEach((tone) => {
-        const osc = c.createOscillator();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(tone.f, tone.start);
-
-        const g = c.createGain();
-        g.gain.setValueAtTime(0.55, tone.start);
-        g.gain.exponentialRampToValueAtTime(0.001, tone.start + tone.duration);
-
-        osc.connect(g);
-        g.connect(masterGain);
-
-        osc.start(tone.start);
-        osc.stop(tone.start + tone.duration + 0.01);
-      });
-    }
-
-    function playWrongWay(vol) {
-      const c = getAudioContext();
-      if (!c) return;
-      const t0 = c.currentTime + 0.01;
-      const masterGain = c.createGain();
-      masterGain.gain.setValueAtTime(vol * 0.85, t0);
-      masterGain.connect(c.destination);
-
-      const duration = 0.28;
-      [415, 311].forEach((f) => {
-        const osc = c.createOscillator();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(f, t0);
-
-        const lpf = c.createBiquadFilter();
-        lpf.type = 'lowpass';
-        lpf.frequency.setValueAtTime(1100, t0);
-
-        const g = c.createGain();
-        g.gain.setValueAtTime(0.001, t0);
-        g.gain.linearRampToValueAtTime(0.4, t0 + 0.015);
-        g.gain.setValueAtTime(0.4, t0 + duration - 0.03);
-        g.gain.exponentialRampToValueAtTime(0.001, t0 + duration);
-
-        osc.connect(lpf);
-        lpf.connect(g);
-        g.connect(masterGain);
-
-        osc.start(t0);
-        osc.stop(t0 + duration + 0.01);
-      });
-    }
-
-    function playWarningChime(vol) {
-      const c = getAudioContext();
-      if (!c) return;
-      const t0 = c.currentTime + 0.01;
-      const masterGain = c.createGain();
-      masterGain.gain.setValueAtTime(vol * 0.75, t0);
-      masterGain.connect(c.destination);
-
-      [
-        { f: 520, start: t0, duration: 0.08 },
-        { f: 660, start: t0 + 0.10, duration: 0.08 },
-        { f: 880, start: t0 + 0.20, duration: 0.12 }
-      ].forEach((tone) => {
-        const osc = c.createOscillator();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(tone.f, tone.start);
-
-        const g = c.createGain();
-        g.gain.setValueAtTime(0.5, tone.start);
-        g.gain.exponentialRampToValueAtTime(0.001, tone.start + tone.duration);
-
-        osc.connect(g);
-        g.connect(masterGain);
-
-        osc.start(tone.start);
-        osc.stop(tone.start + tone.duration + 0.01);
-      });
-    }
-
-    function playRefuel(vol) {
-      const c = getAudioContext();
-      if (!c) return;
-      const t0 = c.currentTime + 0.01;
-      const masterGain = c.createGain();
-      masterGain.gain.setValueAtTime(vol * 0.8, t0);
-      masterGain.connect(c.destination);
-
-      [
-        { f: 587.33, start: t0, duration: 0.14 },
-        { f: 880.00, start: t0 + 0.13, duration: 0.32 }
-      ].forEach((tone) => {
-        const osc = c.createOscillator();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(tone.f, tone.start);
-
-        const g = c.createGain();
-        g.gain.setValueAtTime(0.001, tone.start);
-        g.gain.linearRampToValueAtTime(0.55, tone.start + 0.01);
-        g.gain.exponentialRampToValueAtTime(0.001, tone.start + tone.duration);
-
-        osc.connect(g);
-        g.connect(masterGain);
-
-        osc.start(tone.start);
-        osc.stop(tone.start + tone.duration + 0.01);
-      });
-    }
-
-    function playTollgate(vol) {
-      const c = getAudioContext();
-      if (!c) return;
-      const t0 = c.currentTime + 0.01;
-      const masterGain = c.createGain();
-      masterGain.gain.setValueAtTime(vol * 0.85, t0);
-      masterGain.connect(c.destination);
-
-      const osc = c.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(1850, t0);
-
-      const osc2 = c.createOscillator();
-      osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(3700, t0);
-      const g2 = c.createGain();
-      g2.gain.setValueAtTime(0.08, t0);
-
-      const g = c.createGain();
-      g.gain.setValueAtTime(0.001, t0);
-      g.gain.linearRampToValueAtTime(0.6, t0 + 0.003);
-      g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.085);
-
-      osc.connect(g);
-      osc2.connect(g2);
-      g2.connect(g);
-      g.connect(masterGain);
-
-      osc.start(t0);
-      osc2.start(t0);
-      osc.stop(t0 + 0.09);
-      osc2.stop(t0 + 0.09);
-    }
-
-    function playFerry(vol) {
-      const c = getAudioContext();
-      if (!c) return;
-      const t0 = c.currentTime + 0.01;
-      const masterGain = c.createGain();
-      masterGain.gain.setValueAtTime(vol * 0.9, t0);
-      masterGain.connect(c.destination);
-
-      const duration = 0.52;
-      [146.8, 185.0, 220.0].forEach((f) => {
-        const osc = c.createOscillator();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(f, t0);
-
-        const lpf = c.createBiquadFilter();
-        lpf.type = 'lowpass';
-        lpf.frequency.setValueAtTime(750, t0);
-
-        const g = c.createGain();
-        g.gain.setValueAtTime(0.001, t0);
-        g.gain.linearRampToValueAtTime(0.4, t0 + 0.06);
-        g.gain.setValueAtTime(0.4, t0 + duration - 0.08);
-        g.gain.exponentialRampToValueAtTime(0.001, t0 + duration);
-
-        osc.connect(lpf);
-        lpf.connect(g);
-        g.connect(masterGain);
-
-        osc.start(t0);
-        osc.stop(t0 + duration + 0.01);
-      });
-    }
-
-    function playTrain(vol) {
-      const c = getAudioContext();
-      if (!c) return;
-      const t0 = c.currentTime + 0.01;
-      const masterGain = c.createGain();
-      masterGain.gain.setValueAtTime(vol * 0.85, t0);
-      masterGain.connect(c.destination);
-
-      const duration = 0.40;
-      [311.1, 369.9].forEach((f) => {
-        const osc = c.createOscillator();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(f, t0);
-
-        const lpf = c.createBiquadFilter();
-        lpf.type = 'lowpass';
-        lpf.frequency.setValueAtTime(950, t0);
-
-        const g = c.createGain();
-        g.gain.setValueAtTime(0.001, t0);
-        g.gain.linearRampToValueAtTime(0.38, t0 + 0.035);
-        g.gain.setValueAtTime(0.38, t0 + duration - 0.05);
-        g.gain.exponentialRampToValueAtTime(0.001, t0 + duration);
-
-        osc.connect(lpf);
-        lpf.connect(g);
-        g.connect(masterGain);
-
-        osc.start(t0);
-        osc.stop(t0 + duration + 0.01);
-      });
-    }
-
-    function playJobDelivered(vol) {
-      const c = getAudioContext();
-      if (!c) return;
-      const t0 = c.currentTime + 0.01;
-      const masterGain = c.createGain();
-      masterGain.gain.setValueAtTime(vol * 0.8, t0);
-      masterGain.connect(c.destination);
-
-      [
-        { f: 523.25, start: t0, duration: 0.18 },
-        { f: 659.25, start: t0 + 0.09, duration: 0.18 },
-        { f: 783.99, start: t0 + 0.18, duration: 0.22 },
-        { f: 1046.50, start: t0 + 0.27, duration: 0.45 }
+        { f: 783.99, start: t0, dur: 0.09 },
+        { f: 587.33, start: t0 + 0.095, dur: 0.16 }
       ].forEach((note) => {
         const osc = c.createOscillator();
         osc.type = 'sine';
         osc.frequency.setValueAtTime(note.f, note.start);
 
+        const lpf = c.createBiquadFilter();
+        lpf.type = 'lowpass';
+        lpf.frequency.setValueAtTime(1400, note.start);
+
         const g = c.createGain();
         g.gain.setValueAtTime(0.001, note.start);
-        g.gain.linearRampToValueAtTime(0.5, note.start + 0.015);
-        g.gain.exponentialRampToValueAtTime(0.001, note.start + note.duration);
+        g.gain.linearRampToValueAtTime(0.55, note.start + 0.006);
+        g.gain.exponentialRampToValueAtTime(0.001, note.start + note.dur);
 
-        osc.connect(g);
-        g.connect(masterGain);
+        osc.connect(lpf);
+        lpf.connect(g);
+        g.connect(master);
 
         osc.start(note.start);
-        osc.stop(note.start + note.duration + 0.01);
+        osc.stop(note.start + note.dur + 0.01);
       });
     }
 
+    // 3. ДТП / Авария: реалистичный низкий удар (110->38 Гц) + металлический шорох + двойной зуммер
+    function playCrash(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const master = c.createGain();
+      master.gain.setValueAtTime(vol * 0.9, t0);
+      master.connect(c.destination);
+
+      // Низкий саб-удар кузова
+      const oscThump = c.createOscillator();
+      oscThump.type = 'sine';
+      oscThump.frequency.setValueAtTime(110, t0);
+      oscThump.frequency.exponentialRampToValueAtTime(38, t0 + 0.28);
+      const gThump = c.createGain();
+      gThump.gain.setValueAtTime(0.85, t0);
+      gThump.gain.exponentialRampToValueAtTime(0.001, t0 + 0.28);
+      oscThump.connect(gThump);
+      gThump.connect(master);
+      oscThump.start(t0);
+      oscThump.stop(t0 + 0.29);
+
+      // Металлический шорох деформации
+      const noise = createNoiseBuffer(c, 0.14);
+      const srcNoise = c.createBufferSource();
+      srcNoise.buffer = noise;
+      const bpf = c.createBiquadFilter();
+      bpf.type = 'bandpass';
+      bpf.frequency.setValueAtTime(850, t0);
+      bpf.Q.setValueAtTime(1.5, t0);
+      const gNoise = c.createGain();
+      gNoise.gain.setValueAtTime(0.35, t0);
+      gNoise.gain.exponentialRampToValueAtTime(0.001, t0 + 0.13);
+      srcNoise.connect(bpf);
+      bpf.connect(gNoise);
+      gNoise.connect(master);
+      srcNoise.start(t0);
+
+      // Двойной мягкий тон аварийки
+      [t0 + 0.28, t0 + 0.42].forEach((tChime) => {
+        const osc = c.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(659.25, tChime);
+        const lpf = c.createBiquadFilter();
+        lpf.type = 'lowpass';
+        lpf.frequency.setValueAtTime(1500, tChime);
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.001, tChime);
+        g.gain.linearRampToValueAtTime(0.3, tChime + 0.005);
+        g.gain.exponentialRampToValueAtTime(0.001, tChime + 0.09);
+        osc.connect(lpf);
+        lpf.connect(g);
+        g.connect(master);
+        osc.start(tChime);
+        osc.stop(tChime + 0.10);
+      });
+    }
+
+    // 4. Выключенные фары: мягкий приборный тон Scania NextGen (A4 -> C#5)
+    function playNoLights(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const master = c.createGain();
+      master.gain.setValueAtTime(vol * 0.75, t0);
+      master.connect(c.destination);
+
+      [
+        { f: 440.00, start: t0, dur: 0.12 },
+        { f: 554.37, start: t0 + 0.11, dur: 0.24 }
+      ].forEach((note) => {
+        const osc = c.createOscillator();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(note.f, note.start);
+        const lpf = c.createBiquadFilter();
+        lpf.type = 'lowpass';
+        lpf.frequency.setValueAtTime(1600, note.start);
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.001, note.start);
+        g.gain.linearRampToValueAtTime(0.5, note.start + 0.008);
+        g.gain.exponentialRampToValueAtTime(0.001, note.start + note.dur);
+        osc.connect(lpf);
+        lpf.connect(g);
+        g.connect(master);
+        osc.start(note.start);
+        osc.stop(note.start + note.dur + 0.01);
+      });
+    }
+
+    // 5. Тахограф / Режим отдыха: современный двойной тон (E5 -> B5)
+    function playTachograph(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const master = c.createGain();
+      master.gain.setValueAtTime(vol * 0.75, t0);
+      master.connect(c.destination);
+
+      [
+        { f: 659.25, start: t0, dur: 0.10 },
+        { f: 987.77, start: t0 + 0.10, dur: 0.26 }
+      ].forEach((note) => {
+        const osc = c.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(note.f, note.start);
+        const lpf = c.createBiquadFilter();
+        lpf.type = 'lowpass';
+        lpf.frequency.setValueAtTime(1800, note.start);
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.001, note.start);
+        g.gain.linearRampToValueAtTime(0.48, note.start + 0.006);
+        g.gain.exponentialRampToValueAtTime(0.001, note.start + note.dur);
+        osc.connect(lpf);
+        lpf.connect(g);
+        g.connect(master);
+        osc.start(note.start);
+        osc.stop(note.start + note.dur + 0.01);
+      });
+    }
+
+    // 6. Встречная полоса: строгий приборный алерт (D5 -> Bb4)
+    function playWrongWay(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const master = c.createGain();
+      master.gain.setValueAtTime(vol * 0.8, t0);
+      master.connect(c.destination);
+
+      [
+        { f: 587.33, start: t0, dur: 0.12 },
+        { f: 466.16, start: t0 + 0.11, dur: 0.26 }
+      ].forEach((note) => {
+        const osc = c.createOscillator();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(note.f, note.start);
+        const lpf = c.createBiquadFilter();
+        lpf.type = 'lowpass';
+        lpf.frequency.setValueAtTime(1200, note.start);
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.001, note.start);
+        g.gain.linearRampToValueAtTime(0.45, note.start + 0.008);
+        g.gain.exponentialRampToValueAtTime(0.001, note.start + note.dur);
+        osc.connect(lpf);
+        lpf.connect(g);
+        g.connect(master);
+        osc.start(note.start);
+        osc.stop(note.start + note.dur + 0.01);
+      });
+    }
+
+    // 7. Общий штраф / Предупреждение: гармоничный приборный перезвон (F5 -> A5 -> C6)
+    function playWarningChime(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const master = c.createGain();
+      master.gain.setValueAtTime(vol * 0.75, t0);
+      master.connect(c.destination);
+
+      [
+        { f: 698.46, start: t0, dur: 0.08 },
+        { f: 880.00, start: t0 + 0.08, dur: 0.08 },
+        { f: 1046.50, start: t0 + 0.16, dur: 0.22 }
+      ].forEach((note) => {
+        const osc = c.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(note.f, note.start);
+        const lpf = c.createBiquadFilter();
+        lpf.type = 'lowpass';
+        lpf.frequency.setValueAtTime(1800, note.start);
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.001, note.start);
+        g.gain.linearRampToValueAtTime(0.48, note.start + 0.006);
+        g.gain.exponentialRampToValueAtTime(0.001, note.start + note.dur);
+        osc.connect(lpf);
+        lpf.connect(g);
+        g.connect(master);
+        osc.start(note.start);
+        osc.stop(note.start + note.dur + 0.01);
+      });
+    }
+
+    // 8. Платная дорога: современный кристальный сигнал оплаты (E5 -> B5, Apple Pay стиль)
+    function playTollgate(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const master = c.createGain();
+      master.gain.setValueAtTime(vol * 0.85, t0);
+      master.connect(c.destination);
+
+      [
+        { f: 659.25, start: t0, dur: 0.075 },
+        { f: 987.77, start: t0 + 0.07, dur: 0.20 }
+      ].forEach((note) => {
+        const osc = c.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(note.f, note.start);
+
+        const oscHarm = c.createOscillator();
+        oscHarm.type = 'sine';
+        oscHarm.frequency.setValueAtTime(note.f * 2, note.start);
+        const gHarm = c.createGain();
+        gHarm.gain.setValueAtTime(0.07, note.start);
+
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.001, note.start);
+        g.gain.linearRampToValueAtTime(0.55, note.start + 0.003);
+        g.gain.exponentialRampToValueAtTime(0.001, note.start + note.dur);
+
+        osc.connect(g);
+        oscHarm.connect(gHarm);
+        gHarm.connect(g);
+        g.connect(master);
+
+        osc.start(note.start);
+        oscHarm.start(note.start);
+        osc.stop(note.start + note.dur + 0.01);
+        oscHarm.stop(note.start + note.dur + 0.01);
+      });
+    }
+
+    // 9. Дозаправка: тёплый перезвон электропиано / маримбы (C5 -> E5 -> G5)
+    function playRefuel(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const master = c.createGain();
+      master.gain.setValueAtTime(vol * 0.8, t0);
+      master.connect(c.destination);
+
+      [
+        { f: 523.25, start: t0, dur: 0.12 },
+        { f: 659.25, start: t0 + 0.09, dur: 0.12 },
+        { f: 783.99, start: t0 + 0.18, dur: 0.35 }
+      ].forEach((note) => {
+        const osc = c.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(note.f, note.start);
+
+        const lpf = c.createBiquadFilter();
+        lpf.type = 'lowpass';
+        lpf.frequency.setValueAtTime(1600, note.start);
+
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.001, note.start);
+        g.gain.linearRampToValueAtTime(0.52, note.start + 0.004);
+        g.gain.exponentialRampToValueAtTime(0.001, note.start + note.dur);
+
+        osc.connect(lpf);
+        lpf.connect(g);
+        g.connect(master);
+
+        osc.start(note.start);
+        osc.stop(note.start + note.dur + 0.01);
+      });
+    }
+
+    // 10. Морской паром: глубокий реалистичный басовый гудок (98 Гц + 147 Гц, фильтр 280 Гц, атака 0.15s)
+    function playFerry(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const master = c.createGain();
+      master.gain.setValueAtTime(vol * 0.9, t0);
+      master.connect(c.destination);
+
+      const dur = 0.95;
+      [98.0, 147.0].forEach((f) => {
+        const osc = c.createOscillator();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(f, t0);
+
+        const lpf = c.createBiquadFilter();
+        lpf.type = 'lowpass';
+        lpf.frequency.setValueAtTime(280, t0);
+
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.001, t0);
+        g.gain.linearRampToValueAtTime(0.48, t0 + 0.15);
+        g.gain.setValueAtTime(0.48, t0 + dur - 0.35);
+        g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+
+        osc.connect(lpf);
+        lpf.connect(g);
+        g.connect(master);
+
+        osc.start(t0);
+        osc.stop(t0 + dur + 0.02);
+      });
+    }
+
+    // 11. Поезд / Евротоннель: реалистичный аккорд тепловозного тифона вдали (фильтр 450 Гц)
+    function playTrain(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const master = c.createGain();
+      master.gain.setValueAtTime(vol * 0.85, t0);
+      master.connect(c.destination);
+
+      const dur = 0.52;
+      [311.13, 369.99, 466.16].forEach((f) => {
+        const osc = c.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(f, t0);
+
+        const lpf = c.createBiquadFilter();
+        lpf.type = 'lowpass';
+        lpf.frequency.setValueAtTime(450, t0);
+
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.001, t0);
+        g.gain.linearRampToValueAtTime(0.34, t0 + 0.08);
+        g.gain.setValueAtTime(0.34, t0 + dur - 0.10);
+        g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+
+        osc.connect(lpf);
+        lpf.connect(g);
+        g.connect(master);
+
+        osc.start(t0);
+        osc.stop(t0 + dur + 0.01);
+      });
+    }
+
+    // 12. Сдача рейса: бархатный мажорный аккорд завершения контракта (C5 - E5 - G5 - C6)
+    function playJobDelivered(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const master = c.createGain();
+      master.gain.setValueAtTime(vol * 0.85, t0);
+      master.connect(c.destination);
+
+      [
+        { f: 523.25, start: t0, dur: 0.18 },
+        { f: 659.25, start: t0 + 0.075, dur: 0.20 },
+        { f: 783.99, start: t0 + 0.150, dur: 0.24 },
+        { f: 1046.50, start: t0 + 0.225, dur: 0.55 }
+      ].forEach((note) => {
+        const osc = c.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(note.f, note.start);
+
+        const lpf = c.createBiquadFilter();
+        lpf.type = 'lowpass';
+        lpf.frequency.setValueAtTime(2200, note.start);
+
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.001, note.start);
+        g.gain.linearRampToValueAtTime(0.5, note.start + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.001, note.start + note.dur);
+
+        osc.connect(lpf);
+        lpf.connect(g);
+        g.connect(master);
+
+        osc.start(note.start);
+        osc.stop(note.start + note.dur + 0.01);
+      });
+    }
+
+    // 13. Отмена контракта: мягкий двухнотный нисходящий тон (A4 -> E4, без скрежета)
     function playJobCancelled(vol) {
       const c = getAudioContext();
       if (!c) return;
       const t0 = c.currentTime + 0.01;
-      const masterGain = c.createGain();
-      masterGain.gain.setValueAtTime(vol * 0.8, t0);
-      masterGain.connect(c.destination);
+      const master = c.createGain();
+      master.gain.setValueAtTime(vol * 0.75, t0);
+      master.connect(c.destination);
 
-      const duration = 0.42;
-      const osc = c.createOscillator();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(520, t0);
-      osc.frequency.exponentialRampToValueAtTime(240, t0 + duration);
+      [
+        { f: 440.00, start: t0, dur: 0.14 },
+        { f: 329.63, start: t0 + 0.12, dur: 0.32 }
+      ].forEach((note) => {
+        const osc = c.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(note.f, note.start);
 
-      const g = c.createGain();
-      g.gain.setValueAtTime(0.001, t0);
-      g.gain.linearRampToValueAtTime(0.55, t0 + 0.02);
-      g.gain.exponentialRampToValueAtTime(0.001, t0 + duration);
+        const lpf = c.createBiquadFilter();
+        lpf.type = 'lowpass';
+        lpf.frequency.setValueAtTime(1200, note.start);
 
-      osc.connect(g);
-      g.connect(masterGain);
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.001, note.start);
+        g.gain.linearRampToValueAtTime(0.48, note.start + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.001, note.start + note.dur);
 
-      osc.start(t0);
-      osc.stop(t0 + duration + 0.01);
+        osc.connect(lpf);
+        lpf.connect(g);
+        g.connect(master);
+
+        osc.start(note.start);
+        osc.stop(note.start + note.dur + 0.01);
+      });
     }
 
+    // 14. Рост комфорта пассажиров: светлый двухтональный колокольчик (F5 -> A5)
+    function playBusComfortUp(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const master = c.createGain();
+      master.gain.setValueAtTime(vol * 0.75, t0);
+      master.connect(c.destination);
+
+      [
+        { f: 698.46, start: t0, dur: 0.12 },
+        { f: 880.00, start: t0 + 0.10, dur: 0.28 }
+      ].forEach((note) => {
+        const osc = c.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(note.f, note.start);
+
+        const lpf = c.createBiquadFilter();
+        lpf.type = 'lowpass';
+        lpf.frequency.setValueAtTime(2000, note.start);
+
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.001, note.start);
+        g.gain.linearRampToValueAtTime(0.5, note.start + 0.006);
+        g.gain.exponentialRampToValueAtTime(0.001, note.start + note.dur);
+
+        osc.connect(lpf);
+        lpf.connect(g);
+        g.connect(master);
+
+        osc.start(note.start);
+        osc.stop(note.start + note.dur + 0.01);
+      });
+    }
+
+    // 15. Падение комфорта: деликатный салонный нисходящий тон (E5 -> C5)
+    function playBusComfortWarn(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const master = c.createGain();
+      master.gain.setValueAtTime(vol * 0.75, t0);
+      master.connect(c.destination);
+
+      [
+        { f: 659.25, start: t0, dur: 0.13 },
+        { f: 523.25, start: t0 + 0.11, dur: 0.28 }
+      ].forEach((note) => {
+        const osc = c.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(note.f, note.start);
+
+        const lpf = c.createBiquadFilter();
+        lpf.type = 'lowpass';
+        lpf.frequency.setValueAtTime(1400, note.start);
+
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.001, note.start);
+        g.gain.linearRampToValueAtTime(0.46, note.start + 0.008);
+        g.gain.exponentialRampToValueAtTime(0.001, note.start + note.dur);
+
+        osc.connect(lpf);
+        lpf.connect(g);
+        g.connect(master);
+
+        osc.start(note.start);
+        osc.stop(note.start + note.dur + 0.01);
+      });
+    }
+
+    // 16. Остановка автобуса: пневматика дверей (шум 900 Гц) + Ding-Dong (G5 -> E5)
+    function playBusDoors(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const master = c.createGain();
+      master.gain.setValueAtTime(vol * 0.8, t0);
+      master.connect(c.destination);
+
+      // Пневматический сброс давления дверей
+      const dur = 0.35;
+      const noise = createNoiseBuffer(c, dur);
+      const srcNoise = c.createBufferSource();
+      srcNoise.buffer = noise;
+      const bpf = c.createBiquadFilter();
+      bpf.type = 'bandpass';
+      bpf.frequency.setValueAtTime(900, t0);
+      bpf.Q.setValueAtTime(1.8, t0);
+      const gNoise = c.createGain();
+      gNoise.gain.setValueAtTime(0.001, t0);
+      gNoise.gain.linearRampToValueAtTime(0.32, t0 + 0.05);
+      gNoise.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+      srcNoise.connect(bpf);
+      bpf.connect(gNoise);
+      gNoise.connect(master);
+      srcNoise.start(t0);
+
+      // Салонный двухтональный звонок Ding-Dong
+      [
+        { f: 783.99, start: t0 + 0.18, dur: 0.22 },
+        { f: 659.25, start: t0 + 0.34, dur: 0.45 }
+      ].forEach((bell) => {
+        const osc = c.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(bell.f, bell.start);
+
+        const lpf = c.createBiquadFilter();
+        lpf.type = 'lowpass';
+        lpf.frequency.setValueAtTime(1800, bell.start);
+
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.001, bell.start);
+        g.gain.linearRampToValueAtTime(0.5, bell.start + 0.005);
+        g.gain.exponentialRampToValueAtTime(0.001, bell.start + bell.dur);
+
+        osc.connect(lpf);
+        lpf.connect(g);
+        g.connect(master);
+
+        osc.start(bell.start);
+        osc.stop(bell.start + bell.dur + 0.01);
+      });
+    }
+
+    // 17. Повреждение груза: глухой удар + треск + мягкий сигнал
     function playCargoDamage(vol) {
       const c = getAudioContext();
       if (!c) return;
       const t0 = c.currentTime + 0.01;
-      const masterGain = c.createGain();
-      masterGain.gain.setValueAtTime(vol * 0.9, t0);
-      masterGain.connect(c.destination);
+      const master = c.createGain();
+      master.gain.setValueAtTime(vol * 0.85, t0);
+      master.connect(c.destination);
 
       const oscThump = c.createOscillator();
       oscThump.type = 'sine';
       oscThump.frequency.setValueAtTime(95, t0);
       oscThump.frequency.exponentialRampToValueAtTime(32, t0 + 0.22);
       const gThump = c.createGain();
-      gThump.gain.setValueAtTime(0.85, t0);
+      gThump.gain.setValueAtTime(0.8, t0);
       gThump.gain.exponentialRampToValueAtTime(0.001, t0 + 0.24);
       oscThump.connect(gThump);
-      gThump.connect(masterGain);
+      gThump.connect(master);
       oscThump.start(t0);
       oscThump.stop(t0 + 0.25);
 
-      [t0 + 0.08, t0 + 0.20].forEach((pt) => {
-        const oscBeep = c.createOscillator();
-        oscBeep.type = 'sine';
-        oscBeep.frequency.setValueAtTime(2400, pt);
-        const gBeep = c.createGain();
-        gBeep.gain.setValueAtTime(0.45, pt);
-        gBeep.gain.exponentialRampToValueAtTime(0.001, pt + 0.07);
-        oscBeep.connect(gBeep);
-        gBeep.connect(masterGain);
-        oscBeep.start(pt);
-        oscBeep.stop(pt + 0.08);
-      });
+      const noise = createNoiseBuffer(c, 0.10);
+      const src = c.createBufferSource();
+      src.buffer = noise;
+      const bpf = c.createBiquadFilter();
+      bpf.type = 'bandpass';
+      bpf.frequency.setValueAtTime(650, t0);
+      bpf.Q.setValueAtTime(1.6, t0);
+      const gNoise = c.createGain();
+      gNoise.gain.setValueAtTime(0.3, t0);
+      gNoise.gain.exponentialRampToValueAtTime(0.001, t0 + 0.09);
+      src.connect(bpf);
+      bpf.connect(gNoise);
+      gNoise.connect(master);
+      src.start(t0);
+
+      const oscBeep = c.createOscillator();
+      oscBeep.type = 'sine';
+      oscBeep.frequency.setValueAtTime(1200, t0 + 0.12);
+      const lpf = c.createBiquadFilter();
+      lpf.type = 'lowpass';
+      lpf.frequency.setValueAtTime(1500, t0 + 0.12);
+      const gBeep = c.createGain();
+      gBeep.gain.setValueAtTime(0.001, t0 + 0.12);
+      gBeep.gain.linearRampToValueAtTime(0.35, t0 + 0.125);
+      gBeep.gain.exponentialRampToValueAtTime(0.001, t0 + 0.22);
+      oscBeep.connect(lpf);
+      lpf.connect(gBeep);
+      gBeep.connect(master);
+      oscBeep.start(t0 + 0.12);
+      oscBeep.stop(t0 + 0.23);
     }
 
+    // 18. Техобслуживание: щелчки пневмоинструмента + благородный аккорд (D5 -> F#5)
     function playService(vol) {
       const c = getAudioContext();
       if (!c) return;
       const t0 = c.currentTime + 0.01;
-      const masterGain = c.createGain();
-      masterGain.gain.setValueAtTime(vol * 0.85, t0);
-      masterGain.connect(c.destination);
+      const master = c.createGain();
+      master.gain.setValueAtTime(vol * 0.8, t0);
+      master.connect(c.destination);
 
-      const noise = createNoiseBuffer(c, 0.03);
-      for (let i = 0; i < 4; i++) {
-        const nt = t0 + i * 0.055;
+      const noise = createNoiseBuffer(c, 0.025);
+      for (let i = 0; i < 3; i++) {
+        const nt = t0 + i * 0.06;
         const src = c.createBufferSource();
         src.buffer = noise;
         const bpf = c.createBiquadFilter();
         bpf.type = 'bandpass';
-        bpf.frequency.setValueAtTime(1400, nt);
-        bpf.Q.setValueAtTime(2.5, nt);
+        bpf.frequency.setValueAtTime(1200, nt);
+        bpf.Q.setValueAtTime(2.2, nt);
         const g = c.createGain();
-        g.gain.setValueAtTime(0.7, nt);
-        g.gain.exponentialRampToValueAtTime(0.001, nt + 0.045);
+        g.gain.setValueAtTime(0.65, nt);
+        g.gain.exponentialRampToValueAtTime(0.001, nt + 0.04);
         src.connect(bpf);
         bpf.connect(g);
-        g.connect(masterGain);
+        g.connect(master);
         src.start(nt);
       }
 
       [
-        { f: 523.25, start: t0 + 0.28, dur: 0.12 },
-        { f: 659.25, start: t0 + 0.36, dur: 0.25 }
+        { f: 587.33, start: t0 + 0.22, dur: 0.14 },
+        { f: 739.99, start: t0 + 0.32, dur: 0.28 }
       ].forEach((note) => {
         const osc = c.createOscillator();
-        osc.type = 'triangle';
+        osc.type = 'sine';
         osc.frequency.setValueAtTime(note.f, note.start);
+        const lpf = c.createBiquadFilter();
+        lpf.type = 'lowpass';
+        lpf.frequency.setValueAtTime(1800, note.start);
         const g = c.createGain();
-        g.gain.setValueAtTime(0.4, note.start);
+        g.gain.setValueAtTime(0.001, note.start);
+        g.gain.linearRampToValueAtTime(0.48, note.start + 0.008);
         g.gain.exponentialRampToValueAtTime(0.001, note.start + note.dur);
-        osc.connect(g);
-        g.connect(masterGain);
+        osc.connect(lpf);
+        lpf.connect(g);
+        g.connect(master);
         osc.start(note.start);
         osc.stop(note.start + note.dur + 0.01);
       });
     }
 
+    // 19. Резерв топлива: ненавязчивый двойной тон приборной панели (D5)
     function playLowFuel(vol) {
       const c = getAudioContext();
       if (!c) return;
       const t0 = c.currentTime + 0.01;
-      const masterGain = c.createGain();
-      masterGain.gain.setValueAtTime(vol * 0.8, t0);
-      masterGain.connect(c.destination);
+      const master = c.createGain();
+      master.gain.setValueAtTime(vol * 0.75, t0);
+      master.connect(c.destination);
 
-      const osc = c.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(750, t0);
-      const g = c.createGain();
-      g.gain.setValueAtTime(0.001, t0);
-      g.gain.linearRampToValueAtTime(0.65, t0 + 0.02);
-      g.gain.setValueAtTime(0.65, t0 + 0.14);
-      g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.20);
-      osc.connect(g);
-      g.connect(masterGain);
-      osc.start(t0);
-      osc.stop(t0 + 0.21);
-    }
-
-    function playBusDoors(vol) {
-      const c = getAudioContext();
-      if (!c) return;
-      const t0 = c.currentTime + 0.01;
-      const masterGain = c.createGain();
-      masterGain.gain.setValueAtTime(vol * 0.8, t0);
-      masterGain.connect(c.destination);
-
-      const dur = 0.35;
-      const noiseBuf = createNoiseBuffer(c, dur);
-      const noiseSrc = c.createBufferSource();
-      noiseSrc.buffer = noiseBuf;
-      const lpf = c.createBiquadFilter();
-      lpf.type = 'lowpass';
-      lpf.frequency.setValueAtTime(700, t0);
-      const gNoise = c.createGain();
-      gNoise.gain.setValueAtTime(0.35, t0);
-      gNoise.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
-      noiseSrc.connect(lpf);
-      lpf.connect(gNoise);
-      gNoise.connect(masterGain);
-      noiseSrc.start(t0);
-
-      [
-        { f: 659.25, start: t0 + 0.15, dur: 0.18 },
-        { f: 523.25, start: t0 + 0.30, dur: 0.35 }
-      ].forEach((bell) => {
+      [t0, t0 + 0.16].forEach((pt) => {
         const osc = c.createOscillator();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(bell.f, bell.start);
+        osc.frequency.setValueAtTime(587.33, pt);
+        const lpf = c.createBiquadFilter();
+        lpf.type = 'lowpass';
+        lpf.frequency.setValueAtTime(1200, pt);
         const g = c.createGain();
-        g.gain.setValueAtTime(0.5, bell.start);
-        g.gain.exponentialRampToValueAtTime(0.001, bell.start + bell.dur);
-        osc.connect(g);
-        g.connect(masterGain);
-        osc.start(bell.start);
-        osc.stop(bell.start + bell.dur + 0.01);
+        g.gain.setValueAtTime(0.001, pt);
+        g.gain.linearRampToValueAtTime(0.5, pt + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.001, pt + 0.12);
+        osc.connect(lpf);
+        lpf.connect(g);
+        g.connect(master);
+        osc.start(pt);
+        osc.stop(pt + 0.13);
       });
     }
 
-    function playBusComfortWarn(vol) {
-      const c = getAudioContext();
-      if (!c) return;
-      const t0 = c.currentTime + 0.01;
-      const masterGain = c.createGain();
-      masterGain.gain.setValueAtTime(vol * 0.75, t0);
-      masterGain.connect(c.destination);
-
-      const osc = c.createOscillator();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(392, t0);
-      osc.frequency.exponentialRampToValueAtTime(330, t0 + 0.22);
-      const g = c.createGain();
-      g.gain.setValueAtTime(0.5, t0);
-      g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.25);
-      osc.connect(g);
-      g.connect(masterGain);
-      osc.start(t0);
-      osc.stop(t0 + 0.26);
-    }
-
+    // 20. Пневмогудок: реалистичный низкий двухрожковый гудок тягача (220 Гц + 277.18 Гц)
     function playTruckPneumoHorn(vol) {
       const c = getAudioContext();
       if (!c) return;
       const t0 = c.currentTime + 0.01;
-      const masterGain = c.createGain();
-      masterGain.gain.setValueAtTime(vol * 0.9, t0);
-      masterGain.connect(c.destination);
+      const master = c.createGain();
+      master.gain.setValueAtTime(vol * 0.88, t0);
+      master.connect(c.destination);
 
       const dur = 0.55;
-      [220, 277.18].forEach((f) => {
+      [220.00, 277.18].forEach((f) => {
         const osc = c.createOscillator();
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(f, t0);
         const lpf = c.createBiquadFilter();
         lpf.type = 'lowpass';
-        lpf.frequency.setValueAtTime(800, t0);
+        lpf.frequency.setValueAtTime(750, t0);
         const g = c.createGain();
         g.gain.setValueAtTime(0.001, t0);
-        g.gain.linearRampToValueAtTime(0.45, t0 + 0.04);
-        g.gain.setValueAtTime(0.45, t0 + dur - 0.08);
+        g.gain.linearRampToValueAtTime(0.42, t0 + 0.04);
+        g.gain.setValueAtTime(0.42, t0 + dur - 0.08);
         g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
         osc.connect(lpf);
         lpf.connect(g);
-        g.connect(masterGain);
+        g.connect(master);
         osc.start(t0);
         osc.stop(t0 + dur + 0.01);
       });
     }
 
+    // 21. CB-Рация: мягкий шум эфира + роджер-бип
     function playCBRadio(vol) {
       const c = getAudioContext();
       if (!c) return;
       const t0 = c.currentTime + 0.01;
-      const masterGain = c.createGain();
-      masterGain.gain.setValueAtTime(vol * 0.8, t0);
-      masterGain.connect(c.destination);
+      const master = c.createGain();
+      master.gain.setValueAtTime(vol * 0.75, t0);
+      master.connect(c.destination);
 
-      const noiseBuf = createNoiseBuffer(c, 0.06);
+      const noise = createNoiseBuffer(c, 0.045);
       const src = c.createBufferSource();
-      src.buffer = noiseBuf;
+      src.buffer = noise;
       const bpf = c.createBiquadFilter();
       bpf.type = 'bandpass';
-      bpf.frequency.setValueAtTime(1200, t0);
+      bpf.frequency.setValueAtTime(1100, t0);
       const gNoise = c.createGain();
-      gNoise.gain.setValueAtTime(0.6, t0);
-      gNoise.gain.exponentialRampToValueAtTime(0.001, t0 + 0.05);
+      gNoise.gain.setValueAtTime(0.5, t0);
+      gNoise.gain.exponentialRampToValueAtTime(0.001, t0 + 0.04);
       src.connect(bpf);
       bpf.connect(gNoise);
-      gNoise.connect(masterGain);
+      gNoise.connect(master);
       src.start(t0);
 
-      const tBeep = t0 + 0.09;
+      const tBeep = t0 + 0.065;
       const osc = c.createOscillator();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(1046.5, tBeep);
+      osc.frequency.setValueAtTime(1046.50, tBeep);
       const gBeep = c.createGain();
-      gBeep.gain.setValueAtTime(0.45, tBeep);
-      gBeep.gain.exponentialRampToValueAtTime(0.001, tBeep + 0.11);
+      gBeep.gain.setValueAtTime(0.001, tBeep);
+      gBeep.gain.linearRampToValueAtTime(0.4, tBeep + 0.004);
+      gBeep.gain.exponentialRampToValueAtTime(0.001, tBeep + 0.07);
       osc.connect(gBeep);
-      gBeep.connect(masterGain);
+      gBeep.connect(master);
       osc.start(tBeep);
-      osc.stop(tBeep + 0.12);
+      osc.stop(tBeep + 0.08);
+    }
+
+    // 16. Включение CRT-монитора (Pip-Boy 3000 Power-On: щелчок питания + свист кинескопа 15.6 кГц + размагничивание)
+    function playCrtPowerOn(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const master = c.createGain();
+      master.gain.setValueAtTime(vol * 0.85, t0);
+      master.connect(c.destination);
+
+      // Щелчок тумблера питания
+      const clickOsc = c.createOscillator();
+      const clickGain = c.createGain();
+      clickOsc.type = 'triangle';
+      clickOsc.frequency.setValueAtTime(140, t0);
+      clickOsc.frequency.exponentialRampToValueAtTime(35, t0 + 0.04);
+      clickGain.gain.setValueAtTime(0.7, t0);
+      clickGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.04);
+      clickOsc.connect(clickGain);
+      clickGain.connect(master);
+      clickOsc.start(t0);
+      clickOsc.stop(t0 + 0.045);
+
+      // Высоковольтный свист строчного трансформатора ТДКС (15.6 kHz)
+      const flyback = c.createOscillator();
+      const flybackGain = c.createGain();
+      flyback.type = 'sine';
+      flyback.frequency.setValueAtTime(3500, t0 + 0.02);
+      flyback.frequency.exponentialRampToValueAtTime(15625, t0 + 0.35);
+      flybackGain.gain.setValueAtTime(0.001, t0);
+      flybackGain.gain.linearRampToValueAtTime(0.25, t0 + 0.25);
+      flybackGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.55);
+      flyback.connect(flybackGain);
+      flybackGain.connect(master);
+      flyback.start(t0 + 0.02);
+      flyback.stop(t0 + 0.58);
+
+      // Низкочастотный импульс размагничивающей петли
+      const degauss = c.createOscillator();
+      const degaussGain = c.createGain();
+      degauss.type = 'sine';
+      degauss.frequency.setValueAtTime(110, t0);
+      degauss.frequency.exponentialRampToValueAtTime(45, t0 + 0.32);
+      degaussGain.gain.setValueAtTime(0.45, t0);
+      degaussGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.35);
+      degauss.connect(degaussGain);
+      degaussGain.connect(master);
+      degauss.start(t0);
+      degauss.stop(t0 + 0.36);
+    }
+
+    // 17. Выключение CRT-монитора (Pip-Boy 3000 Power-Off: угасающий свист луча и схлопывание)
+    function playCrtPowerOff(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.01;
+      const master = c.createGain();
+      master.gain.setValueAtTime(vol * 0.85, t0);
+      master.connect(c.destination);
+
+      // Угасающий свист разряда кинескопа
+      const discharge = c.createOscillator();
+      const dischargeGain = c.createGain();
+      discharge.type = 'sine';
+      discharge.frequency.setValueAtTime(15625, t0);
+      discharge.frequency.exponentialRampToValueAtTime(1200, t0 + 0.38);
+      dischargeGain.gain.setValueAtTime(0.2, t0);
+      dischargeGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.4);
+      discharge.connect(dischargeGain);
+      dischargeGain.connect(master);
+      discharge.start(t0);
+      discharge.stop(t0 + 0.42);
+
+      // Щелчок схлопывания луча
+      const snap = c.createOscillator();
+      const snapGain = c.createGain();
+      snap.type = 'square';
+      snap.frequency.setValueAtTime(220, t0 + 0.35);
+      snap.frequency.exponentialRampToValueAtTime(40, t0 + 0.39);
+      snapGain.gain.setValueAtTime(0.4, t0 + 0.35);
+      snapGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.4);
+      snap.connect(snapGain);
+      snapGain.connect(master);
+      snap.start(t0 + 0.35);
+      snap.stop(t0 + 0.41);
+    }
+
+    // 18. Механический щелчок терминала / телетайпа
+    function playTerminalTick(vol) {
+      const c = getAudioContext();
+      if (!c) return;
+      const t0 = c.currentTime + 0.002;
+      const master = c.createGain();
+      master.gain.setValueAtTime(vol * 0.35, t0);
+      master.connect(c.destination);
+
+      const osc = c.createOscillator();
+      const gain = c.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(1800 + Math.random() * 400, t0);
+      osc.frequency.exponentialRampToValueAtTime(600, t0 + 0.012);
+      gain.gain.setValueAtTime(0.6, t0);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.015);
+      osc.connect(gain);
+      gain.connect(master);
+      osc.start(t0);
+      osc.stop(t0 + 0.018);
     }
 
     return {
@@ -3748,8 +4359,12 @@
       playLowFuel,
       playBusDoors,
       playBusComfortWarn,
+      playBusComfortUp,
       playTruckPneumoHorn,
-      playCBRadio
+      playCBRadio,
+      playCrtPowerOn,
+      playCrtPowerOff,
+      playTerminalTick
     };
   })();
 
@@ -3760,6 +4375,11 @@
       ? Math.max(0, Math.min(1, etsCfg.eventSoundVolume))
       : 0.65;
     if (vol <= 0) return;
+
+    if (type === 'update') {
+      TelemetrySoundEngine.playCrtPowerOn(vol);
+      return;
+    }
 
     const soundKey = offence || type;
     const candidatePath = `./assets/sounds/${soundKey}.mp3`;
@@ -3780,11 +4400,11 @@
 
   function synthesizeEventSound(type, offence, vol) {
     if (type === 'fine') {
+      if (offence && offence.startsWith('speeding')) {
+        TelemetrySoundEngine.playSpeeding(vol);
+        return;
+      }
       switch (offence) {
-        case 'speeding':
-        case 'speeding_camera':
-          TelemetrySoundEngine.playSpeeding(vol);
-          break;
         case 'red_signal':
           TelemetrySoundEngine.playRedSignal(vol);
           break;
@@ -3831,14 +4451,18 @@
       TelemetrySoundEngine.playLowFuel(vol);
     } else if (type === 'bus_stop') {
       TelemetrySoundEngine.playBusDoors(vol);
-    } else if (type === 'bus_comfort') {
+    } else if (type === 'bus_comfort' || type === 'bus_comfort_down') {
       TelemetrySoundEngine.playBusComfortWarn(vol);
+    } else if (type === 'bus_comfort_up') {
+      TelemetrySoundEngine.playBusComfortUp(vol);
     } else if (type === 'chat_honk') {
       TelemetrySoundEngine.playTruckPneumoHorn(vol);
     } else if (type === 'chat_cb') {
       TelemetrySoundEngine.playCBRadio(vol);
     } else if (type === 'chat_route' || type === 'chat_stats' || type === 'chat_truck' || type === 'chat_driver') {
       TelemetrySoundEngine.playWarningChime(vol * 0.7);
+    } else if (type === 'update') {
+      TelemetrySoundEngine.playCrtPowerOn(vol);
     }
   }
 
@@ -3866,64 +4490,74 @@
       cardModifier = 'fine';
       valueText = amount > 0 ? `− € ${formatIntWithSpaces(amount)}` : '';
 
-      switch (offence) {
-        case 'speeding':
-          title = t('eventFineSpeeding');
-          svgIcon = EVENT_SVG_ICONS.speeding;
-          break;
-        case 'speeding_camera':
-          title = t('eventFineSpeedingCamera');
-          svgIcon = EVENT_SVG_ICONS.speeding_camera;
-          break;
-        case 'red_signal':
-          title = t('eventFineRedSignal');
-          svgIcon = EVENT_SVG_ICONS.red_signal;
-          break;
-        case 'crash':
-          title = t('eventFineCrash');
-          svgIcon = EVENT_SVG_ICONS.crash;
-          break;
-        case 'no_lights':
-          title = t('eventFineNoLights');
-          svgIcon = EVENT_SVG_ICONS.no_lights;
-          break;
-        case 'avoid_sleeping':
-          title = t('eventFineAvoidSleeping');
-          svgIcon = EVENT_SVG_ICONS.avoid_sleeping;
-          break;
-        case 'wrong_way':
-          title = t('eventFineWrongWay');
-          svgIcon = EVENT_SVG_ICONS.wrong_way;
-          break;
-        case 'avoid_weighing':
-          title = t('eventFineAvoidWeighing');
-          svgIcon = EVENT_SVG_ICONS.avoid_weighing;
-          break;
-        case 'illegal_trailer':
-          title = t('eventFineIllegalTrailer');
-          svgIcon = EVENT_SVG_ICONS.illegal_trailer;
-          break;
-        case 'avoid_inspection':
-          title = t('eventFineAvoidInspection');
-          svgIcon = EVENT_SVG_ICONS.avoid_weighing;
-          break;
-        case 'illegal_border_crossing':
-          title = t('eventFineIllegalBorderCrossing');
-          svgIcon = EVENT_SVG_ICONS.illegal_border_crossing;
-          break;
-        case 'hard_shoulder_violation':
-          title = t('eventFineHardShoulderViolation');
-          svgIcon = EVENT_SVG_ICONS.hard_shoulder_violation;
-          break;
-        case 'damaged_vehicle':
-        case 'damaged_vehicle_usage':
-          title = t('eventFineDamagedVehicleUsage');
-          svgIcon = EVENT_SVG_ICONS.damaged_vehicle;
-          break;
-        default:
-          title = offence ? offence.replace(/_/g, ' ') : t('eventFineGeneric');
-          svgIcon = EVENT_SVG_ICONS.generic_fine;
-          break;
+      if (offence.startsWith('speeding')) {
+        let targetLimit = 80;
+        const match = offence.match(/speeding_(\d+)/);
+        if (match && match[1]) {
+          targetLimit = parseInt(match[1], 10);
+        } else if (event.speedLimit && Number.isFinite(Number(event.speedLimit))) {
+          targetLimit = snapToSpeedLimit(event.speedLimit);
+        } else if (lastValidSpeedLimit > 0) {
+          targetLimit = snapToSpeedLimit(lastValidSpeedLimit);
+        }
+        const isCamera = offence.includes('camera');
+        title = isCamera ? t('eventFineSpeedingCamera') : t('eventFineSpeeding');
+        svgIcon = generateSpeedLimitSignSvg(targetLimit, isCamera);
+        subText = (lang === 'ru')
+          ? `Превышение лимита ${targetLimit} км/ч`
+          : `Speed Limit ${targetLimit} km/h Exceeded`;
+      } else {
+        switch (offence) {
+          case 'red_signal':
+            title = t('eventFineRedSignal');
+            svgIcon = EVENT_SVG_ICONS.red_signal;
+            break;
+          case 'crash':
+            title = t('eventFineCrash');
+            svgIcon = EVENT_SVG_ICONS.crash;
+            break;
+          case 'no_lights':
+            title = t('eventFineNoLights');
+            svgIcon = EVENT_SVG_ICONS.no_lights;
+            break;
+          case 'avoid_sleeping':
+            title = t('eventFineAvoidSleeping');
+            svgIcon = EVENT_SVG_ICONS.avoid_sleeping;
+            break;
+          case 'wrong_way':
+            title = t('eventFineWrongWay');
+            svgIcon = EVENT_SVG_ICONS.wrong_way;
+            break;
+          case 'avoid_weighing':
+            title = t('eventFineAvoidWeighing');
+            svgIcon = EVENT_SVG_ICONS.avoid_weighing;
+            break;
+          case 'illegal_trailer':
+            title = t('eventFineIllegalTrailer');
+            svgIcon = EVENT_SVG_ICONS.illegal_trailer;
+            break;
+          case 'avoid_inspection':
+            title = t('eventFineAvoidInspection');
+            svgIcon = EVENT_SVG_ICONS.avoid_weighing;
+            break;
+          case 'illegal_border_crossing':
+            title = t('eventFineIllegalBorderCrossing');
+            svgIcon = EVENT_SVG_ICONS.illegal_border_crossing;
+            break;
+          case 'hard_shoulder_violation':
+            title = t('eventFineHardShoulderViolation');
+            svgIcon = EVENT_SVG_ICONS.hard_shoulder_violation;
+            break;
+          case 'damaged_vehicle':
+          case 'damaged_vehicle_usage':
+            title = t('eventFineDamagedVehicleUsage');
+            svgIcon = EVENT_SVG_ICONS.damaged_vehicle;
+            break;
+          default:
+            title = offence ? offence.replace(/_/g, ' ') : t('eventFineGeneric');
+            svgIcon = EVENT_SVG_ICONS.generic_fine;
+            break;
+        }
       }
     } else if (type === 'tollgate') {
       category = t('eventCategoryToll');
@@ -3963,27 +4597,29 @@
       }
       svgIcon = EVENT_SVG_ICONS.train;
     } else if (type === 'job_delivered') {
-      category = t('eventCategoryJobDelivered');
-      title = t('eventJobDeliveredTitle');
-      badgeText = t('badgeDelivered');
+      const isBus = Boolean(event.isBusJob || (latestJobStateSnapshot && latestJobStateSnapshot.isBusJob) || (lastActiveJobSnapshot && lastActiveJobSnapshot.isBusJob));
+      category = event.category || (isBus ? t('eventCategoryBusStop') : t('eventCategoryJobDelivered'));
+      title = event.title || (isBus ? t('eventBusJobDeliveredTitle') : t('eventJobDeliveredTitle'));
+      badgeText = isBus ? t('badgeCoach') : t('badgeDelivered');
       cardModifier = 'job_delivered';
       valueText = amount > 0 ? `+ € ${formatIntWithSpaces(amount)}` : `+ € 0`;
       if (xp > 0) {
         subText = `(+ ${xp} XP)`;
       }
-      svgIcon = EVENT_SVG_ICONS.job_delivered;
+      svgIcon = isBus ? EVENT_SVG_ICONS.bus_stop : EVENT_SVG_ICONS.job_delivered;
       if (event.summaryMetrics) {
         summaryMetrics = event.summaryMetrics;
         cardModifier = 'job_delivered event-toast-card--summary';
         durationMs = 7000;
       }
     } else if (type === 'job_cancelled') {
-      category = t('eventCategoryJobCancelled');
-      title = t('eventJobCancelledTitle');
-      badgeText = t('badgeCancelled');
+      const isBus = Boolean(event.isBusJob || (latestJobStateSnapshot && latestJobStateSnapshot.isBusJob) || (lastActiveJobSnapshot && lastActiveJobSnapshot.isBusJob));
+      category = event.category || (isBus ? t('eventCategoryBusStop') : t('eventCategoryJobCancelled'));
+      title = event.title || (isBus ? t('eventBusJobCancelledTitle') : t('eventJobCancelledTitle'));
+      badgeText = isBus ? t('badgeCoach') : t('badgeCancelled');
       cardModifier = 'job_cancelled';
       valueText = amount > 0 ? `− € ${formatIntWithSpaces(amount)}` : `€ 0`;
-      svgIcon = EVENT_SVG_ICONS.job_cancelled;
+      svgIcon = isBus ? EVENT_SVG_ICONS.bus_stop : EVENT_SVG_ICONS.job_cancelled;
     } else if (type === 'cargo_damage') {
       category = t('eventCategoryCargoDamage');
       title = event.title || t('eventCargoDamageTitle');
@@ -4013,13 +4649,24 @@
       cardModifier = 'bus_stop';
       valueText = event.valueText || event.target || 'Station';
       svgIcon = EVENT_SVG_ICONS.bus_stop;
-    } else if (type === 'bus_comfort') {
+    } else if (type === 'bus_comfort' || type === 'bus_comfort_down') {
       category = t('eventCategoryBusComfort');
       title = event.title || t('eventBusComfortTitle');
-      badgeText = t('badgeComfort');
+      badgeText = t('badgeComfortDown');
       cardModifier = 'bus_comfort';
-      valueText = event.valueText || `-${event.amount || 10}%`;
+      const curSat = event.currentSat !== undefined ? ` (${event.currentSat}%)` : '';
+      valueText = event.valueText || `-${event.amount || 10}%${curSat}`;
+      if (event.subText) subText = event.subText;
       svgIcon = EVENT_SVG_ICONS.bus_comfort;
+    } else if (type === 'bus_comfort_up') {
+      category = t('eventCategoryBusComfort');
+      title = event.title || t('eventBusComfortUpTitle');
+      badgeText = t('badgeComfortUp');
+      cardModifier = 'bus_comfort_up';
+      const curSat = event.currentSat !== undefined ? ` (${event.currentSat}%)` : '';
+      valueText = event.valueText || `+${event.amount || 5}%${curSat}`;
+      if (event.subText) subText = event.subText;
+      svgIcon = EVENT_SVG_ICONS.bus_comfort_up;
     } else if (type === 'chat_honk') {
       category = t('eventCategoryChatHonk');
       title = event.title || `${t('eventChatHonkTitle')} @${event.user || 'Viewer'}`;
@@ -4066,6 +4713,18 @@
       valueText = event.valueText || '';
       subText = event.subText || '';
       svgIcon = EVENT_SVG_ICONS.chat_driver;
+    } else if (type === 'update') {
+      category = t('eventCategoryUpdate') || (lang === 'en' ? 'SYSTEM // FIRMWARE' : 'СИСТЕМА // ОБНОВЛЕНИЕ');
+      const newVer = event.version || event.tag_name || 'v1.2.2';
+      title = `${t('eventUpdateTitle') || (lang === 'en' ? 'UPDATE AVAILABLE' : 'ДОСТУПНА ВЕРСИЯ')} ${newVer}`;
+      badgeText = 'PIP-BOY 3000';
+      cardModifier = 'update';
+      valueText = t('eventUpdateDesc') || (lang === 'en'
+        ? 'Run Update-Overlay.bat to install latest version.'
+        : 'Запустите Update-Overlay.bat для установки.');
+      subText = `${t('eventUpdateCurrent') || (lang === 'en' ? 'Current version:' : 'Текущая версия:')} ${OVERLAY_VERSION}`;
+      svgIcon = EVENT_SVG_ICONS.update;
+      durationMs = 12000;
     }
 
     return {
@@ -4113,14 +4772,13 @@
       container.setAttribute('aria-live', 'assertive');
       container.setAttribute('aria-atomic', 'true');
       const scene = global.document.querySelector('.scene-desktop') ||
-                    global.document.querySelector('.scene-vertical') ||
                     global.document.body;
       scene.appendChild(container);
     }
     return container;
   }
 
-  function showTelemetryEventCard(eventData, onComplete) {
+    function showTelemetryEventCard(eventData, onComplete) {
     const container = getToastContainer();
     const details = resolveEventDetails(eventData);
 
@@ -4165,16 +4823,53 @@
 
     playEventAudio(eventData.type, eventData.offence);
 
+    // Кинематика появления: плавный выезд сверху вниз (или CRT Power-On)
     requestAnimationFrame(() => {
-      card.classList.add('is-visible');
+      card.classList.add('is-visible', 'active', 'show');
     });
+
+    // Эффект печатной машинки (typewriter) для карточки обновления Pip-Boy 3000
+    if (details.cardModifier === 'update' || eventData.type === 'update') {
+      const descEl = card.querySelector('.event-toast-desc');
+      if (descEl) {
+        descEl.classList.add('event-toast-desc--update');
+        const textVal = details.valueText || '';
+        const textSub = details.subText || '';
+        descEl.innerHTML = `<span class="event-toast-typewriter-text"></span><span class="event-toast-cursor">▌</span>${textSub ? `<br><span class="event-toast-sub" style="opacity:0.8;font-size:12.5px;">${escapeHtml(textSub)}</span>` : ''}`;
+        const targetSpan = descEl.querySelector('.event-toast-typewriter-text');
+        if (targetSpan && textVal) {
+          let charIdx = 0;
+          const etsCfg = config.ets2 || {};
+          const vol = typeof etsCfg.eventSoundVolume === 'number' ? etsCfg.eventSoundVolume : 0.65;
+          const typeInterval = setInterval(() => {
+            if (charIdx < textVal.length) {
+              targetSpan.textContent += textVal[charIdx];
+              charIdx++;
+              if (charIdx % 2 === 0) {
+                TelemetrySoundEngine.playTerminalTick(vol * 0.4);
+              }
+            } else {
+              clearInterval(typeInterval);
+            }
+          }, 22);
+        }
+      }
+    }
 
     const displayMs = Math.max(3000, Number(details.durationMs) || 4500);
 
     if (eventToastTimer) clearTimeout(eventToastTimer);
     eventToastTimer = setTimeout(() => {
-      card.classList.remove('is-visible');
-      card.classList.add('is-leaving');
+      // Для обновления проигрываем звук выключения CRT
+      if (details.cardModifier === 'update' || eventData.type === 'update') {
+        const etsCfg = config.ets2 || {};
+        const vol = typeof etsCfg.eventSoundVolume === 'number' ? etsCfg.eventSoundVolume : 0.65;
+        TelemetrySoundEngine.playCrtPowerOff(vol);
+      }
+
+      // Кинематика растворения: остаётся на месте и плавно затухает (или CRT Power-Off)
+      card.classList.remove('is-visible', 'active', 'show');
+      card.classList.add('is-leaving', 'hiding', 'fade-out');
 
       if (eventToastLeaveTimer) clearTimeout(eventToastLeaveTimer);
       eventToastLeaveTimer = setTimeout(() => {
@@ -4184,7 +4879,7 @@
         if (typeof onComplete === 'function') {
           onComplete();
         }
-      }, 350);
+      }, 480);
     }, displayMs);
   }
 
@@ -4209,7 +4904,12 @@
   let lastServiceAlertAt = 0;
   let lowFuelAlerted = false;
   let lastBusStopId = null;
-  let lastBusSat = null;
+  let lastReportedBusSat = null;
+  let prevBusSat = null;
+  let lastComfortToastAt = 0;
+  let wasJobActive = false;
+  let lastActiveJobSnapshot = null;
+  let lastJobDeliveredOrCancelledAt = 0;
   let latestJobStateSnapshot = null;
   let latestIdentitySnapshot = null;
 
@@ -4285,9 +4985,22 @@
     }
   }
 
-  function checkBusEvents(data) {
-    const isBus = isTruthyTelemetryFlag(data.isBusJob) || data.jobMarket === 'bus_job' || data.jobMarket === 'coach';
-    if (!isBus) return;
+  function checkBusEvents(data, isJobActive) {
+    const isBus = Boolean(
+      isTruthyTelemetryFlag(data.isBusJob) ||
+      isTruthyTelemetryFlag(data.busJob) ||
+      data.jobMarket === 'bus_job' ||
+      data.jobMarket === 'coach' ||
+      (latestJobStateSnapshot && latestJobStateSnapshot.isBusJob)
+    );
+
+    // Сброс опорных значений при отсутствии автобуса или неактивном рейсе
+    if (!isBus || !isJobActive) {
+      lastReportedBusSat = null;
+      prevBusSat = null;
+      lastBusStopId = null;
+      return;
+    }
 
     const stopName = (data.destinationStop && (data.destinationStop.name || data.destinationStop.id)) ||
                      (data.sourceStop && (data.sourceStop.name || data.sourceStop.id));
@@ -4302,18 +5015,69 @@
       lastBusStopId = stopName;
     }
 
-    const sat = parseFiniteTelemetryNumber(data.busSat);
-    if (sat !== null) {
-      if (lastBusSat !== null && sat < lastBusSat - 0.075) {
-        const drop = Math.round((lastBusSat - sat) * 100);
-        enqueueTelemetryEvent({
-          type: 'bus_comfort',
-          amount: drop,
-          valueText: `-${drop}%`
-        });
-      }
-      lastBusSat = sat;
+    const rawSat = parseFiniteTelemetryNumber(
+      data.busSat ?? (data.tel && data.tel.busSat) ?? (data.trip && data.trip.busSat) ?? (data.cfg && data.cfg.bus && data.cfg.bus.satisfaction)
+    );
+    if (rawSat === null) return;
+    const currentBusSat = Math.round(rawSat > 1.0 ? rawSat : rawSat * 100.0);
+
+    // 1. БЛОКИРОВКА ЛОЖНОГО -100% КОМФОРТА:
+    // Если busSat падает до 0 (или <= 1), либо одновременно пропадает активный заказ/маршрут,
+    // КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО триггерить событие падения комфорта!
+    // Сброс busSat в 0 означает закрытие автобусного маршрута, а не падение комфорта.
+    if (currentBusSat <= 1) {
+      lastReportedBusSat = null;
+      prevBusSat = null;
+      return;
     }
+
+    // Первичная инициализация эталонного значения при старте рейса
+    if (lastReportedBusSat === null || prevBusSat === null) {
+      lastReportedBusSat = currentBusSat;
+      prevBusSat = currentBusSat;
+      return;
+    }
+
+    // Отслеживание изменений только когда автобусный рейс реально активен и prevBusSat > 0 и currentBusSat > 0
+    if (prevBusSat > 0 && currentBusSat > 0) {
+      const now = Date.now();
+      const delta = currentBusSat - lastReportedBusSat;
+
+      // Падение комфорта (bus_comfort): currentBusSat < lastReportedBusSat
+      if (delta <= -1) {
+        if (now - lastComfortToastAt >= 4000) {
+          const drop = Math.abs(delta);
+          lastComfortToastAt = now;
+          lastReportedBusSat = currentBusSat;
+          enqueueTelemetryEvent({
+            type: 'bus_comfort',
+            amount: drop,
+            currentSat: currentBusSat,
+            valueText: `-${drop}% (${currentBusSat}%)`,
+            title: lang === 'ru' ? 'Резкое падение комфорта' : 'Comfort Rating Drop',
+            subText: lang === 'ru' ? `Рейтинг комфорта: ${currentBusSat}%` : `Comfort rating: ${currentBusSat}%`
+          });
+        }
+      }
+      // Увеличение комфорта (bus_comfort_up): currentBusSat > lastReportedBusSat
+      else if (delta >= 1) {
+        if (now - lastComfortToastAt >= 4000) {
+          const gain = delta;
+          lastComfortToastAt = now;
+          lastReportedBusSat = currentBusSat;
+          enqueueTelemetryEvent({
+            type: 'bus_comfort_up',
+            amount: gain,
+            currentSat: currentBusSat,
+            valueText: `+${gain}% (${currentBusSat}%)`,
+            title: lang === 'ru' ? 'Комфорт пассажиров повышен' : 'Passenger Comfort Increased',
+            subText: lang === 'ru' ? `Рейтинг комфорта: ${currentBusSat}%` : `Comfort rating: ${currentBusSat}%`
+          });
+        }
+      }
+    }
+
+    prevBusSat = currentBusSat;
   }
 
   let prevFuel = null;
@@ -4391,6 +5155,7 @@
         sessionStats.currentTripFinesAmount += amt;
         sessionStats.safetyScore = Math.max(10, sessionStats.safetyScore - 4);
       } else if (lastEvent.type === 'job_delivered') {
+        lastJobDeliveredOrCancelledAt = Date.now();
         const amt = Number(lastEvent.amount) || 0;
         sessionStats.jobsCompleted += 1;
         sessionStats.revenue += amt;
@@ -4401,20 +5166,29 @@
           if (bet === outcome) winningUsers.push(`@${user}`);
         });
 
-        const routeText = latestJobStateSnapshot ? latestJobStateSnapshot.routeText : '';
+        const routeText = (lastEvent.summaryMetrics && lastEvent.summaryMetrics.route) ||
+                          (latestJobStateSnapshot ? (latestJobStateSnapshot.routeText || latestJobStateSnapshot.text) : '') ||
+                          (lastActiveJobSnapshot ? lastActiveJobSnapshot.routeText : '');
+        const distText = (latestJobStateSnapshot ? (latestJobStateSnapshot.distanceText || latestJobStateSnapshot.meta) : '') ||
+                         (lastActiveJobSnapshot && lastActiveJobSnapshot.plannedKm ? `${lastActiveJobSnapshot.plannedKm} ${t('km')}` : '');
         const finesSummary = sessionStats.currentTripFines === 0
           ? (lang === 'ru' ? '0 (ЧИСТЫЙ РЕЙС)' : '0 (CLEAN TRIP)')
           : `${sessionStats.currentTripFines} (€ ${formatIntWithSpaces(sessionStats.currentTripFinesAmount)})`;
 
         lastEvent.summaryMetrics = {
           route: routeText,
-          distance: latestJobStateSnapshot ? latestJobStateSnapshot.distanceText : '',
+          distance: distText,
           revenue: amt,
-          xp: Number(lastEvent.xp) || 0,
+          xp: Number(lastEvent.xp) || (lastEvent.isBusJob ? 450 : 600),
           finesText: finesSummary,
           winners: winningUsers.length > 0 ? winningUsers.join(', ') : t('eventSummaryNoBets')
         };
 
+        tripBets.clear();
+        sessionStats.currentTripFines = 0;
+        sessionStats.currentTripFinesAmount = 0;
+      } else if (lastEvent.type === 'job_cancelled') {
+        lastJobDeliveredOrCancelledAt = Date.now();
         tripBets.clear();
         sessionStats.currentTripFines = 0;
         sessionStats.currentTripFinesAmount = 0;
@@ -4497,6 +5271,24 @@
     let tKind = String(type || 'fine').toLowerCase();
     let off = String(offence || '').toLowerCase();
 
+    // Быстрые сокращения для вызовов вроде testTelemetryEvent('speeding_60') или ('bus_comfort_up')
+    if (tKind === 'update') {
+      enqueueTelemetryEvent({
+        seq: Date.now(),
+        type: 'update',
+        version: offence || 'v1.2.3',
+        offence: 'update'
+      });
+      return;
+    } else if (tKind.startsWith('speeding')) {
+      off = tKind;
+      tKind = 'fine';
+    } else if (tKind === 'bus_comfort_up') {
+      tKind = 'bus_comfort_up';
+    } else if (tKind === 'bus_comfort_down') {
+      tKind = 'bus_comfort';
+    }
+
     const knownOffences = [
       'speeding', 'speeding_camera', 'red_signal', 'crash', 'no_lights',
       'avoid_sleeping', 'wrong_way', 'avoid_weighing', 'illegal_trailer',
@@ -4522,12 +5314,17 @@
       if (!off) off = 'speeding';
       mock.offence = off;
       mock.amount = customAmount ? Number(customAmount) :
-                    (off === 'speeding' || off === 'speeding_camera') ? 550 :
+                    off.startsWith('speeding') ? 550 :
                     (off === 'red_signal') ? 350 :
                     (off === 'crash') ? 400 :
                     (off === 'no_lights') ? 150 :
                     (off === 'avoid_sleeping') ? 150 :
                     (off === 'wrong_way') ? 100 : 250;
+
+      const limitMatch = off.match(/speeding_(\d+)/);
+      if (limitMatch && limitMatch[1]) {
+        mock.speedLimit = parseInt(limitMatch[1], 10);
+      }
     } else if (tKind === 'tollgate') {
       mock.amount = customAmount ? Number(customAmount) : 45;
     } else if (tKind === 'refuel') {
@@ -4542,18 +5339,24 @@
       mock.source = lang === 'ru' ? 'Фолкстон' : 'Folkestone';
       mock.target = lang === 'ru' ? 'Кале' : 'Calais';
     } else if (tKind === 'job_delivered') {
-      mock.amount = customAmount ? Number(customAmount) : 14850;
-      mock.xp = 980;
+      const isBus = (off === 'bus' || off === 'coach');
+      mock.isBusJob = isBus;
+      mock.amount = customAmount ? Number(customAmount) : (isBus ? 8400 : 14850);
+      mock.xp = isBus ? 520 : 980;
       mock.summaryMetrics = {
-        route: lang === 'ru' ? 'Берлин → Париж (24Т)' : 'Berlin → Paris (24T)',
-        distance: '1 050 км',
+        route: isBus
+          ? (lang === 'ru' ? 'Берлин ZOB → Мюнхен ZOB' : 'Berlin ZOB → Munich ZOB')
+          : (lang === 'ru' ? 'Берлин → Париж (24Т)' : 'Berlin → Paris (24T)'),
+        distance: isBus ? '580 км' : '1 050 км',
         revenue: mock.amount,
-        xp: 980,
+        xp: mock.xp,
         finesText: lang === 'ru' ? '0 (ЧИСТЫЙ РЕЙС)' : '0 (CLEAN TRIP)',
         winners: '@VipViewer, @Trucker_77'
       };
     } else if (tKind === 'job_cancelled') {
-      mock.amount = customAmount ? Number(customAmount) : 12000;
+      const isBus = (off === 'bus' || off === 'coach');
+      mock.isBusJob = isBus;
+      mock.amount = customAmount ? Number(customAmount) : (isBus ? 0 : 12000);
     } else if (tKind === 'cargo_damage') {
       mock.amount = customAmount || '2.5';
       mock.valueText = `+${mock.amount}%`;
@@ -4564,9 +5367,18 @@
       mock.subText = '(~110 км)';
     } else if (tKind === 'bus_stop') {
       mock.target = off || 'Berlin ZOB';
-    } else if (tKind === 'bus_comfort') {
+    } else if (tKind === 'bus_comfort' || tKind === 'bus_comfort_down') {
+      mock.type = 'bus_comfort';
       mock.amount = customAmount || 12;
-      mock.valueText = `-${mock.amount}%`;
+      mock.currentSat = 82;
+      mock.valueText = `-${mock.amount}% (82%)`;
+      mock.subText = lang === 'ru' ? 'Рейтинг комфорта: 82%' : 'Comfort rating: 82%';
+    } else if (tKind === 'bus_comfort_up') {
+      mock.type = 'bus_comfort_up';
+      mock.amount = customAmount || 6;
+      mock.currentSat = 96;
+      mock.valueText = `+${mock.amount}% (96%)`;
+      mock.subText = lang === 'ru' ? 'Рейтинг комфорта: 96%' : 'Comfort rating: 96%';
     } else if (tKind === 'chat_honk') {
       mock.user = off || 'VipFan';
     } else if (tKind === 'chat_cb') {
@@ -4633,6 +5445,10 @@
     const limitKmh = Number.isFinite(limitRaw) && limitRaw > 0
       ? Math.round(limitRaw * speedMult)
       : 0;
+
+    if (limitKmh >= 15) {
+      lastValidSpeedLimit = limitKmh;
+    }
 
     const ccSource =
       data.cruise ??
@@ -4802,6 +5618,79 @@
     latestJobStateSnapshot = jobState;
     latestIdentitySnapshot = identity;
 
+    // Гарантированный State Fallback завершения/отмены рейса (DLC Coaches и грузовики)
+    const isJobActive = Boolean(
+      jobState && jobState.hasJob && !jobState.isGpsRoute &&
+      (jobState.plannedKm > 0 || (jobState.text && jobState.text !== t('freeRoam')))
+    );
+
+    const navMeters = resolveNavDistanceMeters(navInputs.navDist, apiCfg);
+    const navKm = navMeters !== null ? navMeters / 1000 : null;
+
+    if (wasJobActive && !isJobActive) {
+      const now = Date.now();
+      const hasRecentPluginEvent = (now - lastJobDeliveredOrCancelledAt <= 2000);
+
+      if (!hasRecentPluginEvent) {
+        const snap = lastActiveJobSnapshot;
+        const remKm = snap ? snap.remainingKm : null;
+        const lastSpeed = snap ? snap.speedKmh : speedKmh;
+        const isBus = snap ? snap.isBusJob : false;
+
+        const isDelivered = (remKm !== null && remKm <= 3.0) || lastSpeed < 2.0;
+
+        if (isDelivered) {
+          const deliveredAmount = (snap && snap.income) ? snap.income : 0;
+          const fallbackEvent = {
+            seq: now,
+            type: 'job_delivered',
+            amount: deliveredAmount,
+            xp: isBus ? 450 : 600,
+            isBusJob: isBus,
+            title: isBus
+              ? t('eventBusJobDeliveredTitle')
+              : t('eventJobDeliveredTitle'),
+            category: isBus
+              ? t('eventCategoryBusStop')
+              : t('eventCategoryJobDelivered')
+          };
+          lastJobDeliveredOrCancelledAt = now;
+          handleIncomingTelemetryEvent(fallbackEvent);
+        } else {
+          const fallbackCancel = {
+            seq: now,
+            type: 'job_cancelled',
+            amount: 0,
+            isBusJob: isBus,
+            title: isBus
+              ? t('eventBusJobCancelledTitle')
+              : t('eventJobCancelledTitle'),
+            category: isBus
+              ? t('eventCategoryBusStop')
+              : t('eventCategoryJobCancelled')
+          };
+          lastJobDeliveredOrCancelledAt = now;
+          handleIncomingTelemetryEvent(fallbackCancel);
+        }
+      }
+
+      wasJobActive = false;
+      lastActiveJobSnapshot = null;
+    }
+
+    if (isJobActive) {
+      wasJobActive = true;
+      lastActiveJobSnapshot = {
+        isBusJob: Boolean(jobState.isBusJob),
+        routeText: jobState.routeText || jobState.text || '',
+        plannedKm: jobState.plannedKm || 0,
+        income: jobState.income || 0,
+        remainingKm: navKm,
+        speedKmh: speedKmh,
+        timestamp: Date.now()
+      };
+    }
+
     if (speedKmh > sessionStats.maxSpeed) {
       sessionStats.maxSpeed = speedKmh;
     }
@@ -4817,7 +5706,7 @@
     }
 
     checkCargoAndDamageEvents(data, speedKmh);
-    checkBusEvents(data);
+    checkBusEvents(data, isJobActive);
 
     const lastEvent = data.lastEvent || (data.tel && data.tel.lastEvent);
     if (lastEvent) {
@@ -5258,6 +6147,75 @@
     demoTimers = [];
   }
 
+  function checkOverlayUpdates() {
+    const etsCfg = config.ets2 || {};
+    if (etsCfg.checkUpdates === false) return;
+
+    function parseSemver(v) {
+      if (!v) return [0, 0, 0];
+      const clean = String(v).replace(/^v/i, '').trim();
+      const parts = clean.split('.').map((n) => parseInt(n, 10) || 0);
+      while (parts.length < 3) parts.push(0);
+      return parts;
+    }
+
+    function isNewerVersion(remote, local) {
+      const r = parseSemver(remote);
+      const l = parseSemver(local);
+      for (let i = 0; i < 3; i++) {
+        if (r[i] > l[i]) return true;
+        if (r[i] < l[i]) return false;
+      }
+      return false;
+    }
+
+    try {
+      const now = Date.now();
+      let cached = null;
+      try {
+        const raw = global.localStorage.getItem(UPDATE_CACHE_KEY);
+        if (raw) cached = JSON.parse(raw);
+      } catch (_) {}
+
+      if (cached && (now - cached.timestamp < UPDATE_CACHE_TTL_MS) && cached.tag_name) {
+        if (isNewerVersion(cached.tag_name, OVERLAY_VERSION)) {
+          enqueueTelemetryEvent({
+            seq: Date.now(),
+            type: 'update',
+            version: cached.tag_name
+          });
+        }
+        return;
+      }
+
+      fetch('https://api.github.com/repos/FooZzee/ets2-ats-stream-overlay/releases/latest', {
+        headers: { 'Accept': 'application/vnd.github.v3+json' }
+      })
+        .then((res) => {
+          if (!res.ok) return null;
+          return res.json();
+        })
+        .then((data) => {
+          if (!data || !data.tag_name) return;
+          try {
+            global.localStorage.setItem(UPDATE_CACHE_KEY, JSON.stringify({
+              tag_name: data.tag_name,
+              timestamp: Date.now()
+            }));
+          } catch (_) {}
+
+          if (isNewerVersion(data.tag_name, OVERLAY_VERSION)) {
+            enqueueTelemetryEvent({
+              seq: Date.now(),
+              type: 'update',
+              version: data.tag_name
+            });
+          }
+        })
+        .catch(() => {});
+    } catch (_) {}
+  }
+
   function bootstrap() {
     applyLocalization();
     applyWebcamState(!config.webcam || config.webcam.enabled !== false);
@@ -5301,6 +6259,8 @@
     if (config.ets2 && config.ets2.telemetryApi && config.ets2.telemetryApi.enabled) {
       pollETS2Telemetry();
     }
+
+    setTimeout(checkOverlayUpdates, 3000);
   }
 
   global.addEventListener('DOMContentLoaded', bootstrap);

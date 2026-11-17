@@ -2,12 +2,14 @@
 
 > **Professional broadcast cockpit HUD for OBS Studio powered by native SCS Telemetry SDK 1.16**
 
-[![Release](https://img.shields.io/badge/Release-v1.2.1-orange?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases)
-[![Platform](https://img.shields.io/badge/Platform-Windows%20x64-blue?style=for-the-badge&logo=windows)](https://www.microsoft.com/windows)
-[![SCS SDK](https://img.shields.io/badge/SCS%20SDK-v1.16%20Native-yellow?style=for-the-badge)](https://modding.scssoft.com/wiki/Documentation/Tools/Telemetry_server)
-[![DLC Coaches](https://img.shields.io/badge/ETS2-DLC%20Coaches%20Supported-green?style=for-the-badge)](https://scssoft.com/)
-[![OBS Studio](https://img.shields.io/badge/OBS%20Studio-Browser%20Source-purple?style=for-the-badge&logo=obsstudio)](https://obsproject.com/)
-[![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge)](./LICENSE)
+[![Release](https://img.shields.io/badge/Release-v1.2.2-blue?style=flat&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20x64-blue?style=flat&logo=windows)](https://www.microsoft.com/windows)
+[![SCS SDK](https://img.shields.io/badge/SCS%20SDK-v1.16%20Native-yellow?style=flat)](https://modding.scssoft.com/wiki/Documentation/Tools/Telemetry_server)
+[![DLC Coaches](https://img.shields.io/badge/ETS2-DLC%20Coaches-green?style=flat)](https://scssoft.com/)
+[![OBS Studio](https://img.shields.io/badge/OBS%20Studio-Browser%20Source-purple?style=flat&logo=obsstudio)](https://obsproject.com/)
+[![License](https://img.shields.io/badge/License-MIT-success?style=flat)](./LICENSE)
+
+[![Support Project](https://img.shields.io/badge/Support_Project-FF5E5B?style=for-the-badge&logo=heart&logoColor=white)](https://www.donationalerts.com/r/foozzee)
 
 ---
 
@@ -36,7 +38,7 @@
 
 * ⚡ **Zero-Overhead Shared Memory:** Bundles a custom C++ plugin (`overlayobs_foozzee_telemetry.dll`) that interfaces directly with SCS Telemetry SDK 1.16 via Win32 Shared Memory. Zero external proxy tools, third-party executables, or heavy Node runtimes required.
 * 🖥️ **2-Row Lower Dashboard ("Torpedo"):** Occupies the lower edge of a `1920×1080` canvas, offering pristine visibility for natural simulation viewing.
-* 📱 **Mobile Vertical Layout:** Native `1080×1920` vertical layout optimized for TikTok Live, YouTube Shorts, and Instagram Reels with built-in UI overlay safe zones.
+* 🖥️ **Full HD Desktop Cockpit HUD:** 2-row broadcast HUD (`1920×1080`) for OBS Studio with transparent windscreen area and solid dashboard base.
 * ⏱️ **Real-World Navigation ETA (`real-eta-panel`):** Automatically detects the active map scale (`1:19` highways, `1:3` cities, `1:10` UK) to convert in-game navigation time into precise real-world hours and minutes remaining.
 * 💬 **Audience Engagement:** Integrated Twitch IRC chat client and sequential FIFO alert notifications (`donate`, `sub`, `follow`, `raid`) with optional DonationAlerts integration.
 * 🌐 **Instant Bilingual Support:** Seamless English and Russian localization (`EN` / `RU`) across the entire HUD, installer, and update terminal.
@@ -103,7 +105,7 @@
 flowchart LR
     A["Euro Truck Simulator 2 / ATS\n(64-bit Game Engine)"] -->|"SCS Telemetry SDK 1.16"| B["overlayobs_foozzee_telemetry.dll\n(Native C++ Release Plugin)"]
     B -->|"Shared Memory\nLocal\\FooZzeeSCSTelemetry"| C["udp-bridge.ps1\n(Local HTTP/JSON Server :30002)"]
-    C -->|"JSON Polling (30-60 FPS)\n/telemetry"| D["OBS Studio Browser Source\n(ets2-desktop.html / ets2-vertical.html)"]
+    C -->|"JSON Polling (30-60 FPS)\n/telemetry"| D["OBS Studio Browser Source\n(ets2-desktop.html)"]
     E["Twitch IRC & DonationAlerts"] -->|"WebSockets\n(Alerts & Live Chat)"| D
     F["GitHub Releases API"] -->|"Periodic Check (Pip-Boy 3000)"| D
 ```
@@ -115,7 +117,6 @@ flowchart LR
 | `assets/js/ets2-updater.js` | Standalone Pip-Boy 3000 update detector | ES6 JavaScript, WebAudio API, GitHub REST API |
 | `assets/css/ets2-pipboy.css` | Phosphor CRT scanlines, vignette & animations | Pure CSS3, Keyframe Animations, Flexbox |
 | `ets2-desktop.html` | 2-row horizontal cockpit HUD (`1920×1080`) | HTML5, CSS Grid, Canvas, Vanilla JS |
-| `ets2-vertical.html` | Mobile vertical broadcast HUD (`1080×1920`) | HTML5, Mobile UI Safe Zones, CSS3 |
 | `scripts/installer.ps1` | 1-click GUI setup wizard (`Install-Overlay.bat`) | PowerShell WinForms, UTF-8 with BOM |
 
 ---
@@ -196,8 +197,7 @@ window.OVERLAY_CONFIG = {
      > The overlay must be added strictly via the **"URL" (Ссылка)** field. If loaded with "Local file" checked, OBS isolates the page in a restricted file sandbox: **interactive cockpit controls, Pip-Boy update buttons, and external links will NOT work**.
    * In the **`URL` (Ссылка)** field, enter the full path to the HTML file:  
      `D:\html\Overlay\ets2-desktop.html` *(or `C:\ETS2-ATS-Stream-Overlay\ets2-desktop.html`)*  
-     *(for mobile vertical scene: path to `ets2-vertical.html`)*.
-   * **Resolution:** Width **`1920`**, Height **`1080`** *(for vertical: **`1080`** × **`1920`**)*.
+     * **Resolution:** Width **`1920`**, Height **`1080`**, FPS: **`60`** fps.
    * Check: **«Refresh browser when scene becomes active»** & **«Shutdown source when not visible»**.
    * **Interactive Controls:** To click buttons on the HUD (such as Pip-Boy update buttons or social links), right-click the Browser Source in OBS and select **«Interact» (Взаимодействовать)**.
 3. **Webcam Positioning (Desktop Scene):**

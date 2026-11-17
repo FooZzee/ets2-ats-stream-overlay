@@ -4,10 +4,10 @@
 > All notable changes are documented in strict adherence to [Keep a Changelog](https://keepachangelog.com/) and [Semantic Versioning 2.0.0](https://semver.org/).  
 > Все значимые изменения документируются в соответствии со стандартами [Keep a Changelog](https://keepachangelog.com/) и [Semantic Versioning 2.0.0](https://semver.org/).
 
-[![Keep a Changelog](https://img.shields.io/badge/Changelog-Keep%20a%20Changelog%201.1.1-orange?style=for-the-badge&logo=git)](https://keepachangelog.com/)
-[![SemVer](https://img.shields.io/badge/SemVer-2.0.0-blue?style=for-the-badge&logo=semver)](https://semver.org/)
-[![Latest Release](https://img.shields.io/badge/Latest-v1.2.1-green?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.2.1)
-[![License](https://img.shields.io/badge/License-MIT-purple?style=for-the-badge)](./LICENSE)
+[![Keep a Changelog](https://img.shields.io/badge/Changelog-Keep%20a%20Changelog%201.1.1-orange?style=flat&logo=git)](https://keepachangelog.com/)
+[![SemVer](https://img.shields.io/badge/SemVer-2.0.0-blue?style=flat&logo=semver)](https://semver.org/)
+[![Latest Release](https://img.shields.io/badge/Latest-v1.2.2-green?style=flat&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.2.2)
+[![License](https://img.shields.io/badge/License-MIT-purple?style=flat)](./LICENSE)
 
 ---
 
@@ -25,12 +25,59 @@
 ## 🇬🇧 English Changelog
 
 ### 📌 Version Index (EN)
+* [v1.2.2 (2026-11-17) — Single Desktop Cockpit HUD, Auto-Update Notification, WPF Setup Wizard & 8-Bit Audio](#122---2026-11-17-en)
 * [v1.2.1 (2026-11-16) — GUI Installer Documentation Viewers & Commands Quick Access](#121---2026-11-16-en)
 * [v1.2.0 (2026-11-16) — In-Game Event Toast Notifications, SVG Icons & Web Audio API Sound Synthesizer](#120---2026-11-16-en)
 * [v1.1.3 (2026-11-15) — Telemetry Stability, Native Plugin Renaming & 100% Bilingual HUD](#113---2026-11-15-en)
 * [v1.1.2 (2026-11-15) — Pip-Boy 3000 Standalone Auto-Update Terminal, 100% Bilingual Localization & DLC Coaches](#112---2026-11-15-en)
 * [v1.1.0 (2026-11-15) — ETS2 DLC Coaches Support, Solid Dashboard & Enhanced SCS Telemetry](#110---2026-11-15-en)
 * [v1.0.0 (2026-11-12) — Initial Release (Native SCS Telemetry SDK 1.16 & Broadcast HUD)](#100---2026-11-12-en)
+
+---
+
+<a id="122---2026-11-17-en"></a>
+### [1.2.2] - 2026-11-17
+
+> [!IMPORTANT]
+> **Release v1.2.2** delivers a complete transition to a unified desktop Cockpit HUD layout, resolves bus and truck job completion/cancellation state handling, revamps the in-game telemetry toast card design and kinematics, introduces an in-OBS auto-update notification with CRT animations and Web Audio sound effects, and completely redesigns the GUI Setup Wizard and standalone Pip-Boy 3000 update terminal with native WPF architecture and retro 8-bit audio.
+
+#### 🚀 Added
+* **🔔 In-OBS Auto-Update Notification (`assets/js/ets2-telemetry.js`, `assets/css/ets2-base.css`):**
+  * Autonomous update check in OBS preview with GitHub API rate-limit protection (`HTTP 403` cache in `localStorage` with a 3-hour TTL).
+  * Authentic Pip-Boy 3000 green phosphor aesthetic (`#22c55e`, `#15803d`, background `#070b09`, CRT scanlines).
+  * CRT Power-On and Power-Off beam expansion/collapse animations (`crtPowerOn`, `crtPowerOff`).
+  * Smooth 22ms teletype typewriter text printing with blinking green terminal cursor `▌` and min-height container.
+  * Real-time Web Audio API sound synthesis: power relay click, high-voltage 15.6 kHz flyback transformer sweep, CRT degauss coil hum, and mechanical terminal keystroke clicks.
+  * Interactive console test commands: `window.testTelemetryEvent('update')` and `window.testTelemetryEvent('update', 'v1.2.3')`.
+* **🛠️ Standalone Pip-Boy 3000 Update Terminal (`Update-Overlay.bat` & `scripts/updater.ps1`):**
+  * Native WPF terminal running in `-STA` (Single-Threaded Apartment) mode with enforced TLS 1.2 protocol.
+  * Resilient network handling with 5-second timeout and graceful rate-limit fallback messages without crashing.
+  * Full bilingual localization (`RU` / `EN`) with instant language switching and changelog viewer.
+* **🚚 Graphical Setup Wizard Redesign (`Install-Overlay.bat` & `scripts/installer.ps1`):**
+  * Complete overhaul in ETS2 / ATS Cockpit HUD style (`#0d1117`, `#151b24`, `#2a3444`, amber gold `#f59e0b`, cyan `#38bdf8`).
+  * Standardized button control templates with `CornerRadius="8"`, hover gradient, and pressed state translation.
+  * Prominent centered «SUPPORT PROJECT» button (`CornerRadius="10"`, `#ff5e5b` → `#e11d48`) with vector Material Design Heart path linking to DonationAlerts.
+  * Dedicated GitHub Star card with vector Star path and direct repository link.
+  * Compact in-memory 8-bit sound loop (268 KB, 22050 Hz Mono) generated in 6 ms via C# synthesis with header pause/resume speaker toggle.
+  * Automatic package version display (`v1.2.2`) in window title, header badge, and footer status line.
+* **🎯 Vector HUD Speed Limit Signs (30–130 km/h):**
+  * Full vector speed limit sign coverage from 30 km/h to 130 km/h in 10 km/h increments with crisp typography and high-contrast red border.
+* **😊 Dynamic Passenger Comfort Emojis (`busSat`):**
+  * Added high-contrast vector SVG emojis for passenger satisfaction tiers (ecstatic, happy, neutral, unhappy, furious) with delta comfort change alerts.
+
+#### 🔄 Changed
+* **🖥️ Single Desktop HUD Architecture:**
+  * Complete removal of `ets2-vertical.html` and dead vertical layout code; all resources and documentation now focus purely on the streamlined desktop HUD (`1920×1080` — `ets2-desktop.html`).
+* **🎨 Toast Card Redesign & Kinematics:**
+  * Increased toast card scale by +10% for enhanced legibility on high-resolution streams.
+  * New kinematics: smooth slide-in from top to windscreen zone followed by stationary in-place fade out.
+  * Unified Cockpit HUD dark chassis (`#0e131b`) with solid opacity and border status lights.
+
+#### 🐛 Fixed
+* **🛑 Job Completion & Cancellation Fallbacks (`plugin.cpp`, `ets2-telemetry.js`):**
+  * Added interception for all SCS SDK job delivery and cancellation gameplay event IDs (including `job.delivered`, `job.cancelled`, `bus_job.*`, and `car_job.*`).
+  * Blocked false «-100% comfort drop» alerts caused by SCS SDK resetting passenger satisfaction to 0 upon coach trip completion.
+  * Implemented state-based fallback detection for trip finish when game telemetry resets job active flags.
 
 ---
 
@@ -203,12 +250,59 @@
 ## 🇷🇺 Русская история версий
 
 ### 📌 Навигация по версиям (RU)
+* [v1.2.2 (2026-11-17) — Единая десктопная сцена, автоуведомление об обновлениях, WPF-установщик и 8-bit музыка](#122---2026-11-17-ru)
 * [v1.2.1 (2026-11-16) — Встроенные средства просмотра документации и справочник команд](#121---2026-11-16-ru)
 * [v1.2.0 (2026-11-16) — Всплывающие уведомления о событиях, SVG-иконки и Web Audio API синтезатор звуков](#120---2026-11-16-ru)
 * [v1.1.3 (2026-11-15) — Стабильность телеметрии, переименование плагина и 100% двуязычный HUD](#113---2026-11-15-ru)
 * [v1.1.2 (2026-11-15) — Автономная проверка обновлений Pip-Boy 3000, 100% двуязычная локализация и DLC Coaches](#112---2026-11-15-ru)
 * [v1.1.0 (2026-11-15) — Поддержка ETS2 DLC Coaches, непрозрачная торпеда и новые каналы SCS SDK](#110---2026-11-15-ru)
 * [v1.0.0 (2026-11-12) — Первый публичный релиз (Нативный плагин SCS SDK 1.16 и приборный HUD)](#100---2026-11-12-ru)
+
+---
+
+<a id="122---2026-11-17-ru"></a>
+### [1.2.2] - 2026-11-17
+
+> [!IMPORTANT]
+> **Релиз v1.2.2** обеспечивает полный переход на единую десктопную архитектуру Cockpit HUD, устраняет сбои завершения и отмены рейсов на автобусах и грузовиках, обновляет кинематику и дизайн карточек уведомлений, добавляет автоуведомление об обновлениях в предпросмотре OBS с ЭЛТ-анимацией и Web Audio эффектами, а также полностью перерабатывает графический установщик и терминал Pip-Boy 3000 на нативный WPF со встроенной 8-bit музыкой.
+
+#### 🚀 Добавлено
+* **🔔 Автоуведомление об обновлении в предпросмотре OBS (`assets/js/ets2-telemetry.js`, `assets/css/ets2-base.css`):**
+  * Автономный опрос GitHub API с защитой от rate-лимитов (`HTTP 403`) через кэширование в `localStorage` (интервал 3 часа).
+  * Аутентичный ретро-стиль зелёного люминофора Pip-Boy 3000 (`#22c55e`, `#15803d`, глубокий фон `#070b09`, сканлайны кинескопа).
+  * Анимации включения и выключения ЭЛТ-монитора (`crtPowerOn` и `crtPowerOff`) с развёрткой луча из горизонтальной линии.
+  * Побуквенная печать текста со скоростью 22 мс на символ, мигающим зелёным курсором `▌` и контейнером с фиксированной высотой (без скачков оверлея).
+  * Синтез звуков через Web Audio API: щелчок тумблера питания, свист строчного трансформатора ТДКС (15.6 кГц), размагничивание и реалистичные щелчки клавиатуры терминала.
+  * Интерактивные команды тестирования: `window.testTelemetryEvent('update')` и `window.testTelemetryEvent('update', 'v1.2.3')`.
+* **🛠️ Автономный терминал обновлений Pip-Boy 3000 (`Update-Overlay.bat` и `scripts/updater.ps1`):**
+  * Графический интерфейс на базе WPF, работающий строго в STA-потоке (`Single-Threaded Apartment`) с принудительной поддержкой TLS 1.2.
+  * Защита от сбоев сети с 5-секундным таймаутом и информативным выводом сообщения при исчерпании лимитов GitHub API без падения приложения.
+  * Двуязычная локализация (`RU` / `EN`) с мгновенным переключением и встроенным просмотром списка изменений.
+* **🚚 Редизайн графического мастера установки (`Install-Overlay.bat` и `scripts/installer.ps1`):**
+  * Полная переработка интерфейса на WPF в стиле приборной панели ETS2 / ATS (`#0d1117`, `#151b24`, `#2a3444`, золотой янтарь `#f59e0b`, циан `#38bdf8`).
+  * Премиальные шаблоны кнопок со скруглением `CornerRadius="8"`, сменой градиента при наведении и тактильным сдвигом при клике.
+  * Центральная кнопка «ПОДДЕРЖАТЬ ПРОЕКТ» (`CornerRadius="10"`, градиент `#ff5e5b` → `#e11d48`) с проверенной векторной иконкой сердца Material Design со ссылкой на DonationAlerts.
+  * Блок «Поставить звезду на GitHub» с векторной иконкой звезды и прямым переходом в репозиторий.
+  * Компактный 8-bit аудиолуп в памяти (268 КБ, 22050 Гц Mono), генерируемый через встроенный C#-код за 6 мс, с кнопкой паузы/воспроизведения в шапке.
+  * Отображение актуальной версии пакета `v1.2.2` в заголовке окна, бейдже шапки и статусной строке футера.
+* **🎯 Векторные знаки ограничения скорости (30–130 км/ч):**
+  * Полный набор векторных знаков скорости с шагом 10 км/ч (30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130) с контрастной красной каймой и чётким шрифтом.
+* **😊 Векторные эмодзи комфорта пассажиров (`busSat`):**
+  * Пять уровней удовлетворенности пассажиров с динамическими векторными эмодзи и уведомлениями об изменении комфорта (`bus_comfort_up` / `bus_comfort_down`).
+
+#### 🔄 Изменено
+* **🖥️ Переход на единую десктопную версию:**
+  * Полностью удалён файл `ets2-vertical.html` и специфичный мёртвый код вертикального режима; весь проект и документация сфокусированы на десктопной сцене `1920×1080` (`ets2-desktop.html`).
+* **🎨 Масштаб и кинематика уведомлений:**
+  * Размер карточек уведомлений увеличен на +10% для идеальной читаемости на трансляциях.
+  * Новая кинематика: плавный выезд сверху вниз на лобовое стекло и последующее мягкое растворение на месте.
+  * Плотная непрозрачная графитовая подложка (`#0e131b`) с контурным свечением статуса.
+
+#### 🐛 Исправлено
+* **🛑 Логика завершения и отмены рейсов (`plugin.cpp`, `ets2-telemetry.js`):**
+  * Добавлен перехват всех вариантов событий завершения и аннулирования контрактов в SCS SDK (`job.delivered`, `job.cancelled`, `bus_job.*`, `car_job.*`).
+  * Заблокировано ложное уведомление «-100% комфорта», возникавшее при сбросе значения `busSat` игрой в 0 при завершении путевого листа.
+  * Реализован fallback по изменению состояния контракта в телеметрии при отсутствии явного события от игрового движка.
 
 ---
 

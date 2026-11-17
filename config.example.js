@@ -9,6 +9,9 @@ window.OVERLAY_CONFIG = {
   // Режим отладки (true — выводит подробные логи в консоль OBS и разрешает ?test=1)
   debug: false,
 
+  // Проверка обновлений оверлея на GitHub при запуске (с защитой от лимитов GitHub API и CRT-уведомлением)
+  checkUpdates: true,
+
   // Настройки каналов и подключений
   channels: {
     twitch: {

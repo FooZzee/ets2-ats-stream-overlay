@@ -3,10 +3,10 @@
 > **ETS2 / ATS Cockpit Telemetry Stream Overlay**  
 > All notable changes are documented in strict adherence to [Keep a Changelog](https://keepachangelog.com/) and [Semantic Versioning 2.0.0](https://semver.org/).
 
-[![Keep a Changelog](https://img.shields.io/badge/Changelog-Keep%20a%20Changelog%201.1.1-orange?style=for-the-badge&logo=git)](https://keepachangelog.com/)
-[![SemVer](https://img.shields.io/badge/SemVer-2.0.0-blue?style=for-the-badge&logo=semver)](https://semver.org/)
-[![Latest Release](https://img.shields.io/badge/Latest-v1.2.1-green?style=for-the-badge&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.2.1)
-[![License](https://img.shields.io/badge/License-MIT-purple?style=for-the-badge)](./LICENSE)
+[![Keep a Changelog](https://img.shields.io/badge/Changelog-Keep%20a%20Changelog%201.1.1-orange?style=flat&logo=git)](https://keepachangelog.com/)
+[![SemVer](https://img.shields.io/badge/SemVer-2.0.0-blue?style=flat&logo=semver)](https://semver.org/)
+[![Latest Release](https://img.shields.io/badge/Latest-v1.2.2-green?style=flat&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.2.2)
+[![License](https://img.shields.io/badge/License-MIT-purple?style=flat)](./LICENSE)
 
 ---
 
@@ -16,6 +16,7 @@
 
 ## 📌 Version Index
 
+* [v1.2.2 (2026-11-17) — Single Desktop Cockpit HUD, Auto-Update Notification, WPF Setup Wizard & 8-Bit Audio](#122---2026-11-17)
 * [v1.2.1 (2026-11-16) — GUI Installer Documentation Viewers & Commands Quick Access](#121---2026-11-16)
 * [v1.2.0 (2026-11-16) — In-Game Event Toast Notifications, SVG Icons & Web Audio API Sound Synthesizer](#120---2026-11-16)
 * [v1.1.3 (2026-11-15) — Telemetry Stability, Native Plugin Renaming & 100% Bilingual HUD](#113---2026-11-15)
