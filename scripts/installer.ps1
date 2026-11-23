@@ -64,7 +64,7 @@ $SourceRoot = if (Test-Path (Join-Path $ScriptRoot 'ets2-desktop.html')) {
     (Get-Location).Path
 }
 $RedistDll  = Join-Path $SourceRoot 'redist\overlayobs_foozzee_telemetry.dll'
-$TARGET_VER = '0.0.1'
+$TARGET_VER = '1.2.3'
 
 # 5. Определение языка системы по умолчанию
 $DefaultLang = if ([System.Globalization.CultureInfo]::CurrentUICulture.TwoLetterISOLanguageName -eq 'ru') { 'ru' } else { 'en' }
@@ -407,6 +407,7 @@ function Copy-OverlayDirectory {
         'commands.md',
         'commands.en.md',
         'commands.ru.md',
+        'RELEASE_NOTES_v1.2.3.md',
         'RELEASE_NOTES_v1.2.2.md',
         'LICENSE',
         '.gitignore'
@@ -1041,7 +1042,7 @@ $xaml = @"
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock x:Name="txtHeaderTitle" Text="ETS2 / ATS STREAM OVERLAY COCKPIT" FontWeight="Bold" FontSize="15" Foreground="#f59e0b" VerticalAlignment="Center"/>
                         <Border Background="#2a1d08" BorderBrush="#f59e0b" BorderThickness="1" CornerRadius="6" Padding="6,1" Margin="10,0,0,0" VerticalAlignment="Center">
-                            <TextBlock x:Name="txtBadgeVer" Text="v0.0.1" FontWeight="Bold" FontSize="11" Foreground="#fbbf24"/>
+                            <TextBlock x:Name="txtBadgeVer" Text="v1.2.3" FontWeight="Bold" FontSize="11" Foreground="#fbbf24"/>
                         </Border>
                     </StackPanel>
                     <TextBlock x:Name="txtHeaderSub" Text="2-Row Cockpit HUD • Native SCS SDK 1.16 Telemetry • © 2026 FooZzee (All Rights Reserved)" FontSize="11" Foreground="#94a3b8" Margin="0,2,0,0"/>
@@ -1327,7 +1328,7 @@ $xaml = @"
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBlock x:Name="txtFooterVer" Grid.Column="0" Text="Версия пакета: v1.2.2" FontSize="10.5" Foreground="#f59e0b"/>
+            <TextBlock x:Name="txtFooterVer" Grid.Column="0" Text="Версия пакета: v1.2.3" FontSize="10.5" Foreground="#f59e0b"/>
             <TextBlock x:Name="txtFooterObs" Grid.Column="1" Text="OBS Desktop: 1920x1080 (ets2-desktop.html) • Камера: 325x244 px (4:3)" FontSize="10.5" Foreground="#64748b"/>
         </Grid>
     </Grid>
@@ -1991,7 +1992,7 @@ $btnToggleToken.Add_Click({
 
 # Поддержка и звезда
 $btnStar.Add_Click({
-    [System.Diagnostics.Process]::Start('https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay')
+    [System.Diagnostics.Process]::Start('https://github.com/FooZzee/ets2-ats-stream-overlay')
 })
 $btnSupport.Add_Click({
     [System.Diagnostics.Process]::Start('https://www.donationalerts.com/r/foozzee')
@@ -2152,7 +2153,7 @@ $([string]$obsBodyText)
 
 ----------------------------------------------------------------------
 © 2026 FooZzee · Proprietary Freeware License (All Rights Reserved)
-https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay
+https://github.com/FooZzee/ets2-ats-stream-overlay
 "@
         [System.Windows.MessageBox]::Show($resMsg, (Get-Text 'DoneHeader'), [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information)
         $win.Close()

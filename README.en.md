@@ -2,7 +2,7 @@
 
 > **Professional broadcast cockpit HUD for OBS Studio powered by native SCS Telemetry SDK 1.16**
 
-[![Release](https://img.shields.io/badge/Release-v1.2.2-blue?style=flat&logo=github)](https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/releases)
+[![Release](https://img.shields.io/badge/Release-v1.2.3-blue?style=flat&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20x64-blue?style=flat&logo=windows)](https://www.microsoft.com/windows)
 [![SCS SDK](https://img.shields.io/badge/SCS%20SDK-v1.16%20Native-yellow?style=flat)](https://modding.scssoft.com/wiki/Documentation/Tools/Telemetry_server)
 [![DLC Coaches](https://img.shields.io/badge/ETS2-DLC%20Coaches-green?style=flat)](https://scssoft.com/)
@@ -132,7 +132,7 @@ flowchart LR
 
 ## ⚡ 1-Click GUI Installation
 
-1. Download the latest release archive **`ETS2-ATS-Stream-Overlay-v1.2.1.zip`** from [Releases](https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/releases).
+1. Download the latest release archive **`ETS2-ATS-Stream-Overlay-v1.2.1.zip`** from [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
 2. Extract the archive into any permanent folder (e.g., `C:\ETS2-ATS-Stream-Overlay`).
 3. Run **`Install-Overlay.bat`**:
    * Choose **`English (EN)`** or **`Русский (RU)`** in the top-right corner.

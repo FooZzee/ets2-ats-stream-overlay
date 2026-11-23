@@ -1,6 +1,6 @@
 /* Copyright (c) 2026 FooZzee. All Rights Reserved. Licensed under Proprietary Freeware License. */
 /**
- * Шаблон конфигурации OBS Overlays.
+ * Шаблон конфигурации ets2-ats-stream-overlay v1.2.3.0.2.
  * Скопируйте этот файл в config.js и заполните своими данными.
  */
 window.OVERLAY_CONFIG = {

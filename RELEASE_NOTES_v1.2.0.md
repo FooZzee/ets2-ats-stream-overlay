@@ -1,6 +1,6 @@
 # 🚀 ETS2 / ATS Cockpit Telemetry Stream Overlay — Release v1.2.0
 
-[![Release](https://img.shields.io/badge/Release-v1.2.0-orange.svg?style=flat-square)](https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/releases/tag/v1.2.0)
+[![Release](https://img.shields.io/badge/Release-v1.2.0-orange.svg?style=flat-square)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.2.0)
 [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-blue.svg?style=flat-square)](https://semver.org/)
 [![License](https://img.shields.io/badge/License-All_Rights_Reserved-ef4444?style=flat)](./LICENSE)
 
@@ -9,7 +9,7 @@
 ## [EN] English Release Notes
 
 ### Executive Summary
-Release **v1.2.0** introduces a native C++ gameplay event extraction pipeline (`overlayobs_foozzee_telemetry.dll`), real-time windshield HUD toast cards, a zero-dependency procedural Web Audio synthesizer, interactive Twitch chat viewer engagement commands with role permissions, automated vehicle condition monitors, and dedicated standalone command documentation ([commands.en.md](https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/blob/main/commands.en.md), [commands.ru.md](https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/blob/main/commands.ru.md), [commands.md](https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/blob/main/commands.md)).
+Release **v1.2.0** introduces a native C++ gameplay event extraction pipeline (`overlayobs_foozzee_telemetry.dll`), real-time windshield HUD toast cards, a zero-dependency procedural Web Audio synthesizer, interactive Twitch chat viewer engagement commands with role permissions, automated vehicle condition monitors, and dedicated standalone command documentation ([commands.en.md](https://github.com/FooZzee/ets2-ats-stream-overlay/blob/main/commands.en.md), [commands.ru.md](https://github.com/FooZzee/ets2-ats-stream-overlay/blob/main/commands.ru.md), [commands.md](https://github.com/FooZzee/ets2-ats-stream-overlay/blob/main/commands.md)).
 
 > [!IMPORTANT]
 > **Primary Upgrade Requirement:** Close Euro Truck Simulator 2 and American Truck Simulator before running `Install-Overlay.bat` or `build-and-install-plugin.bat`. The installer will automatically deploy the updated native module `overlayobs_foozzee_telemetry.dll` into `bin\win_x64\plugins\`.
@@ -45,7 +45,7 @@ Release **v1.2.0** introduces a native C++ gameplay event extraction pipeline (`
 ## [RU] Русское описание релиза
 
 ### Краткое описание
-Релиз **v1.2.0** добавляет нативный конвейер перехвата игровых событий через C++ плагин (`overlayobs_foozzee_telemetry.dll`), всплывающие уведомления в верхней зоне лобового стекла, процедурный звуковой синтезатор Web Audio без внешних файлов, интерактивные команды Twitch-чата с системой ролей, автоматические детекторы состояния автопоезда и отдельные подробные руководства по командам ([commands.ru.md](https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/blob/main/commands.ru.md), [commands.en.md](https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/blob/main/commands.en.md), [commands.md](https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/blob/main/commands.md)).
+Релиз **v1.2.0** добавляет нативный конвейер перехвата игровых событий через C++ плагин (`overlayobs_foozzee_telemetry.dll`), всплывающие уведомления в верхней зоне лобового стекла, процедурный звуковой синтезатор Web Audio без внешних файлов, интерактивные команды Twitch-чата с системой ролей, автоматические детекторы состояния автопоезда и отдельные подробные руководства по командам ([commands.ru.md](https://github.com/FooZzee/ets2-ats-stream-overlay/blob/main/commands.ru.md), [commands.en.md](https://github.com/FooZzee/ets2-ats-stream-overlay/blob/main/commands.en.md), [commands.md](https://github.com/FooZzee/ets2-ats-stream-overlay/blob/main/commands.md)).
 
 ---
 

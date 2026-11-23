@@ -47,9 +47,9 @@ if (-not (Test-Path (Join-Path $ProjectRoot 'ets2-desktop.html'))) {
 }
 
 # 5. Константы проекта и репозитория
-$CurrentVersion = 'v0.0.3'
+$CurrentVersion = 'v1.2.3'
 $RepoOwner = 'FooZzee'
-$RepoName = 'ETS2-ATS-Cockpit-Stream-Overlay'
+$RepoName = 'ets2-ats-stream-overlay'
 $ApiUrl = "https://api.github.com/repos/$RepoOwner/$RepoName/releases/latest"
 $WebReleasesUrl = "https://github.com/$RepoOwner/$RepoName/releases/latest"
 $WebAllReleasesUrl = "https://github.com/$RepoOwner/$RepoName/releases"
@@ -135,7 +135,7 @@ function Get-ReleaseInfo {
         $req = [System.Net.HttpWebRequest]::Create($ApiUrl)
         $req.Method = 'GET'
         $req.Timeout = $TimeoutSec * 1000
-        $req.UserAgent = 'FooZzee-Overlay-PipBoy-Updater/1.2.2'
+        $req.UserAgent = 'FooZzee-Overlay-PipBoy-Updater/1.2.3'
         $req.Accept = 'application/vnd.github.v3+json'
 
         $resp = $req.GetResponse()
@@ -264,7 +264,7 @@ $xaml = @"
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <Border Background="#052E16" BorderBrush="#22C55E" BorderThickness="1" CornerRadius="4" Padding="8,4" Margin="0,0,10,0">
-                        <TextBlock x:Name="txtBadge" Text="ТЕКУЩАЯ: v1.2.2" FontSize="11" FontWeight="Bold" Foreground="#86EFAC"/>
+                        <TextBlock x:Name="txtBadge" Text="ТЕКУЩАЯ: v1.2.3" FontSize="11" FontWeight="Bold" Foreground="#86EFAC"/>
                     </Border>
                     <Button x:Name="btnLang" Content="🇬🇧 EN" Padding="8,4" FontSize="11" Height="26"/>
                 </StackPanel>

@@ -5,7 +5,7 @@
 
 [![Keep a Changelog](https://img.shields.io/badge/Changelog-Keep%20a%20Changelog%201.1.1-orange?style=flat&logo=git)](https://keepachangelog.com/)
 [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-blue?style=flat&logo=semver)](https://semver.org/)
-[![Latest Release](https://img.shields.io/badge/Latest-v1.2.2-green?style=flat&logo=github)](https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/releases/tag/v1.2.2)
+[![Latest Release](https://img.shields.io/badge/Latest-v1.2.3-green?style=flat&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.2.3)
 [![License](https://img.shields.io/badge/License-All_Rights_Reserved-ef4444?style=flat)](./LICENSE)
 
 ---
@@ -16,6 +16,7 @@
 
 ## 📌 Version Index
 
+* [v1.2.3 (2026-11-23) — Proprietary Freeware License, Security Audit & Author Links Synchronization](#123---2026-11-23)
 * [v1.2.2 (2026-11-17) — Single Desktop Cockpit HUD, Auto-Update Notification, WPF Setup Wizard & 8-Bit Audio](#122---2026-11-17)
 * [v1.2.1 (2026-11-16) — GUI Installer Documentation Viewers & Commands Quick Access](#121---2026-11-16)
 * [v1.2.0 (2026-11-16) — In-Game Event Toast Notifications, SVG Icons & Web Audio API Sound Synthesizer](#120---2026-11-16)
@@ -298,12 +299,12 @@ Integrated 4 new native telemetry channels into the C++ plugin (`overlayobs_fooz
 * **Telegram:** [@foozzeestream](https://t.me/foozzeestream)
 * **VK:** [vk.ru/gtfun](https://vk.ru/gtfun)
 
-[1.2.1]: https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/compare/v1.2.0...v1.2.1
-[1.2.0]: https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/compare/v1.1.3...v1.2.0
-[1.1.3]: https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/compare/v1.1.2...v1.1.3
-[1.1.2]: https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/compare/v1.1.0...v1.1.2
-[1.1.0]: https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/compare/v1.0.0...v1.1.0
-[1.0.0]: https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/releases/tag/v1.0.0
+[1.2.1]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.2.0...v1.2.1
+[1.2.0]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.3...v1.2.0
+[1.1.3]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.2...v1.1.3
+[1.1.2]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.0...v1.1.2
+[1.1.0]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.0.0
 
 ---
 

@@ -6,7 +6,7 @@
 
 [![Keep a Changelog](https://img.shields.io/badge/Changelog-Keep%20a%20Changelog%201.1.1-orange?style=flat&logo=git)](https://keepachangelog.com/)
 [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-blue?style=flat&logo=semver)](https://semver.org/)
-[![Latest Release](https://img.shields.io/badge/Latest-v1.2.2-green?style=flat&logo=github)](https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/releases/tag/v1.2.2)
+[![Latest Release](https://img.shields.io/badge/Latest-v1.2.3-green?style=flat&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.2.3)
 [![License](https://img.shields.io/badge/License-All_Rights_Reserved-ef4444?style=flat)](./LICENSE)
 
 ---
@@ -25,6 +25,7 @@
 ## 🇬🇧 English Changelog
 
 ### 📌 Version Index (EN)
+* [v1.2.3 (2026-11-23) — Proprietary Freeware License, Security Audit & Author Links Synchronization](#123---2026-11-23-en)
 * [v1.2.2 (2026-11-17) — Single Desktop Cockpit HUD, Auto-Update Notification, WPF Setup Wizard & 8-Bit Audio](#122---2026-11-17-en)
 * [v1.2.1 (2026-11-16) — GUI Installer Documentation Viewers & Commands Quick Access](#121---2026-11-16-en)
 * [v1.2.0 (2026-11-16) — In-Game Event Toast Notifications, SVG Icons & Web Audio API Sound Synthesizer](#120---2026-11-16-en)
@@ -32,6 +33,21 @@
 * [v1.1.2 (2026-11-15) — Pip-Boy 3000 Standalone Auto-Update Terminal, 100% Bilingual Localization & DLC Coaches](#112---2026-11-15-en)
 * [v1.1.0 (2026-11-15) — ETS2 DLC Coaches Support, Solid Dashboard & Enhanced SCS Telemetry](#110---2026-11-15-en)
 * [v1.0.0 (2026-11-12) — Initial Release (Native SCS Telemetry SDK 1.16 & Broadcast HUD)](#100---2026-11-12-en)
+
+---
+
+<a id="123---2026-11-23-en"></a>
+### [1.2.3] - 2026-11-23
+
+#### 🛡️ Security & Licensing
+* **Proprietary Freeware License (All Rights Reserved):** Complete transition to a proprietary freeware license for streaming and personal broadcasts, prohibiting commercial resale and unauthorized modified redistributions. Completely removed all references to open-source licenses (open-source).
+* **Credential Security Audit (`assets/js/ets2-config.js`):** Cleaned default DonationAlerts socket token placeholder (`donationAlerts.socketToken = ''`), preventing accidental exposure of private streaming keys.
+* **Clean Source Tree:** Removed intermediate CMake/MSVC build artifacts from `native-plugin/build/`, delivering the production-ready native plugin via `redist/overlayobs_foozzee_telemetry.dll`.
+
+#### 🔧 Scripts & System Automation
+* **PowerShell Script Encoding (`UTF-8 with BOM`):** Standardized all PowerShell automation scripts (`installer.ps1`, `updater.ps1`, `configurator.ps1`, `udp-bridge.ps1`, `build-plugin.ps1`) to UTF-8 with BOM signature, fully verified with `AST_ERRORS = 0`.
+* **Repository Target Verification:** Synchronized GitHub updater endpoints and repo references across `scripts/updater.ps1`, `assets/js/ets2-updater.js`, and `scripts/installer.ps1` to `FooZzee/ets2-ats-stream-overlay`.
+* **Official Author Links:** Updated all documentation files and GUI tools with official author links (Website, Twitch, YouTube, Telegram, VK, DonationAlerts).
 
 ---
 
@@ -250,6 +266,7 @@
 ## 🇷🇺 Русская история версий
 
 ### 📌 Навигация по версиям (RU)
+* [v1.2.3 (2026-11-23) — Proprietary Freeware License, аудит безопасности и обновление ссылок автора](#123---2026-11-23-ru)
 * [v1.2.2 (2026-11-17) — Единая десктопная сцена, автоуведомление об обновлениях, WPF-установщик и 8-bit музыка](#122---2026-11-17-ru)
 * [v1.2.1 (2026-11-16) — Встроенные средства просмотра документации и справочник команд](#121---2026-11-16-ru)
 * [v1.2.0 (2026-11-16) — Всплывающие уведомления о событиях, SVG-иконки и Web Audio API синтезатор звуков](#120---2026-11-16-ru)
@@ -257,6 +274,21 @@
 * [v1.1.2 (2026-11-15) — Автономная проверка обновлений Pip-Boy 3000, 100% двуязычная локализация и DLC Coaches](#112---2026-11-15-ru)
 * [v1.1.0 (2026-11-15) — Поддержка ETS2 DLC Coaches, непрозрачная торпеда и новые каналы SCS SDK](#110---2026-11-15-ru)
 * [v1.0.0 (2026-11-12) — Первый публичный релиз (Нативный плагин SCS SDK 1.16 и приборный HUD)](#100---2026-11-12-ru)
+
+---
+
+<a id="123---2026-11-23-ru"></a>
+### [1.2.3] - 2026-11-23
+
+#### 🛡️ Безопасность и лицензирование (Security & Licensing)
+* **Proprietary Freeware License (All Rights Reserved):** Полный переход на проприетарную лицензию бесплатного использования на стримах с запретом коммерческой перепродажи и несанкционированных сборок без разрешения автора. Полное исключение любых ссылок на open-source лицензии (open-source).
+* **Защита конфиденциальных данных (`assets/js/ets2-config.js`):** Очищен токен подключения DonationAlerts (`donationAlerts.socketToken = ''`), исключающий случайную утечку приватных ключей при клонировании репозитория.
+* **Очистка репозитория от временных файлов сборки:** Из публичного дерева удалены промежуточные артефакты компиляции CMake/MSVC из `native-plugin/build/`, рабочий нативный плагин поставляется через `redist/overlayobs_foozzee_telemetry.dll`.
+
+#### 🔧 Скрипты и системная интеграция (Scripts & Automation)
+* **Кодировка скриптов PowerShell (`UTF-8 with BOM`):** Все скрипты автоматизации (`installer.ps1`, `updater.ps1`, `configurator.ps1`, `udp-bridge.ps1`, `build-plugin.ps1`) приведены к строгому стандарту кодировки UTF-8 с сигнатурой BOM и верифицированы с `AST_ERRORS = 0`.
+* **Надёжная адресация репозитория:** Во всех скриптах обновления (`scripts/updater.ps1`, `assets/js/ets2-updater.js`, `scripts/installer.ps1`) зафиксирован репозиторий `FooZzee/ets2-ats-stream-overlay`.
+* **Эталонные ссылки автора:** Во всех файлах документации и интерфейсах GUI-утилит синхронизированы ссылки на официальные ресурсы FooZzee (Сайт, Twitch, YouTube, Telegram, VK, DonationAlerts).
 
 ---
 
@@ -478,12 +510,12 @@
 * **Telegram:** [@foozzeestream](https://t.me/foozzeestream)
 * **VK:** [vk.ru/gtfun](https://vk.ru/gtfun)
 
-[1.2.1]: https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/compare/v1.2.0...v1.2.1
-[1.2.0]: https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/compare/v1.1.3...v1.2.0
-[1.1.3]: https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/compare/v1.1.2...v1.1.3
-[1.1.2]: https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/compare/v1.1.0...v1.1.2
-[1.1.0]: https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/compare/v1.0.0...v1.1.0
-[1.0.0]: https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/releases/tag/v1.0.0
+[1.2.1]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.2.0...v1.2.1
+[1.2.0]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.3...v1.2.0
+[1.1.3]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.2...v1.1.3
+[1.1.2]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.0...v1.1.2
+[1.1.0]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.0.0
 
 ---
 

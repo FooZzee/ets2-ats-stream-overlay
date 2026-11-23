@@ -1,3 +1,0 @@
-D:/html/Overlay/native-plugin/build/CMakeFiles/overlayobs_foozzee_telemetry.dir
-D:/html/Overlay/native-plugin/build/CMakeFiles/ALL_BUILD.dir
-D:/html/Overlay/native-plugin/build/CMakeFiles/ZERO_CHECK.dir

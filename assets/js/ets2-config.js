@@ -13,7 +13,7 @@
     channels: {
       twitch: { enabled: true, channelName: 'foozzee', oauthToken: '', clientId: '' },
       vk: { enabled: true, channelUrl: 'https://live.vkvideo.ru/foozzee', token: '' },
-      donationAlerts: { enabled: true, socketToken: 'CsNPR4wulOmEgXoMT4OT' },
+      donationAlerts: { enabled: true, socketToken: '' },
       obsWebSocket: { enabled: false, url: 'ws://127.0.0.1:4455', password: '' }
     },
     alerts: {
