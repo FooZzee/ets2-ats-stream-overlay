@@ -5,7 +5,7 @@
 
 [![Документация](https://img.shields.io/badge/Документация-Справочник_команд-blue?style=flat&logo=gitbook)](./commands.ru.md)
 [![Статус](https://img.shields.io/badge/Статус-Готов_к_эфиру-success?style=flat)](./README.ru.md)
-[![Лицензия](https://img.shields.io/badge/Лицензия-MIT-purple?style=flat)](./LICENSE)
+[![Лицензия](https://img.shields.io/badge/Лицензия-All_Rights_Reserved-red?style=flat)](./LICENSE)
 
 ---
 
@@ -120,3 +120,7 @@ window.testChatCommand('!ставка штраф', 'BetUser2', 'viewer');
 | `setCockpitTheme(preset)` | `'amber'` | Переключение палитры подсветки приборной панели (`'amber'` / `'ice'`). |
 | `toggleWebcam(force)` | Переключение | Скрытие или отображение рамки веб-камеры. |
 | `toggleGuides(force)` | Переключение | Включение или отключение вспомогательной монтажной сетки OBS. |
+
+---
+
+Copyright (c) 2026 FooZzee. All Rights Reserved.

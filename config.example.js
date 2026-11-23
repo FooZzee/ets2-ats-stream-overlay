@@ -1,3 +1,4 @@
+/* Copyright (c) 2026 FooZzee. All Rights Reserved. Licensed under Proprietary Freeware License. */
 /**
  * Шаблон конфигурации OBS Overlays.
  * Скопируйте этот файл в config.js и заполните своими данными.

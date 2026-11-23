@@ -2,12 +2,12 @@
 
 > **Профессиональный приборный HUD-оверлей для OBS Studio на базе нативного SCS Telemetry SDK 1.16**
 
-[![Релиз](https://img.shields.io/badge/Релиз-v1.2.2-blue?style=flat&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases)
+[![Релиз](https://img.shields.io/badge/Релиз-v1.2.2-blue?style=flat&logo=github)](https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/releases)
 [![Платформа](https://img.shields.io/badge/Платформа-Windows%20x64-blue?style=flat&logo=windows)](https://www.microsoft.com/windows)
 [![SCS SDK](https://img.shields.io/badge/SCS%20SDK-v1.16%20Native-yellow?style=flat)](https://modding.scssoft.com/wiki/Documentation/Tools/Telemetry_server)
 [![DLC Coaches](https://img.shields.io/badge/ETS2-DLC%20Coaches-green?style=flat)](https://scssoft.com/)
 [![OBS Studio](https://img.shields.io/badge/OBS%20Studio-Browser%20Source-purple?style=flat&logo=obsstudio)](https://obsproject.com/)
-[![Лицензия](https://img.shields.io/badge/Лицензия-MIT-success?style=flat)](./LICENSE)
+[![Лицензия](https://img.shields.io/badge/Лицензия-All_Rights_Reserved-red?style=flat)](./LICENSE)
 
 [![Поддержать проект](https://img.shields.io/badge/Поддержать_проект-FF5E5B?style=for-the-badge&logo=heart&logoColor=white)](https://www.donationalerts.com/r/foozzee)
 
@@ -132,7 +132,7 @@ flowchart LR
 
 ## ⚡ Быстрая установка (1-клик установщик)
 
-1. Скачайте архив релиза **`ETS2-ATS-Stream-Overlay-v1.2.1.zip`** из раздела [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
+1. Скачайте архив релиза **`ETS2-ATS-Stream-Overlay-v1.2.1.zip`** из раздела [Releases](https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/releases).
 2. Распакуйте архив в постоянную папку (например, `C:\ETS2-ATS-Stream-Overlay`).
 3. Запустите файл **`Install-Overlay.bat`**:
    * В правом верхнем углу выберите язык: **`Русский (RU)`** или **`English (EN)`**.
@@ -228,4 +228,8 @@ window.OVERLAY_CONFIG = {
 * **Telegram:** [@foozzeestream](https://t.me/foozzeestream)
 * **VK:** [vk.ru/gtfun](https://vk.ru/gtfun)
 
-Лицензия: [MIT License](./LICENSE). Полная свобода использования для стримеров и создателей контента.
+Лицензия: [Proprietary Freeware License (All Rights Reserved)](./LICENSE). Полная свобода использования для стримеров и создателей контента.
+
+---
+
+Copyright (c) 2026 FooZzee. All Rights Reserved.

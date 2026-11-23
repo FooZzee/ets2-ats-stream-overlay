@@ -5,8 +5,8 @@
 
 [![Keep a Changelog](https://img.shields.io/badge/Changelog-Keep%20a%20Changelog%201.1.1-orange?style=flat&logo=git)](https://keepachangelog.com/)
 [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-blue?style=flat&logo=semver)](https://semver.org/)
-[![Latest Release](https://img.shields.io/badge/Latest-v1.2.2-green?style=flat&logo=github)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.2.2)
-[![License](https://img.shields.io/badge/License-MIT-purple?style=flat)](./LICENSE)
+[![Latest Release](https://img.shields.io/badge/Latest-v1.2.2-green?style=flat&logo=github)](https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/releases/tag/v1.2.2)
+[![License](https://img.shields.io/badge/License-All_Rights_Reserved-ef4444?style=flat)](./LICENSE)
 
 ---
 
@@ -298,9 +298,13 @@ Integrated 4 new native telemetry channels into the C++ plugin (`overlayobs_fooz
 * **Telegram:** [@foozzeestream](https://t.me/foozzeestream)
 * **VK:** [vk.ru/gtfun](https://vk.ru/gtfun)
 
-[1.2.1]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.2.0...v1.2.1
-[1.2.0]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.3...v1.2.0
-[1.1.3]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.2...v1.1.3
-[1.1.2]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.0...v1.1.2
-[1.1.0]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.0.0...v1.1.0
-[1.0.0]: https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.0.0
+[1.2.1]: https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/compare/v1.2.0...v1.2.1
+[1.2.0]: https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/compare/v1.1.3...v1.2.0
+[1.1.3]: https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/compare/v1.1.2...v1.1.3
+[1.1.2]: https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/compare/v1.1.0...v1.1.2
+[1.1.0]: https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/releases/tag/v1.0.0
+
+---
+
+Copyright (c) 2026 FooZzee. All Rights Reserved.

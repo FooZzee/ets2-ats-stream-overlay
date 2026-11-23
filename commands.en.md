@@ -5,7 +5,7 @@
 
 [![Documentation](https://img.shields.io/badge/Documentation-Commands_Reference-blue?style=flat&logo=gitbook)](./commands.en.md)
 [![Status](https://img.shields.io/badge/Status-Production_Ready-success?style=flat)](./README.en.md)
-[![License](https://img.shields.io/badge/License-MIT-purple?style=flat)](./LICENSE)
+[![License](https://img.shields.io/badge/License-All_Rights_Reserved-ef4444?style=flat)](./LICENSE)
 
 ---
 
@@ -120,3 +120,7 @@ window.testChatCommand('!bet fine', 'BetUser2', 'viewer');
 | `setCockpitTheme(preset)` | `'amber'` | Switches instrument cluster palette (`'amber'` / `'ice'`). |
 | `toggleWebcam(force)` | Toggle | Toggles webcam viewport border visibility. |
 | `toggleGuides(force)` | Toggle | Displays OBS layout alignment reference guides. |
+
+---
+
+Copyright (c) 2026 FooZzee. All Rights Reserved.

@@ -1,8 +1,8 @@
 # 🚀 ETS2 / ATS Cockpit Telemetry Stream Overlay — Release v1.2.1
 
-[![Release](https://img.shields.io/badge/Release-v1.2.1-orange.svg?style=flat-square)](https://github.com/FooZzee/ets2-ats-stream-overlay/releases/tag/v1.2.1)
+[![Release](https://img.shields.io/badge/Release-v1.2.1-orange.svg?style=flat-square)](https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay/releases/tag/v1.2.1)
 [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-blue.svg?style=flat-square)](https://semver.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+[![License](https://img.shields.io/badge/License-All_Rights_Reserved-ef4444?style=flat)](./LICENSE)
 
 ---
 
@@ -49,3 +49,7 @@ Release **v1.2.1** integrates native dark-themed documentation viewer windows di
 | :--- | :--- | :--- |
 | `ETS2-ATS-Stream-Overlay-v1.2.1.zip` | 1.82 MB (1 912 059 B) | `502119FB0CA67A8A07450477E67DF40FCA716A54403F3E173A94F0E9C3631079` |
 | `overlayobs_foozzee_telemetry.dll` | 205 KB (209 920 B) | `8C65F458C010B5E8415B470561966D11F2B1DEB09FA84A65092DCC77E1BC1DAF` |
+
+---
+
+Copyright (c) 2026 FooZzee. All Rights Reserved.

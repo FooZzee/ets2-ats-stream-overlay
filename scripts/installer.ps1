@@ -2,18 +2,24 @@
 .SYNOPSIS
   Bilingual (RU / EN) WPF GUI Installer for ETS2 / ATS Cockpit Telemetry Stream Overlay.
   Двуязычный (RU / EN) графический WPF-мастер установки оверлея ETS2 / ATS в стиле Cockpit HUD.
+  © 2026 FooZzee · Proprietary Freeware License (All Rights Reserved)
 #>
 [CmdletBinding()]
 param()
 
 $ErrorActionPreference = 'Stop'
 
-# 1. Проверка режима STA (Single-Threaded Apartment) для WPF
+# 1. Надёжное определение пути к скрипту и директории
+$scriptPath = if ($MyInvocation.MyCommand.Path -and (Test-Path -LiteralPath $MyInvocation.MyCommand.Path)) {
+    $MyInvocation.MyCommand.Path
+} elseif ($PSScriptRoot) {
+    Join-Path $PSScriptRoot 'installer.ps1'
+} else {
+    Join-Path (Get-Location).Path 'scripts\installer.ps1'
+}
+
+# 1.1. Проверка режима STA (Single-Threaded Apartment) для WPF
 if ([System.Threading.Thread]::CurrentThread.GetApartmentState() -ne [System.Threading.ApartmentState]::STA) {
-    $scriptPath = $MyInvocation.MyCommand.Definition
-    if (-not $scriptPath) {
-        $scriptPath = Join-Path $PSScriptRoot 'installer.ps1'
-    }
     Start-Process -FilePath 'powershell.exe' -ArgumentList "-NoProfile -ExecutionPolicy Bypass -STA -WindowStyle Hidden -File `"$scriptPath`""
     exit
 }
@@ -27,23 +33,38 @@ Add-Type -AssemblyName PresentationCore
 Add-Type -AssemblyName WindowsBase
 Add-Type -AssemblyName System.Windows.Forms
 
+# Регистрация Win32 API для обновления кэша иконок Рабочего стола
+if (-not ([System.Management.Automation.PSTypeName]'ShellNotify').Type) {
+    Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+public class ShellNotify {
+    [DllImport("shell32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+    public static extern void SHChangeNotify(uint wEventId, uint uFlags, IntPtr dwItem1, IntPtr dwItem2);
+}
+"@ -ErrorAction SilentlyContinue
+}
+
 # 4. Пути и версии проекта
-$ScriptRoot = if ($PSScriptRoot) {
+$ScriptRoot = if ($MyInvocation.MyCommand.Path) {
+    Split-Path -Parent $MyInvocation.MyCommand.Path
+} elseif ($scriptPath -and (Test-Path -LiteralPath $scriptPath)) {
+    Split-Path -Parent $scriptPath
+} elseif ($PSScriptRoot) {
     $PSScriptRoot
-} elseif ($MyInvocation.MyCommand.Definition) {
-    Split-Path -Parent $MyInvocation.MyCommand.Definition
 } else {
     (Get-Location).Path
 }
 
-$SourceRoot = Split-Path -Parent $ScriptRoot
-if (-not (Test-Path (Join-Path $SourceRoot 'ets2-desktop.html'))) {
-    if (Test-Path (Join-Path (Get-Location).Path 'ets2-desktop.html')) {
-        $SourceRoot = (Get-Location).Path
-    }
+$SourceRoot = if (Test-Path (Join-Path $ScriptRoot 'ets2-desktop.html')) {
+    $ScriptRoot
+} elseif (Test-Path (Join-Path (Split-Path -Parent $ScriptRoot) 'ets2-desktop.html')) {
+    Split-Path -Parent $ScriptRoot
+} else {
+    (Get-Location).Path
 }
 $RedistDll  = Join-Path $SourceRoot 'redist\overlayobs_foozzee_telemetry.dll'
-$TARGET_VER = '1.2.2'
+$TARGET_VER = '0.0.1'
 
 # 5. Определение языка системы по умолчанию
 $DefaultLang = if ([System.Globalization.CultureInfo]::CurrentUICulture.TwoLetterISOLanguageName -eq 'ru') { 'ru' } else { 'en' }
@@ -52,8 +73,8 @@ $script:CurrentLang = $DefaultLang
 # 6. Двуязычный словарь локализации
 $Strings = @{
     en = @{
-        WindowTitle       = "ETS2 / ATS Stream Overlay — Setup Wizard v$TARGET_VER"
-        HeaderTitle       = "ETS2 / ATS STREAM OVERLAY"
+        WindowTitle       = "ETS2 / ATS Stream Overlay Cockpit — Setup Wizard v$TARGET_VER"
+        HeaderTitle       = "ETS2 / ATS STREAM OVERLAY COCKPIT"
         HeaderSubtitle    = "2-Row Cockpit HUD • Native SCS SDK 1.16 Telemetry • Twitch Chat & Alerts"
         BadgeVersion      = "v$TARGET_VER"
         LangBtn           = "Русский (RU)"
@@ -66,14 +87,34 @@ $Strings = @{
         PluginMissing     = "Not detected automatically — browse if installed"
         DllMissingNote    = "Warning: redist\overlayobs_foozzee_telemetry.dll not found in installer package."
         ThirdPartyNote    = "Notice: Third-party rtrucksim_telemetry.dll will remain untouched."
-        GrpProfile        = "3. Streamer Profile (written to config.js)"
+        GrpCamAspect      = "3. Webcam Frame Aspect Ratio (select matching your camera)"
+        LblCamAspect      = "3. Webcam Frame Aspect Ratio (select matching your camera)"
+        HintCamAspect     = "Choose the aspect ratio matching your camera source in OBS so the cockpit frame aligns seamlessly."
+        RbCam4x3          = "4:3 — Standard / Square Frame (325×244 px)"
+        RbCam4x3Sub       = "Outer: 325×244 px (1080p) • 397×298 px (1440p) • Full cluster height match"
+        RbCam16x9         = "16:9 — Widescreen Frame (384×216 px)"
+        RbCam16x9Sub      = "Outer: 384×216 px (1080p) • 464×261 px (1440p) • Top cluster edge match"
+        GrpCockpitTheme   = "4. Cockpit Dashboard Theme (select visual style)"
+        LblCockpitTheme   = "4. Cockpit Dashboard Theme (select visual style)"
+        HintCockpitTheme  = "Choose between the classic cluster or the full-width Torpedo Pro dashboard with 8 analog needle mini-gauges."
+        RbThemeClassic    = "Classic Cockpit — Scania/Volvo Instrument Cluster"
+        RbThemeClassicSub = "Compact cluster (988 px) • Center MFD • Speedometer & Tachometer"
+        RbThemeTorpedo    = "Torpedo Pro Cockpit — Full-Width Automotive Dashboard"
+        RbThemeTorpedoSub = "Wide console (1080 px) • 8 Analog Mini-Gauges (Air, Fuel, Temps, Oil, Batt) • Vertical Pedals • Ice-Blue Rim"
+        RbThemeScania     = "Scania Touring — Scandinavian Coach Instrument Cluster"
+        RbThemeScaniaSub  = "Sculpted cowl (1020 px) • Satin Aluminum Bezels • Green Eco Zone (10-15) • Scania ICL Display"
+        RbThemeMan        = "MAN Lion's Coach — German Faceted Coach Instrument Cluster"
+        RbThemeManSub     = "Faceted cowl (1040 px) • Red MAN Line • Vertical Segmented LED Bars • TipMatic TFT"
+        RbThemeVolvo      = "Volvo 9700 DD — Scandinavian Double Decker Instrument Cluster"
+        RbThemeVolvoSub   = "Dynamic cluster (1024 px) • Center speed ring • Curved RPM arc • I-Shift"
+        GrpProfile        = "5. Streamer Profile (written to config.js)"
         LblDriver         = "Streamer Nickname:"
         LblTwitch         = "Twitch Channel:"
         LblDaToken        = "DonationAlerts Secret Token (optional):"
         HintDaToken       = "Enables live donation alerts on the dashboard (DonationAlerts -> Settings -> Secret Token)"
         BtnShowToken      = "Show"
         BtnHideToken      = "Hide"
-        GrpOptions        = "4. Shortcuts & Finish Options"
+        GrpOptions        = "6. Shortcuts & Finish Options"
         ChkShortcut       = "Create Desktop Shortcut ('ETS2-ATS Overlay Bridge')"
         ChkUpdateShortcut = "Create Update Checker (Pip-Boy 3000) shortcut on Desktop"
         ChkOpenFolder     = "Open installation folder after setup"
@@ -90,8 +131,10 @@ $Strings = @{
         LinkVk            = "VK"
         BtnChangelog      = "📜 Changelog"
         BtnCommands       = "📖 Commands"
-        FooterPkgVer      = "Package Version: v$TARGET_VER"
-        FooterObsHint     = "OBS Desktop: 1920x1080 (ets2-desktop.html) • Webcam: 346x195 px"
+        FooterPkgVer      = "Package Version: v$TARGET_VER • © 2026 FooZzee · Proprietary Freeware License (All Rights Reserved)"
+        FooterObsHint     = "OBS Desktop: 1920x1080 (ets2-desktop.html) • Webcam: 325x244 px (4:3)"
+        FooterObsHint4x3  = "OBS Desktop: 1920x1080 (ets2-desktop.html) • Webcam: 325x244 px (4:3)"
+        FooterObsHint16x9 = "OBS Desktop: 1920x1080 (ets2-desktop.html) • Webcam: 384x216 px (16:9)"
         DlgOverlayTitle   = "Select overlay installation folder"
         DlgEts2Title      = "Select Euro Truck Simulator 2 folder (root, bin\win_x64, or plugins)"
         DlgAtsTitle       = "Select American Truck Simulator folder (root, bin\win_x64, or plugins)"
@@ -100,7 +143,7 @@ $Strings = @{
         ErrAtsPath        = "ATS plugin installation is checked, but the selected ATS folder does not exist."
         StatusOk          = "Installed"
         DoneHeader        = "INSTALLATION COMPLETE"
-        DoneSub           = "Your ETS2 / ATS Cockpit Overlay and native SCS SDK 1.16 plugin are ready."
+        DoneSub           = "Your ETS2 / ATS Stream Overlay Cockpit and native SCS SDK 1.16 plugin are ready."
         DoneOverlayLine   = "Overlay Files & config.js:"
         DoneEts2Line      = "ETS2 Plugin:"
         DoneAtsLine       = "ATS Plugin:"
@@ -110,17 +153,19 @@ $Strings = @{
         StatusDaOk        = "Configured [OK]"
         StatusDaSkipped   = "Skipped (can be added later in config.js)"
         DoneObsHeader     = "OBS STUDIO CONFIGURATION & LAUNCH"
-        DoneObsBody       = "• Desktop Browser Source: 1920x1080 -> ets2-desktop.html`r`n• Webcam Source (16:9): 346x195 px | left: 24 | top: 180 (layer below overlay)`r`n• Launch 'ETS2-ATS Overlay Bridge' (start-telemetry.bat) before starting your stream."
+        DoneObsBody       = "• Desktop Browser Source: 1920x1080 -> ets2-desktop.html`r`n• Webcam Source (4:3): 325x244 px @ 1080p | 397x298 px @ 1440p (layer below overlay)`r`n• Launch 'ETS2-ATS Overlay Bridge' (start-telemetry.bat) before starting your stream."
+        DoneObsBody4x3    = "• Desktop Browser Source: 1920x1080 -> ets2-desktop.html`r`n• Webcam Source (4:3): 325x244 px @ 1080p | 397x298 px @ 1440p (layer below overlay)`r`n• Launch 'ETS2-ATS Overlay Bridge' (start-telemetry.bat) before starting your stream."
+        DoneObsBody16x9   = "• Desktop Browser Source: 1920x1080 -> ets2-desktop.html`r`n• Webcam Source (16:9): 384x216 px @ 1080p | 464x261 px @ 1440p (layer below overlay)`r`n• Launch 'ETS2-ATS Overlay Bridge' (start-telemetry.bat) before starting your stream."
         BtnFinishClose    = "Finish & Close"
-        DocChangelogTitle = "ETS2 / ATS Stream Overlay — Version History"
-        DocCommandsTitle  = "ETS2 / ATS Stream Overlay — Commands Reference"
+        DocChangelogTitle = "ETS2 / ATS Stream Overlay Cockpit — Version History"
+        DocCommandsTitle  = "ETS2 / ATS Stream Overlay Cockpit — Commands Reference"
         ShortcutDesc      = "Launch ETS2 / ATS Native SCS SDK Telemetry Bridge for OBS"
         UpdateShortcutDesc= "Check ETS2 / ATS Overlay Updates via Pip-Boy 3000 Terminal"
         SetupErrorTitle   = "Installation Error"
     }
     ru = @{
-        WindowTitle       = "ETS2 / ATS Stream Overlay — Мастер установки v$TARGET_VER"
-        HeaderTitle       = "ETS2 / ATS STREAM OVERLAY"
+        WindowTitle       = "ETS2 / ATS Stream Overlay Cockpit — Мастер установки v$TARGET_VER"
+        HeaderTitle       = "ETS2 / ATS STREAM OVERLAY COCKPIT"
         HeaderSubtitle    = "2-рядная торпеда • Прямой SCS SDK 1.16 • Чат и алерты Twitch"
         BadgeVersion      = "v$TARGET_VER"
         LangBtn           = "English (EN)"
@@ -133,14 +178,34 @@ $Strings = @{
         PluginMissing     = "Не найдено автоматически — укажите папку вручную"
         DllMissingNote    = "Внимание: файл redist\overlayobs_foozzee_telemetry.dll отсутствует в сборке."
         ThirdPartyNote    = "Напоминание: сторонний rtrucksim_telemetry.dll строго не затрагивается."
-        GrpProfile        = "3. Профиль стримера (записывается в config.js)"
+        GrpCamAspect      = "3. Формат рамки веб-камеры (подберите под вашу камеру)"
+        LblCamAspect      = "3. Формат рамки веб-камеры (подберите под вашу камеру)"
+        HintCamAspect     = "Выберите формат под реальные пропорции вашей камеры в OBS, чтобы рамка оверлея идеально легла поверх видеопотока."
+        RbCam4x3          = "4:3 — Стандартный / квадратный кадр (325×244 px)"
+        RbCam4x3Sub       = "Габариты: 325×244 px (1080p) • 397×298 px (1440p) • Полная высота приборной панели"
+        RbCam16x9         = "16:9 — Широкоформатный кадр (384×216 px)"
+        RbCam16x9Sub      = "Габариты: 384×216 px (1080p) • 464×261 px (1440p) • Выравнивание по верхней кромке"
+        GrpCockpitTheme   = "4. Тема оформления приборной панели тягача"
+        LblCockpitTheme   = "4. Тема оформления приборной панели тягача"
+        HintCockpitTheme  = "Выберите между классическим компактным щитком и новой полноразмерной торпедой с 8 стрелочными мини-приборами."
+        RbThemeClassic    = "Классическая (Classic) — Щиток приборов Scania/Volvo"
+        RbThemeClassicSub = "Компактный щиток (988 px) • Центральный MFD • Спидометр и тахометр"
+        RbThemeTorpedo    = "Торпеда Про (Torpedo Pro) — Полноразмерная автомобильная торпеда"
+        RbThemeTorpedoSub = "Широкая консоль (1080 px) • 8 стрелочных мини-приборов (Воздух, Топливо, ОЖ, Масло, АКБ) • Вертикальные педали • Неон Ice-Blue"
+        RbThemeScania     = "Scania Touring — Скандинавская приборная панель Scania"
+        RbThemeScaniaSub  = "Скульптурный козырёк (1020 px) • Сатиновые кольца • Эко-зона Scania (10-15) • Дисплей Scania ICL"
+        RbThemeMan        = "MAN Lion's Coach — Немецкая приборная панель MAN"
+        RbThemeManSub     = "Гранёный козырёк (1040 px) • Красная линия MAN • Вертикальные LED-шкалы • Дисплей TipMatic"
+        RbThemeVolvo      = "Volvo 9700 DD — Автобусная панель Volvo Double Decker"
+        RbThemeVolvoSub   = "Центр-доминантный щиток (1024 px) • Большое кольцо спидометра • Дуга тахометра • I-Shift"
+        GrpProfile        = "5. Профиль стримера (записывается в config.js)"
         LblDriver         = "Никнейм стримера:"
         LblTwitch         = "Канал Twitch:"
         LblDaToken        = "Секретный токен DonationAlerts (необязательно):"
         HintDaToken       = "Для показа донатов на торпеде (DonationAlerts -> Настройки аккаунта -> Секретный токен)"
         BtnShowToken      = "Показать"
         BtnHideToken      = "Скрыть"
-        GrpOptions        = "4. Ярлыки и параметры"
+        GrpOptions        = "6. Ярлыки и параметры"
         ChkShortcut       = "Создать ярлык на Рабочем столе ('ETS2-ATS Overlay Bridge')"
         ChkUpdateShortcut = "Создать ярлык проверки обновлений (Pip-Boy 3000) на Рабочем столе"
         ChkOpenFolder     = "Открыть папку установки после завершения"
@@ -157,8 +222,10 @@ $Strings = @{
         LinkVk            = "VK"
         BtnChangelog      = "📜 Список изменений"
         BtnCommands       = "📖 Список команд"
-        FooterPkgVer      = "Версия пакета: v$TARGET_VER"
-        FooterObsHint     = "OBS Desktop: 1920x1080 (ets2-desktop.html) • Камера: 346x195 px"
+        FooterPkgVer      = "Версия пакета: v$TARGET_VER • © 2026 FooZzee · Proprietary Freeware License (All Rights Reserved)"
+        FooterObsHint     = "OBS Desktop: 1920x1080 (ets2-desktop.html) • Камера: 325x244 px (4:3)"
+        FooterObsHint4x3  = "OBS Desktop: 1920x1080 (ets2-desktop.html) • Камера: 325x244 px (4:3)"
+        FooterObsHint16x9 = "OBS Desktop: 1920x1080 (ets2-desktop.html) • Камера: 384x216 px (16:9)"
         DlgOverlayTitle   = "Выберите папку для установки оверлея"
         DlgEts2Title      = "Выберите папку Euro Truck Simulator 2 (корень игры, bin\win_x64 или plugins)"
         DlgAtsTitle       = "Выберите папку American Truck Simulator (корень игры, bin\win_x64 или plugins)"
@@ -167,7 +234,7 @@ $Strings = @{
         ErrAtsPath        = "Отмечена установка плагина ATS, но указанная папка ATS не найдена."
         StatusOk          = "Установлено"
         DoneHeader        = "УСТАНОВКА ЗАВЕРШЕНА"
-        DoneSub           = "Оверлей ETS2 / ATS и нативный плагин SCS SDK 1.16 готовы к работе."
+        DoneSub           = "Оверлей ETS2 / ATS Stream Overlay Cockpit и нативный плагин SCS SDK 1.16 готовы к работе."
         DoneOverlayLine   = "Файлы оверлея и config.js:"
         DoneEts2Line      = "Плагин ETS2:"
         DoneAtsLine       = "Плагин ATS:"
@@ -177,7 +244,9 @@ $Strings = @{
         StatusDaOk        = "Настроено [OK]"
         StatusDaSkipped   = "Пропущено (можно добавить позже в config.js)"
         DoneObsHeader     = "ПАРАМЕТРЫ OBS STUDIO И ЗАПУСК"
-        DoneObsBody       = "• Desktop-сцена: 1920x1080 -> ets2-desktop.html`r`n• Веб-камера (16:9): 346x195 px | left: 24 | top: 180 (слой ниже оверлея)`r`n• Перед стримом запустите ярлык 'ETS2-ATS Overlay Bridge' (start-telemetry.bat)."
+        DoneObsBody       = "• Desktop-сцена: 1920x1080 -> ets2-desktop.html`r`n• Веб-камера (4:3): 325x244 px @ 1080p | 397x298 px @ 1440p (слой ниже оверлея)`r`n• Перед стримом запустите ярлык 'ETS2-ATS Overlay Bridge' (start-telemetry.bat)."
+        DoneObsBody4x3    = "• Desktop-сцена: 1920x1080 -> ets2-desktop.html`r`n• Веб-камера (4:3): 325x244 px @ 1080p | 397x298 px @ 1440p (слой ниже оверлея)`r`n• Перед стримом запустите ярлык 'ETS2-ATS Overlay Bridge' (start-telemetry.bat)."
+        DoneObsBody16x9   = "• Desktop-сцена: 1920x1080 -> ets2-desktop.html`r`n• Веб-камера (16:9): 384x216 px @ 1080p | 464x261 px @ 1440p (слой ниже оверлея)`r`n• Перед стримом запустите ярлык 'ETS2-ATS Overlay Bridge' (start-telemetry.bat)."
         BtnFinishClose    = "Готово"
         DocChangelogTitle = "ETS2 / ATS Stream Overlay — История изменений"
         DocCommandsTitle  = "ETS2 / ATS Stream Overlay — Справочник команд"
@@ -357,6 +426,13 @@ function Copy-OverlayDirectory {
             Copy-Item -Path (Join-Path $srcSub '*') -Destination $dstSub -Recurse -Force
         }
     }
+    # Явная гарантия наличия каталога фирменных иконок
+    $srcIcons = Join-Path $srcFull 'assets\icons'
+    if (Test-Path -LiteralPath $srcIcons) {
+        $dstIcons = Join-Path $dstFull 'assets\icons'
+        New-Item -ItemType Directory -Force -Path $dstIcons | Out-Null
+        Copy-Item -Path (Join-Path $srcIcons '*') -Destination $dstIcons -Recurse -Force
+    }
 }
 
 function Build-ConfigJsContent {
@@ -364,10 +440,14 @@ function Build-ConfigJsContent {
         [string]$SelectedLang,
         [string]$DriverName,
         [string]$TwitchName,
-        [string]$DonationAlertsToken
+        [string]$DonationAlertsToken,
+        [string]$WebcamAspect = '4:3',
+        [string]$CockpitTheme = 'classic'
     )
 
     $safeLang     = if ($SelectedLang -eq 'ru') { 'ru' } else { 'en' }
+    $safeAspect   = if ($WebcamAspect -eq '16:9') { '16:9' } else { '4:3' }
+    $safeTheme    = if ($CockpitTheme -eq 'volvo-9700-dd') { 'volvo-9700-dd' } elseif ($CockpitTheme -eq 'man-lions-coach') { 'man-lions-coach' } elseif ($CockpitTheme -eq 'scania-touring') { 'scania-touring' } elseif ($CockpitTheme -eq 'torpedo-pro') { 'torpedo-pro' } else { 'classic' }
     $driverOut    = if ([string]::IsNullOrWhiteSpace($DriverName)) { 'STREAMER' } else { $DriverName.Trim() }
     $twEnabled    = if ([string]::IsNullOrWhiteSpace($TwitchName)) { 'false' } else { 'true' }
     $cleanDaToken = ([string]$DonationAlertsToken).Trim()
@@ -382,8 +462,8 @@ function Build-ConfigJsContent {
 
     return @"
 /**
- * ETS2 / ATS Stream Overlay runtime configuration (generated by Install-Overlay v$TARGET_VER).
- * Рабочая конфигурация оверлея ETS2 / ATS (создано мастером установки Install-Overlay v$TARGET_VER).
+ * ETS2 / ATS Stream Overlay Cockpit runtime configuration (generated by Install-Overlay v$TARGET_VER).
+ * Рабочая конфигурация оверлея ETS2 / ATS Stream Overlay Cockpit (создано мастером установки Install-Overlay v$TARGET_VER).
  */
 window.OVERLAY_CONFIG = {
   // Overlay language / Язык интерфейса ('en' | 'ru')
@@ -443,8 +523,15 @@ window.OVERLAY_CONFIG = {
     cockpitAccentColor: ''
   },
 
+  // Тема приборной панели тягача ('classic' | 'torpedo-pro')
+  cockpitTheme: '$safeTheme',
+
+  // Рамка веб-камеры (ETS2 / ATS: '4:3' | '16:9')
+  webcamAspect: '$safeAspect',
+
   webcam: {
     enabled: true,
+    aspect: '$safeAspect',
     cbChannel: 'CB 19'
   },
 
@@ -484,6 +571,60 @@ window.OVERLAY_CONFIG = {
 "@
 }
 
+function Update-ExistingConfigJsCockpitTheme {
+    param(
+        [string]$ConfigPath,
+        [string]$CockpitTheme = 'classic'
+    )
+    if (-not (Test-Path -LiteralPath $ConfigPath)) { return }
+    try {
+        $content = [System.IO.File]::ReadAllText($ConfigPath, [System.Text.Encoding]::UTF8)
+        $safeTheme = if ($CockpitTheme -eq 'volvo-9700-dd') { 'volvo-9700-dd' } elseif ($CockpitTheme -eq 'man-lions-coach') { 'man-lions-coach' } elseif ($CockpitTheme -eq 'scania-touring') { 'scania-touring' } elseif ($CockpitTheme -eq 'torpedo-pro') { 'torpedo-pro' } else { 'classic' }
+
+        if ($content -match 'cockpitTheme\s*:\s*[''"][^''"]*[''"]') {
+            $content = [regex]::Replace($content, 'cockpitTheme\s*:\s*[''"][^''"]*[''"]', "cockpitTheme: '$safeTheme'")
+        } elseif ($content -match '(?m)^\s*theme\s*:\s*\{') {
+            $content = [regex]::Replace($content, '(?m)^\s*theme\s*:\s*\{', "  cockpitTheme: '$safeTheme',`r`n  theme: {")
+        } elseif ($content -match '(?m)^\s*webcamAspect\s*:\s*') {
+            $content = [regex]::Replace($content, '(?m)^\s*webcamAspect\s*:\s*', "  cockpitTheme: '$safeTheme',`r`n  webcamAspect: ")
+        }
+
+        [System.IO.File]::WriteAllText($ConfigPath, $content, [System.Text.Encoding]::UTF8)
+    } catch {
+        Write-Warning "Could not update cockpitTheme in existing config.js: $_"
+    }
+}
+
+function Update-ExistingConfigJsWebcamAspect {
+    param(
+        [string]$ConfigPath,
+        [string]$WebcamAspect = '4:3'
+    )
+    if (-not (Test-Path -LiteralPath $ConfigPath)) { return }
+    try {
+        $content = [System.IO.File]::ReadAllText($ConfigPath, [System.Text.Encoding]::UTF8)
+        $safeAspect = if ($WebcamAspect -eq '16:9') { '16:9' } else { '4:3' }
+
+        # 1. Update or insert root webcamAspect
+        if ($content -match 'webcamAspect\s*:\s*[''"][^''"]*[''"]') {
+            $content = [regex]::Replace($content, 'webcamAspect\s*:\s*[''"][^''"]*[''"]', "webcamAspect: '$safeAspect'")
+        } elseif ($content -match '(?m)^\s*webcam\s*:\s*\{') {
+            $content = [regex]::Replace($content, '(?m)^\s*webcam\s*:\s*\{', "  webcamAspect: '$safeAspect',`r`n  webcam: {")
+        }
+
+        # 2. Update or insert webcam.aspect inside webcam: { ... }
+        if ($content -match 'aspect\s*:\s*[''"][^''"]*[''"]') {
+            $content = [regex]::Replace($content, 'aspect\s*:\s*[''"][^''"]*[''"]', "aspect: '$safeAspect'")
+        } elseif ($content -match '(?m)^\s*webcam\s*:\s*\{') {
+            $content = [regex]::Replace($content, '(?m)^\s*webcam\s*:\s*\{', "webcam: {`r`n    aspect: '$safeAspect',")
+        }
+
+        [System.IO.File]::WriteAllText($ConfigPath, $content, [System.Text.Encoding]::UTF8)
+    } catch {
+        Write-Warning "Could not update webcamAspect in existing config.js: $_"
+    }
+}
+
 function Install-NativePluginToGame {
     param([string]$GamePath, [string]$SourceDll)
     $pluginsDir = Resolve-TruckPluginDir -SelectedPath $GamePath
@@ -505,8 +646,8 @@ function Install-NativePluginToGame {
 $xaml = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="ETS2 / ATS Stream Overlay — Setup Wizard"
-        Width="740" SizeToContent="Height"
+        Title="ETS2 / ATS Stream Overlay Cockpit — Setup Wizard"
+        Width="1000" SizeToContent="Height"
         Background="#0d1117" Foreground="#f1f5f9"
         WindowStartupLocation="CenterScreen"
         FontFamily="Segoe UI, -apple-system, sans-serif"
@@ -632,6 +773,219 @@ $xaml = @"
             <Setter Property="Padding" Value="14,5"/>
         </Style>
 
+        <!-- Фирменные кнопки площадок и соцсетей FooZzee -->
+        <Style TargetType="Button" x:Key="BtnBrandWeb">
+            <Setter Property="Background" Value="#F59E0B"/>
+            <Setter Property="Foreground" Value="#0F172A"/>
+            <Setter Property="BorderBrush" Value="#FBBF24"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="10.5"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter x:Name="content" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#FBBF24"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#FDE68A"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#D97706"/>
+                                <Setter TargetName="content" Property="RenderTransform">
+                                    <Setter.Value><TranslateTransform Y="1"/></Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="Button" x:Key="BtnBrandTwitch">
+            <Setter Property="Background" Value="#9146FF"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#A970FF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="10.5"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter x:Name="content" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#A970FF"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#DDD6FE"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#772CE8"/>
+                                <Setter TargetName="content" Property="RenderTransform">
+                                    <Setter.Value><TranslateTransform Y="1"/></Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="Button" x:Key="BtnBrandYouTube">
+            <Setter Property="Background" Value="#DC2626"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#EF4444"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="10.5"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter x:Name="content" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#EF4444"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#FCA5A5"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#B91C1C"/>
+                                <Setter TargetName="content" Property="RenderTransform">
+                                    <Setter.Value><TranslateTransform Y="1"/></Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="Button" x:Key="BtnBrandTelegram">
+            <Setter Property="Background" Value="#0088CC"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#229ED9"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="10.5"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter x:Name="content" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#229ED9"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#7DD3FC"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#0284C7"/>
+                                <Setter TargetName="content" Property="RenderTransform">
+                                    <Setter.Value><TranslateTransform Y="1"/></Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="Button" x:Key="BtnBrandVk">
+            <Setter Property="Background" Value="#0077FF"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#3392FF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="10.5"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter x:Name="content" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#3392FF"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#93C5FD"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#005FCC"/>
+                                <Setter TargetName="content" Property="RenderTransform">
+                                    <Setter.Value><TranslateTransform Y="1"/></Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Нейтральный графитовый стиль для кнопок документации (Changelog / Commands) -->
+        <Style TargetType="Button" x:Key="BtnToolNeutral">
+            <Setter Property="Background" Value="#1E293B"/>
+            <Setter Property="Foreground" Value="#E2E8F0"/>
+            <Setter Property="BorderBrush" Value="#334155"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="10.5"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter x:Name="content" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#334155"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#475569"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#0F172A"/>
+                                <Setter TargetName="content" Property="RenderTransform">
+                                    <Setter.Value><TranslateTransform Y="1"/></Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!-- Поля ввода -->
         <Style TargetType="TextBox">
             <Setter Property="Background" Value="#0b0f14"/>
@@ -658,6 +1012,13 @@ $xaml = @"
             <Setter Property="FontSize" Value="11.5"/>
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
+
+        <Style TargetType="RadioButton">
+            <Setter Property="Foreground" Value="#f1f5f9"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
     </Window.Resources>
 
     <Grid Margin="14,10,14,10">
@@ -678,12 +1039,12 @@ $xaml = @"
 
                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock x:Name="txtHeaderTitle" Text="ETS2 / ATS STREAM OVERLAY" FontWeight="Bold" FontSize="15" Foreground="#f59e0b" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="txtHeaderTitle" Text="ETS2 / ATS STREAM OVERLAY COCKPIT" FontWeight="Bold" FontSize="15" Foreground="#f59e0b" VerticalAlignment="Center"/>
                         <Border Background="#2a1d08" BorderBrush="#f59e0b" BorderThickness="1" CornerRadius="6" Padding="6,1" Margin="10,0,0,0" VerticalAlignment="Center">
-                            <TextBlock x:Name="txtBadgeVer" Text="v1.2.2" FontWeight="Bold" FontSize="11" Foreground="#fbbf24"/>
+                            <TextBlock x:Name="txtBadgeVer" Text="v0.0.1" FontWeight="Bold" FontSize="11" Foreground="#fbbf24"/>
                         </Border>
                     </StackPanel>
-                    <TextBlock x:Name="txtHeaderSub" Text="2-Row Cockpit HUD • Native SCS SDK 1.16 Telemetry • Twitch Chat &amp; Alerts" FontSize="11" Foreground="#94a3b8" Margin="0,2,0,0"/>
+                    <TextBlock x:Name="txtHeaderSub" Text="2-Row Cockpit HUD • Native SCS SDK 1.16 Telemetry • © 2026 FooZzee (All Rights Reserved)" FontSize="11" Foreground="#94a3b8" Margin="0,2,0,0"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
@@ -694,28 +1055,28 @@ $xaml = @"
 
         <!-- МОДУЛЬНЫЕ СЕКЦИИ УСТАНОВКИ (КОМПАКТНЫЙ ЛАЙАУТ БЕЗ СКРОЛЛА) -->
         <StackPanel Grid.Row="1">
-            <!-- 1. Папка установки оверлея (По умолчанию C:\OverlayOBS_FooZzee) -->
-            <Border Background="#151b24" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="8" Padding="12,7" Margin="0,0,0,6">
+            <!-- 1. Папка установки оверлея (По умолчанию C:\Stream _Overlay _Cockpit) -->
+            <Border Background="#151b24" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="8" Padding="12,6" Margin="0,0,0,5">
                 <StackPanel>
-                    <TextBlock x:Name="lblInstallDir" Text="1. Папка установки оверлея" FontWeight="Bold" FontSize="12" Foreground="#f59e0b" Margin="0,0,0,4"/>
+                    <TextBlock x:Name="lblInstallDir" Text="1. Папка установки оверлея" FontWeight="Bold" FontSize="15" Foreground="#f59e0b" Margin="0,0,0,3"/>
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBox x:Name="txtInstallDir" Grid.Column="0" Height="26" Text="C:\OverlayOBS_FooZzee"/>
+                        <TextBox x:Name="txtInstallDir" Grid.Column="0" Height="26" Text="C:\Stream _Overlay _Cockpit"/>
                         <Button x:Name="btnBrowseInstall" Style="{StaticResource BtnBase}" Grid.Column="1" Content="Обзор..." Margin="6,0,0,0" Height="26"/>
                     </Grid>
                 </StackPanel>
             </Border>
 
             <!-- 2. Плагин телеметрии SCS SDK -->
-            <Border Background="#151b24" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="8" Padding="12,7" Margin="0,0,0,6">
+            <Border Background="#151b24" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="8" Padding="12,6" Margin="0,0,0,5">
                 <StackPanel>
-                    <TextBlock x:Name="lblPlugins" Text="2. Установка нативного плагина телеметрии (overlayobs_foozzee_telemetry.dll)" FontWeight="Bold" FontSize="12" Foreground="#f59e0b" Margin="0,0,0,5"/>
+                    <TextBlock x:Name="lblPlugins" Text="2. Установка нативного плагина телеметрии (overlayobs_foozzee_telemetry.dll)" FontWeight="Bold" FontSize="15" Foreground="#f59e0b" Margin="0,0,0,4"/>
                     
                     <!-- ETS2 -->
-                    <Grid Margin="0,0,0,3">
+                    <Grid Margin="0,0,0,2">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
@@ -725,10 +1086,10 @@ $xaml = @"
                         <TextBox x:Name="txtEts2Path" Grid.Column="1" Height="24" FontSize="11"/>
                         <Button x:Name="btnBrowseEts2" Style="{StaticResource BtnBase}" Grid.Column="2" Content="Обзор..." Margin="6,0,0,0" Height="24" Padding="8,1"/>
                     </Grid>
-                    <TextBlock x:Name="lblEts2Status" Text="Найдено автоматически" FontSize="10.5" Foreground="#38bdf8" Margin="20,0,0,4"/>
+                    <TextBlock x:Name="lblEts2Status" Text="Найдено автоматически" FontSize="10.5" Foreground="#38bdf8" Margin="20,0,0,3"/>
 
                     <!-- ATS -->
-                    <Grid Margin="0,0,0,3">
+                    <Grid Margin="0,0,0,2">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
@@ -738,16 +1099,109 @@ $xaml = @"
                         <TextBox x:Name="txtAtsPath" Grid.Column="1" Height="24" FontSize="11"/>
                         <Button x:Name="btnBrowseAts" Style="{StaticResource BtnBase}" Grid.Column="2" Content="Обзор..." Margin="6,0,0,0" Height="24" Padding="8,1"/>
                     </Grid>
-                    <TextBlock x:Name="lblAtsStatus" Text="Найдено автоматически" FontSize="10.5" Foreground="#38bdf8" Margin="20,0,0,4"/>
+                    <TextBlock x:Name="lblAtsStatus" Text="Найдено автоматически" FontSize="10.5" Foreground="#38bdf8" Margin="20,0,0,3"/>
 
                     <TextBlock x:Name="lblThirdPartyNote" Text="Напоминание: сторонний rtrucksim_telemetry.dll строго не затрагивается." FontSize="10.5" Foreground="#64748b"/>
                 </StackPanel>
             </Border>
 
-            <!-- 3. Профиль стримера -->
-            <Border Background="#151b24" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="8" Padding="12,7" Margin="0,0,0,6">
+            <!-- 3. Формат рамки веб-камеры -->
+            <Border Background="#151b24" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="8" Padding="12,6" Margin="0,0,0,5">
                 <StackPanel>
-                    <TextBlock x:Name="lblProfile" Text="3. Профиль стримера (записывается в config.js)" FontWeight="Bold" FontSize="12" Foreground="#f59e0b" Margin="0,0,0,4"/>
+                    <TextBlock x:Name="lblCamAspectHeader" Text="3. Формат рамки веб-камеры (подберите под вашу камеру)" FontWeight="Bold" FontSize="15" Foreground="#f59e0b" Margin="0,0,0,2"/>
+                    <TextBlock x:Name="lblCamAspectHint" Text="Выберите формат под реальные пропорции вашей камеры в OBS, чтобы рамка оверлея идеально легла поверх видеопотока." FontSize="10.5" Foreground="#94a3b8" Margin="0,0,0,5"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Карточка 4:3 -->
+                        <Border Grid.Column="0" Background="#0e141d" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="6" Padding="10,6">
+                            <StackPanel>
+                                <RadioButton x:Name="rbCam4x3" GroupName="CamAspect" Content="4:3 — Стандартный / квадратный кадр (325×244 px)" IsChecked="True" FontSize="12.5" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="lblCam4x3Sub" Text="Габариты: 325×244 px (1080p) • 397×298 px (1440p) • Полная высота приборной панели" FontSize="10" Foreground="#64748b" Margin="22,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Карточка 16:9 -->
+                        <Border Grid.Column="2" Background="#0e141d" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="6" Padding="10,6">
+                            <StackPanel>
+                                <RadioButton x:Name="rbCam16x9" GroupName="CamAspect" Content="16:9 — Широкоформатный кадр (384×216 px)" FontSize="12.5" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="lblCam16x9Sub" Text="Габариты: 384×216 px (1080p) • 464×261 px (1440p) • Выравнивание по верхней кромке" FontSize="10" Foreground="#64748b" Margin="22,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- 4. Тема приборной панели -->
+            <Border Background="#151b24" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="8" Padding="12,6" Margin="0,0,0,5">
+                <StackPanel>
+                    <TextBlock x:Name="lblCockpitThemeHeader" Text="4. Тема оформления приборной панели тягача" FontWeight="Bold" FontSize="15" Foreground="#f59e0b" Margin="0,0,0,2"/>
+                    <TextBlock x:Name="lblCockpitThemeHint" Text="Выберите между классическим компактным щитком и новой полноразмерной торпедой с 8 стрелочными мини-приборами." FontSize="10.5" Foreground="#94a3b8" Margin="0,0,0,5"/>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="6"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="6"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Карточка 1: Классическая -->
+                        <Border Grid.Row="0" Grid.Column="0" Background="#0e141d" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="6" Padding="10,6">
+                            <StackPanel>
+                                <RadioButton x:Name="rbThemeClassic" GroupName="CockpitTheme" Content="Классическая (Classic) — Щиток Scania/Volvo" IsChecked="True" FontSize="12" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="lblThemeClassicSub" Text="Компактный щиток (988 px) • Центральный MFD • Спидометр и тахометр" FontSize="10" Foreground="#64748b" Margin="22,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Карточка 2: Торпеда Про -->
+                        <Border Grid.Row="0" Grid.Column="2" Background="#0e141d" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="6" Padding="10,6">
+                            <StackPanel>
+                                <RadioButton x:Name="rbThemeTorpedo" GroupName="CockpitTheme" Content="Торпеда Про (Torpedo Pro) — Полноразмерная торпеда" FontSize="12" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="lblThemeTorpedoSub" Text="Широкая консоль (1080 px) • 8 стрелочных мини-приборов • Вертикальные педали" FontSize="10" Foreground="#64748b" Margin="22,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Карточка 3: Scania Touring -->
+                        <Border Grid.Row="2" Grid.Column="0" Background="#0e141d" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="6" Padding="10,6">
+                            <StackPanel>
+                                <RadioButton x:Name="rbThemeScania" GroupName="CockpitTheme" Content="Scania Touring — Автобусная панель Scania" FontSize="12" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="lblThemeScaniaSub" Text="Скульптурный козырёк (1020 px) • Сатиновые кольца • Эко-зона Scania (10-15)" FontSize="10" Foreground="#64748b" Margin="22,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Карточка 4: MAN Lion's Coach -->
+                        <Border Grid.Row="2" Grid.Column="2" Background="#0e141d" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="6" Padding="10,6">
+                            <StackPanel>
+                                <RadioButton x:Name="rbThemeMan" GroupName="CockpitTheme" Content="MAN Lion's Coach — Автобусная панель MAN" FontSize="12" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="lblThemeManSub" Text="Гранёный козырёк (1040 px) • Красная линия MAN • Вертикальные LED-шкалы" FontSize="10" Foreground="#64748b" Margin="22,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Карточка 5: Volvo 9700 Double Decker -->
+                        <Border Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Background="#0e141d" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="6" Padding="10,6">
+                            <StackPanel>
+                                <RadioButton x:Name="rbThemeVolvo" GroupName="CockpitTheme" Content="Volvo 9700 DD — Автобусная панель Volvo Double Decker" FontSize="12" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="lblThemeVolvoSub" Text="Центр-доминантный щиток (1024 px) • Большое кольцо спидометра • Дуга тахометра • I-Shift" FontSize="10" Foreground="#64748b" Margin="22,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- 5. Профиль стримера -->
+            <Border Background="#151b24" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="8" Padding="12,6" Margin="0,0,0,5">
+                <StackPanel>
+                    <TextBlock x:Name="lblProfile" Text="5. Профиль стримера (записывается в config.js)" FontWeight="Bold" FontSize="15" Foreground="#f59e0b" Margin="0,0,0,3"/>
                     <Grid Margin="0,0,0,4">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -777,10 +1231,10 @@ $xaml = @"
                 </StackPanel>
             </Border>
 
-            <!-- 4. Ярлыки и параметры (Включая ярлык Pip-Boy 3000) -->
-            <Border Background="#151b24" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="8" Padding="12,7" Margin="0,0,0,6">
+            <!-- 5. Ярлыки и параметры (Включая ярлык Pip-Boy 3000) -->
+            <Border Background="#151b24" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="8" Padding="12,6" Margin="0,0,0,5">
                 <StackPanel>
-                    <TextBlock x:Name="lblOptions" Text="4. Ярлыки и параметры" FontWeight="Bold" FontSize="12" Foreground="#f59e0b" Margin="0,0,0,4"/>
+                    <TextBlock x:Name="lblOptions" Text="6. Ярлыки и параметры" FontWeight="Bold" FontSize="15" Foreground="#f59e0b" Margin="0,0,0,3"/>
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -797,8 +1251,8 @@ $xaml = @"
                 </StackPanel>
             </Border>
 
-            <!-- 5. КАРТОЧКА GITHUB STAR И ЦЕНТРАЛЬНАЯ КНОПКА ПОДДЕРЖКИ -->
-            <Border Background="#121820" BorderBrush="#f59e0b" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,0,6">
+            <!-- 6. КАРТОЧКА GITHUB STAR И ЦЕНТРАЛЬНАЯ КНОПКА ПОДДЕРЖКИ -->
+            <Border Background="#121820" BorderBrush="#f59e0b" BorderThickness="1" CornerRadius="8" Padding="12,7" Margin="0,0,0,5">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -842,26 +1296,27 @@ $xaml = @"
         <Border Grid.Row="2" Background="#151b24" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,0,6">
             <Grid>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Ссылки автора и встроенный просмотр документации -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="FooZzee:" FontSize="11" Foreground="#64748b" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                    <Button x:Name="linkWeb" Style="{StaticResource BtnBase}" Content="foozzee.ru" Padding="5,2" FontSize="10.5" Margin="0,0,3,0"/>
-                    <Button x:Name="linkTwitch" Style="{StaticResource BtnBase}" Content="Twitch" Padding="5,2" FontSize="10.5" Margin="0,0,3,0"/>
-                    <Button x:Name="linkYt" Style="{StaticResource BtnBase}" Content="YouTube" Padding="5,2" FontSize="10.5" Margin="0,0,3,0"/>
-                    <Button x:Name="linkTg" Style="{StaticResource BtnBase}" Content="Telegram" Padding="5,2" FontSize="10.5" Margin="0,0,3,0"/>
-                    <Button x:Name="linkVk" Style="{StaticResource BtnBase}" Content="VK" Padding="5,2" FontSize="10.5" Margin="0,0,6,0"/>
-                    <Button x:Name="btnChangelog" Style="{StaticResource BtnBase}" Content="📜 Changelog" Padding="7,2" FontSize="10.5" Margin="0,0,3,0"/>
-                    <Button x:Name="btnCommands" Style="{StaticResource BtnBase}" Content="📖 Commands" Padding="7,2" FontSize="10.5"/>
+                <!-- Фирменные ссылки автора и нейтральные кнопки документации -->
+                <StackPanel x:Name="pnlLeftActions" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="FooZzee:" FontSize="11" FontWeight="SemiBold" Foreground="#94a3b8" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <Button x:Name="linkWeb" Style="{StaticResource BtnBrandWeb}" Content="foozzee.ru" Margin="0,0,4,0"/>
+                    <Button x:Name="linkTwitch" Style="{StaticResource BtnBrandTwitch}" Content="Twitch" Margin="0,0,4,0"/>
+                    <Button x:Name="linkYt" Style="{StaticResource BtnBrandYouTube}" Content="YouTube" Margin="0,0,4,0"/>
+                    <Button x:Name="linkTg" Style="{StaticResource BtnBrandTelegram}" Content="Telegram" Margin="0,0,4,0"/>
+                    <Button x:Name="linkVk" Style="{StaticResource BtnBrandVk}" Content="VK" Margin="0,0,8,0"/>
+                    <Button x:Name="btnChangelog" Style="{StaticResource BtnToolNeutral}" Content="📜 Changelog" Margin="0,0,4,0"/>
+                    <Button x:Name="btnCommands" Style="{StaticResource BtnToolNeutral}" Content="📖 Commands"/>
                 </StackPanel>
 
                 <!-- Кнопки Закрыть и Установить -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button x:Name="btnCancel" Style="{StaticResource BtnBase}" Content="Закрыть" Margin="0,0,6,0" Height="32"/>
-                    <Button x:Name="btnInstall" Style="{StaticResource BtnPrimary}" Content="🚀 УСТАНОВИТЬ ОВЕРЛЕЙ" Height="32"/>
+                <StackPanel x:Name="pnlRightActions" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
+                    <Button x:Name="btnCancel" Style="{StaticResource BtnBase}" Content="Закрыть" Margin="0,0,6,0" Height="32" Padding="12,5"/>
+                    <Button x:Name="btnInstall" Style="{StaticResource BtnPrimary}" Content="🚀 УСТАНОВИТЬ ОВЕРЛЕЙ" Height="32" Padding="16,6"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -873,7 +1328,7 @@ $xaml = @"
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <TextBlock x:Name="txtFooterVer" Grid.Column="0" Text="Версия пакета: v1.2.2" FontSize="10.5" Foreground="#f59e0b"/>
-            <TextBlock x:Name="txtFooterObs" Grid.Column="1" Text="OBS Desktop: 1920x1080 (ets2-desktop.html) • Камера: 346x195 px" FontSize="10.5" Foreground="#64748b"/>
+            <TextBlock x:Name="txtFooterObs" Grid.Column="1" Text="OBS Desktop: 1920x1080 (ets2-desktop.html) • Камера: 325x244 px (4:3)" FontSize="10.5" Foreground="#64748b"/>
         </Grid>
     </Grid>
 </Window>
@@ -915,7 +1370,25 @@ $lblDaToken       = $win.FindName('lblDaToken')
 $pwdDaToken       = $win.FindName('pwdDaToken')
 $txtDaToken       = $win.FindName('txtDaToken')
 $btnToggleToken   = $win.FindName('btnToggleToken')
-$lblOptions       = $win.FindName('lblOptions')
+$lblCamAspectHeader = $win.FindName('lblCamAspectHeader')
+$lblCamAspectHint   = $win.FindName('lblCamAspectHint')
+$rbCam4x3           = $win.FindName('rbCam4x3')
+$lblCam4x3Sub       = $win.FindName('lblCam4x3Sub')
+$rbCam16x9          = $win.FindName('rbCam16x9')
+$lblCam16x9Sub      = $win.FindName('lblCam16x9Sub')
+$lblCockpitThemeHeader = $win.FindName('lblCockpitThemeHeader')
+$lblCockpitThemeHint   = $win.FindName('lblCockpitThemeHint')
+$rbThemeClassic        = $win.FindName('rbThemeClassic')
+$lblThemeClassicSub    = $win.FindName('lblThemeClassicSub')
+$rbThemeTorpedo        = $win.FindName('rbThemeTorpedo')
+$rbThemeScania         = $win.FindName('rbThemeScania')
+$rbThemeMan            = $win.FindName('rbThemeMan')
+$rbThemeVolvo          = $win.FindName('rbThemeVolvo')
+$lblThemeScaniaSub     = $win.FindName('lblThemeScaniaSub')
+$lblThemeManSub        = $win.FindName('lblThemeManSub')
+$lblThemeVolvoSub      = $win.FindName('lblThemeVolvoSub')
+$lblThemeTorpedoSub    = $win.FindName('lblThemeTorpedoSub')
+$lblOptions         = $win.FindName('lblOptions')
 $chkShortcut      = $win.FindName('chkShortcut')
 $chkUpdateShortcut= $win.FindName('chkUpdateShortcut')
 $chkOpenFolder    = $win.FindName('chkOpenFolder')
@@ -954,6 +1427,24 @@ function Update-Localization {
     $lblTwitch.Text           = Get-Text 'LblTwitch'
     $lblDaToken.Text          = Get-Text 'LblDaToken'
     $btnToggleToken.Content   = if ($pwdDaToken.Visibility -eq [System.Windows.Visibility]::Visible) { Get-Text 'BtnShowToken' } else { Get-Text 'BtnHideToken' }
+    if ($lblCamAspectHeader) { $lblCamAspectHeader.Text = Get-Text 'GrpCamAspect' }
+    if ($lblCamAspectHint)   { $lblCamAspectHint.Text   = Get-Text 'HintCamAspect' }
+    if ($rbCam4x3)           { $rbCam4x3.Content        = Get-Text 'RbCam4x3' }
+    if ($lblCam4x3Sub)       { $lblCam4x3Sub.Text       = Get-Text 'RbCam4x3Sub' }
+    if ($rbCam16x9)          { $rbCam16x9.Content       = Get-Text 'RbCam16x9' }
+    if ($lblCam16x9Sub)      { $lblCam16x9Sub.Text      = Get-Text 'RbCam16x9Sub' }
+    if ($lblCockpitThemeHeader) { $lblCockpitThemeHeader.Text = Get-Text 'GrpCockpitTheme' }
+    if ($lblCockpitThemeHint)   { $lblCockpitThemeHint.Text   = Get-Text 'HintCockpitTheme' }
+    if ($rbThemeClassic)        { $rbThemeClassic.Content     = Get-Text 'RbThemeClassic' }
+    if ($lblThemeClassicSub)    { $lblThemeClassicSub.Text    = Get-Text 'RbThemeClassicSub' }
+    if ($rbThemeTorpedo)        { $rbThemeTorpedo.Content     = Get-Text 'RbThemeTorpedo' }
+if ($rbThemeScania)         { $rbThemeScania.Content      = Get-Text 'RbThemeScania' }
+if ($rbThemeMan)            { $rbThemeMan.Content         = Get-Text 'RbThemeMan' }
+if ($rbThemeVolvo)          { $rbThemeVolvo.Content       = Get-Text 'RbThemeVolvo' }
+if ($lblThemeScaniaSub)     { $lblThemeScaniaSub.Text     = Get-Text 'RbThemeScaniaSub' }
+if ($lblThemeManSub)        { $lblThemeManSub.Text        = Get-Text 'RbThemeManSub' }
+if ($lblThemeVolvoSub)      { $lblThemeVolvoSub.Text      = Get-Text 'RbThemeVolvoSub' }
+    if ($lblThemeTorpedoSub)    { $lblThemeTorpedoSub.Text    = Get-Text 'RbThemeTorpedoSub' }
     $lblOptions.Text          = Get-Text 'GrpOptions'
     $chkShortcut.Content      = Get-Text 'ChkShortcut'
     $chkUpdateShortcut.Content= Get-Text 'ChkUpdateShortcut'
@@ -966,7 +1457,7 @@ function Update-Localization {
     $btnCancel.Content        = Get-Text 'BtnCancel'
     $btnInstall.Content       = Get-Text 'BtnInstall'
     $txtFooterVer.Text        = Get-Text 'FooterPkgVer'
-    $txtFooterObs.Text        = Get-Text 'FooterObsHint'
+    $txtFooterObs.Text        = if ($rbCam16x9 -and $rbCam16x9.IsChecked) { Get-Text 'FooterObsHint16x9' } else { Get-Text 'FooterObsHint4x3' }
 
     if ($txtEts2Path.Text) {
         $lblEts2Status.Text = Get-Text 'PluginFound'
@@ -982,6 +1473,15 @@ function Update-Localization {
         $lblAtsStatus.Text = Get-Text 'PluginMissing'
         $lblAtsStatus.Foreground = [System.Windows.Media.Brushes]::Gray
     }
+}
+
+if ($rbCam4x3 -and $rbCam16x9) {
+    $rbCam4x3.Add_Checked({
+        $txtFooterObs.Text = Get-Text 'FooterObsHint4x3'
+    })
+    $rbCam16x9.Add_Checked({
+        $txtFooterObs.Text = Get-Text 'FooterObsHint16x9'
+    })
 }
 
 # 11. Автопоиск путей к играм ETS2 и ATS
@@ -1004,7 +1504,329 @@ if ($detectedAts) {
 
 Update-Localization
 
-# 12. Встроенные модальные WPF-окна для документации (БЕЗ Блокнота)
+# 12. Встроенные модальные WPF-окна для документации (Красивый FlowDocument БЕЗ Блокнота)
+function Convert-MarkdownToFlowDoc {
+    param([string]$MarkdownText, [string]$DocTitle)
+
+    $brushAmber  = [System.Windows.Media.BrushConverter]::new().ConvertFromString("#F59E0B")
+    $brushCyan   = [System.Windows.Media.BrushConverter]::new().ConvertFromString("#38BDF8")
+    $brushGold   = [System.Windows.Media.BrushConverter]::new().ConvertFromString("#FBBF24")
+    $brushText   = [System.Windows.Media.BrushConverter]::new().ConvertFromString("#CBD5E1")
+    $brushMuted  = [System.Windows.Media.BrushConverter]::new().ConvertFromString("#94A3B8")
+    $brushBgDark = [System.Windows.Media.BrushConverter]::new().ConvertFromString("#080D14")
+    $brushBorder = [System.Windows.Media.BrushConverter]::new().ConvertFromString("#2A3444")
+    $brushCodeBg = [System.Windows.Media.BrushConverter]::new().ConvertFromString("#161E2E")
+    $fontMono    = New-Object System.Windows.Media.FontFamily("Consolas, 'Courier New', monospace")
+    $fontMain    = New-Object System.Windows.Media.FontFamily("Segoe UI, -apple-system, sans-serif")
+
+    $doc = New-Object System.Windows.Documents.FlowDocument
+    $doc.Background = [System.Windows.Media.BrushConverter]::new().ConvertFromString("#0B0F14")
+    $doc.Foreground = $brushText
+    $doc.FontFamily = $fontMain
+    $doc.FontSize = 12.5
+    $doc.PagePadding = New-Object System.Windows.Thickness(20, 14, 20, 14)
+
+    function Add-FormattedInlines($targetInlines, [string]$rawText) {
+        if ([string]::IsNullOrWhiteSpace($rawText)) { return }
+        # Strip remaining markdown link [text](url) -> text
+        $clean = [regex]::Replace($rawText, '\[([^\]]+)\]\([^)]+\)', '$1')
+        # Split by inline code `...` and bold **...**
+        $tokens = [regex]::Split($clean, '(`[^`]+`|\*\*[^*]+\*\*)')
+        foreach ($tok in $tokens) {
+            if ([string]::IsNullOrEmpty($tok)) { continue }
+            if ($tok.StartsWith('`') -and $tok.EndsWith('`') -and $tok.Length -ge 2) {
+                $codeText = $tok.Substring(1, $tok.Length - 2)
+                $run = New-Object System.Windows.Documents.Run($codeText)
+                $run.FontFamily = $fontMono
+                $run.Foreground = $brushGold
+                $run.Background = $brushCodeBg
+                $run.FontSize = 12.0
+                $targetInlines.Add($run)
+            } elseif ($tok.StartsWith('**') -and $tok.EndsWith('**') -and $tok.Length -ge 4) {
+                $boldText = $tok.Substring(2, $tok.Length - 4)
+                $run = New-Object System.Windows.Documents.Run($boldText)
+                $run.FontWeight = [System.Windows.FontWeights]::Bold
+                $run.Foreground = [System.Windows.Media.Brushes]::White
+                $targetInlines.Add($run)
+            } else {
+                $run = New-Object System.Windows.Documents.Run($tok)
+                $targetInlines.Add($run)
+            }
+        }
+    }
+
+    $lines = $MarkdownText -split "`r?`n"
+    $i = 0
+    $count = $lines.Length
+
+    while ($i -lt $count) {
+        $line = $lines[$i]
+        $trimmed = $line.Trim()
+
+        # Skip empty lines
+        if ([string]::IsNullOrWhiteSpace($trimmed)) {
+            $i++
+            continue
+        }
+
+        # Skip nav badges, language switchers, and horizontal lines
+        if ($trimmed -match '^\[(Документация|Статус|Лицензия|License|Keep a Changelog|SemVer|Latest Release)\]\(') { $i++; continue }
+        if ($trimmed -match '^>?[ \t]*\*\*(Язык|Language):\*\*') { $i++; continue }
+        if ($trimmed -eq '---') { $i++; continue }
+
+        # 1. Code blocks (```)
+        if ($trimmed.StartsWith('```')) {
+            $codeLines = [System.Collections.Generic.List[string]]::new()
+            $i++
+            while ($i -lt $count -and -not $lines[$i].Trim().StartsWith('```')) {
+                $codeLines.Add($lines[$i])
+                $i++
+            }
+            if ($i -lt $count) { $i++ }
+
+            $border = New-Object System.Windows.Controls.Border
+            $border.Background = $brushBgDark
+            $border.BorderBrush = $brushBorder
+            $border.BorderThickness = New-Object System.Windows.Thickness(1)
+            $border.CornerRadius = New-Object System.Windows.CornerRadius(6)
+            $border.Padding = New-Object System.Windows.Thickness(12, 8, 12, 8)
+            $border.Margin = New-Object System.Windows.Thickness(0, 4, 0, 8)
+
+            $tb = New-Object System.Windows.Controls.TextBox
+            $tb.Background = [System.Windows.Media.Brushes]::Transparent
+            $tb.Foreground = $brushGold
+            $tb.BorderThickness = New-Object System.Windows.Thickness(0)
+            $tb.FontFamily = $fontMono
+            $tb.FontSize = 11.5
+            $tb.IsReadOnly = $true
+            $tb.TextWrapping = [System.Windows.TextWrapping]::Wrap
+            $tb.Text = ($codeLines -join "`r`n")
+            $border.Child = $tb
+
+            $uic = New-Object System.Windows.Documents.BlockUIContainer($border)
+            $doc.Blocks.Add($uic)
+            continue
+        }
+
+        # 2. Blockquote / Alert callouts (> [!NOTE], > [!IMPORTANT], > [!TIP], or generic > ...)
+        if ($trimmed.StartsWith('>')) {
+            $quoteLines = [System.Collections.Generic.List[string]]::new()
+            $alertKind = $null
+            while ($i -lt $count -and $lines[$i].Trim().StartsWith('>')) {
+                $qLine = $lines[$i].Trim().TrimStart('>').Trim()
+                if ($qLine -match '^\[!(NOTE|IMPORTANT|TIP|WARNING|CAUTION)\]') {
+                    $alertKind = $Matches[1].ToUpper()
+                } else {
+                    if (-not [string]::IsNullOrWhiteSpace($qLine)) {
+                        $quoteLines.Add($qLine)
+                    }
+                }
+                $i++
+            }
+
+            $accentColor = switch ($alertKind) {
+                'IMPORTANT' { '#EF4444' }
+                'TIP'       { '#10B981' }
+                'WARNING'   { '#F59E0B' }
+                'CAUTION'   { '#DC2626' }
+                'NOTE'      { '#38BDF8' }
+                default     { '#64748B' }
+            }
+            $alertTitle = switch ($alertKind) {
+                'IMPORTANT' { if ($MarkdownText -match 'версий|Changelog') { 'ВАЖНО // КЛЮЧЕВЫЕ ИЗМЕНЕНИЯ' } else { 'ВАЖНО // ПРАВИЛО' } }
+                'TIP'       { 'СОВЕТ // ПОДСКАЗКА' }
+                'WARNING'   { 'ВНИМАНИЕ' }
+                'CAUTION'   { 'ОСТОРОЖНО' }
+                'NOTE'      { 'ПРИМЕЧАНИЕ' }
+                default     { $null }
+            }
+
+            $border = New-Object System.Windows.Controls.Border
+            $border.Background = [System.Windows.Media.BrushConverter]::new().ConvertFromString("#131922")
+            $border.BorderBrush = [System.Windows.Media.BrushConverter]::new().ConvertFromString($accentColor)
+            $border.BorderThickness = New-Object System.Windows.Thickness(3, 0, 0, 0)
+            $border.CornerRadius = New-Object System.Windows.CornerRadius(0, 6, 6, 0)
+            $border.Padding = New-Object System.Windows.Thickness(12, 8, 12, 8)
+            $border.Margin = New-Object System.Windows.Thickness(0, 4, 0, 8)
+
+            $sp = New-Object System.Windows.Controls.StackPanel
+            if ($alertTitle) {
+                $tbTitle = New-Object System.Windows.Controls.TextBlock
+                $tbTitle.Text = $alertTitle
+                $tbTitle.FontWeight = [System.Windows.FontWeights]::Bold
+                $tbTitle.FontSize = 11.0
+                $tbTitle.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFromString($accentColor)
+                $tbTitle.Margin = New-Object System.Windows.Thickness(0, 0, 0, 4)
+                $sp.Children.Add($tbTitle) | Out-Null
+            }
+
+            $tbBody = New-Object System.Windows.Controls.TextBlock
+            $tbBody.TextWrapping = [System.Windows.TextWrapping]::Wrap
+            $tbBody.Foreground = $brushText
+            $tbBody.FontSize = 12.0
+            Add-FormattedInlines $tbBody.Inlines ($quoteLines -join ' ')
+            $sp.Children.Add($tbBody) | Out-Null
+
+            $border.Child = $sp
+            $uic = New-Object System.Windows.Documents.BlockUIContainer($border)
+            $doc.Blocks.Add($uic)
+            continue
+        }
+
+        # 3. Tables (| col | col |)
+        if ($trimmed.StartsWith('|') -and $trimmed.EndsWith('|')) {
+            $tableLines = [System.Collections.Generic.List[string]]::new()
+            while ($i -lt $count -and $lines[$i].Trim().StartsWith('|') -and $lines[$i].Trim().EndsWith('|')) {
+                $tableLines.Add($lines[$i].Trim())
+                $i++
+            }
+
+            if ($tableLines.Count -ge 2) {
+                $table = New-Object System.Windows.Documents.Table
+                $table.CellSpacing = 0
+                $table.Margin = New-Object System.Windows.Thickness(0, 4, 0, 8)
+                $table.BorderThickness = New-Object System.Windows.Thickness(1)
+                $table.BorderBrush = $brushBorder
+
+                $rowGroup = New-Object System.Windows.Documents.TableRowGroup
+                $table.RowGroups.Add($rowGroup)
+
+                # Parse header
+                $headerCells = $tableLines[0].Trim('|').Split('|') | ForEach-Object { $_.Trim() }
+                $headerRow = New-Object System.Windows.Documents.TableRow
+                $headerRow.Background = [System.Windows.Media.BrushConverter]::new().ConvertFromString("#151D2A")
+                foreach ($hCell in $headerCells) {
+                    $tc = New-Object System.Windows.Documents.TableCell
+                    $tc.Padding = New-Object System.Windows.Thickness(8, 6, 8, 6)
+                    $tc.BorderBrush = $brushBorder
+                    $tc.BorderThickness = New-Object System.Windows.Thickness(0, 0, 1, 1)
+                    $p = New-Object System.Windows.Documents.Paragraph
+                    $p.FontWeight = [System.Windows.FontWeights]::Bold
+                    $p.Foreground = $brushAmber
+                    $p.FontSize = 11.5
+                    Add-FormattedInlines $p.Inlines $hCell
+                    $tc.Blocks.Add($p)
+                    $headerRow.Cells.Add($tc)
+                }
+                $rowGroup.Rows.Add($headerRow)
+
+                # Data rows (skip index 1 which is divider |:---|:---|)
+                for ($r = 2; $r -lt $tableLines.Count; $r++) {
+                    $dRow = New-Object System.Windows.Documents.TableRow
+                    if ($r % 2 -eq 1) {
+                        $dRow.Background = [System.Windows.Media.BrushConverter]::new().ConvertFromString("#0D131C")
+                    }
+                    $dataCells = $tableLines[$r].Trim('|').Split('|') | ForEach-Object { $_.Trim() }
+                    for ($c = 0; $c -lt $headerCells.Length; $c++) {
+                        $cText = if ($c -lt $dataCells.Length) { $dataCells[$c] } else { '' }
+                        $tc = New-Object System.Windows.Documents.TableCell
+                        $tc.Padding = New-Object System.Windows.Thickness(8, 5, 8, 5)
+                        $tc.BorderBrush = $brushBorder
+                        $tc.BorderThickness = New-Object System.Windows.Thickness(0, 0, 1, 1)
+                        $p = New-Object System.Windows.Documents.Paragraph
+                        $p.Foreground = $brushText
+                        $p.FontSize = 11.5
+                        Add-FormattedInlines $p.Inlines $cText
+                        $tc.Blocks.Add($p)
+                        $dRow.Cells.Add($tc)
+                    }
+                    $rowGroup.Rows.Add($dRow)
+                }
+                $doc.Blocks.Add($table)
+                continue
+            }
+        }
+
+        # 4. Heading 1 (# ...)
+        if ($trimmed -match '^#\s+(.+)$') {
+            $hText = $Matches[1].Trim()
+            $p = New-Object System.Windows.Documents.Paragraph
+            $p.FontSize = 19.0
+            $p.FontWeight = [System.Windows.FontWeights]::Bold
+            $p.Foreground = $brushAmber
+            $p.Margin = New-Object System.Windows.Thickness(0, 0, 0, 8)
+            Add-FormattedInlines $p.Inlines $hText
+            $doc.Blocks.Add($p)
+            $i++
+            continue
+        }
+
+        # 5. Heading 2 (## ...)
+        if ($trimmed -match '^##\s+(.+)$') {
+            $hText = $Matches[1].Trim()
+            $p = New-Object System.Windows.Documents.Paragraph
+            $p.FontSize = 15.0
+            $p.FontWeight = [System.Windows.FontWeights]::Bold
+            $p.Foreground = $brushCyan
+            $p.Margin = New-Object System.Windows.Thickness(0, 14, 0, 4)
+            Add-FormattedInlines $p.Inlines $hText
+            $doc.Blocks.Add($p)
+            $i++
+            continue
+        }
+
+        # 6. Heading 3 (### ...)
+        if ($trimmed -match '^###\s+(.+)$') {
+            $hText = $Matches[1].Trim()
+            $p = New-Object System.Windows.Documents.Paragraph
+            $p.FontSize = 13.5
+            $p.FontWeight = [System.Windows.FontWeights]::SemiBold
+            $p.Foreground = $brushGold
+            $p.Margin = New-Object System.Windows.Thickness(0, 10, 0, 3)
+            Add-FormattedInlines $p.Inlines $hText
+            $doc.Blocks.Add($p)
+            $i++
+            continue
+        }
+
+        # 6b. Heading 4 (#### ...)
+        if ($trimmed -match '^####\s+(.+)$') {
+            $hText = $Matches[1].Trim()
+            $p = New-Object System.Windows.Documents.Paragraph
+            $p.FontSize = 12.5
+            $p.FontWeight = [System.Windows.FontWeights]::SemiBold
+            $p.Foreground = $brushCyan
+            $p.Margin = New-Object System.Windows.Thickness(0, 8, 0, 2)
+            Add-FormattedInlines $p.Inlines $hText
+            $doc.Blocks.Add($p)
+            $i++
+            continue
+        }
+
+        # 7. List item (* item, - item)
+        if ($trimmed -match '^(\*|-)\s+(.+)$') {
+            $itemContent = $Matches[2].Trim()
+            $indent = 16
+            if ($line.StartsWith('    ') -or $line.StartsWith("`t`t")) {
+                $indent = 32
+            } elseif ($line.StartsWith('  ') -or $line.StartsWith("`t")) {
+                $indent = 24
+            }
+
+            $p = New-Object System.Windows.Documents.Paragraph
+            $p.Margin = New-Object System.Windows.Thickness($indent, 1.5, 0, 1.5)
+            $runBullet = New-Object System.Windows.Documents.Run("•  ")
+            $runBullet.Foreground = $brushAmber
+            $runBullet.FontWeight = [System.Windows.FontWeights]::Bold
+            $p.Inlines.Add($runBullet)
+            Add-FormattedInlines $p.Inlines $itemContent
+            $doc.Blocks.Add($p)
+            $i++
+            continue
+        }
+
+        # 8. Regular text paragraph
+        $p = New-Object System.Windows.Documents.Paragraph
+        $p.Margin = New-Object System.Windows.Thickness(0, 2, 0, 5)
+        $p.Foreground = $brushText
+        Add-FormattedInlines $p.Inlines $trimmed
+        $doc.Blocks.Add($p)
+        $i++
+    }
+
+    return $doc
+}
+
 function Show-WpfDocModal([string]$docTitle, [string]$docFileName) {
     $searchDirs = @(
         $SourceRoot,
@@ -1040,12 +1862,15 @@ function Show-WpfDocModal([string]$docTitle, [string]$docFileName) {
         }
     }
 
+    $escapedDocTitle = [System.Security.SecurityElement]::Escape($docTitle)
+    $closeBtnText = if ($script:CurrentLang -eq 'ru') { 'Закрыть' } else { 'Close' }
+
     $modalXaml = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="$docTitle"
-        Height="540" Width="720"
-        MinHeight="400" MinWidth="550"
+        Title="$escapedDocTitle"
+        Height="620" Width="840"
+        MinHeight="450" MinWidth="600"
         Background="#0d1117" Foreground="#f1f5f9"
         WindowStartupLocation="CenterOwner"
         FontFamily="Segoe UI, -apple-system, sans-serif"
@@ -1057,21 +1882,23 @@ function Show-WpfDocModal([string]$docTitle, [string]$docFileName) {
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Background="#151b24" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,0,8">
-            <TextBlock Text="$docTitle" FontWeight="Bold" FontSize="13.5" Foreground="#f59e0b"/>
+        <Border Grid.Row="0" Background="#151b24" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,8">
+            <TextBlock Text="$escapedDocTitle" FontWeight="Bold" FontSize="14" Foreground="#f59e0b"/>
         </Border>
 
         <Border Grid.Row="1" Background="#0b0f14" BorderBrush="#2a3444" BorderThickness="1" CornerRadius="8" Padding="4">
-            <TextBox x:Name="txtDocContent" Background="Transparent" Foreground="#e2e8f0"
-                     BorderThickness="0" FontFamily="Consolas, 'Courier New', monospace"
-                     FontSize="12" IsReadOnly="True" TextWrapping="Wrap"
-                     VerticalScrollBarVisibility="Auto" Padding="8"/>
+            <FlowDocumentScrollViewer x:Name="docViewer"
+                                      Background="#0b0f14"
+                                      Foreground="#cbd5e1"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled"
+                                      IsToolBarVisible="False"/>
         </Border>
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
-            <Button x:Name="btnDocClose" Content="$(if ($script:CurrentLang -eq 'ru') { 'Закрыть' } else { 'Close' })"
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button x:Name="btnDocClose" Content="$closeBtnText" IsCancel="True"
                     Background="#1f2937" Foreground="#f1f5f9" BorderBrush="#374151" BorderThickness="1"
-                    FontWeight="SemiBold" FontSize="12" Padding="18,6" Cursor="Hand" Height="30">
+                    FontWeight="SemiBold" FontSize="12" Padding="22,6" Cursor="Hand" Height="32">
                 <Button.Resources>
                     <Style TargetType="Border">
                         <Setter Property="CornerRadius" Value="6"/>
@@ -1087,10 +1914,9 @@ function Show-WpfDocModal([string]$docTitle, [string]$docFileName) {
         $mWin = [System.Windows.Markup.XamlReader]::Load($mReader)
         $mWin.Owner = $win
 
-        $txtBox = $mWin.FindName('txtDocContent')
-        if ($txtBox) {
-            $txtBox.Text = $fileContent
-            $txtBox.ScrollToHome()
+        $viewer = $mWin.FindName('docViewer')
+        if ($viewer) {
+            $viewer.Document = Convert-MarkdownToFlowDoc -MarkdownText $fileContent -DocTitle $docTitle
         }
 
         $mCloseBtn = $mWin.FindName('btnDocClose')
@@ -1165,7 +1991,7 @@ $btnToggleToken.Add_Click({
 
 # Поддержка и звезда
 $btnStar.Add_Click({
-    [System.Diagnostics.Process]::Start('https://github.com/FooZzee/ets2-ats-stream-overlay')
+    [System.Diagnostics.Process]::Start('https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay')
 })
 $btnSupport.Add_Click({
     [System.Diagnostics.Process]::Start('https://www.donationalerts.com/r/foozzee')
@@ -1173,8 +1999,8 @@ $btnSupport.Add_Click({
 $linkWeb.Add_Click({ [System.Diagnostics.Process]::Start('https://foozzee.ru') })
 $linkTwitch.Add_Click({ [System.Diagnostics.Process]::Start('https://twitch.tv/foozzee') })
 $linkYt.Add_Click({ [System.Diagnostics.Process]::Start('https://youtube.com/@foozzee') })
-$linkTg.Add_Click({ [System.Diagnostics.Process]::Start('https://t.me/foozzee_stream') })
-$linkVk.Add_Click({ [System.Diagnostics.Process]::Start('https://vk.com/foozzee') })
+$linkTg.Add_Click({ [System.Diagnostics.Process]::Start('https://t.me/foozzeestream') })
+$linkVk.Add_Click({ [System.Diagnostics.Process]::Start('https://vk.ru/gtfun') })
 
 # Вызов модальных окон документации (строго без Блокнота)
 $btnChangelog.Add_Click({
@@ -1215,9 +2041,14 @@ $btnInstall.Add_Click({
 
         # Генерация config.js (только если файла ещё нет в целевой папке, чтобы защитить пользовательские настройки)
         $cfgPath = Join-Path $instDir 'config.js'
+        $selectedAspect = if ($rbCam16x9 -and $rbCam16x9.IsChecked) { '16:9' } else { '4:3' }
+        $selectedTheme  = if ($rbThemeVolvo -and $rbThemeVolvo.IsChecked) { 'volvo-9700-dd' } elseif ($rbThemeMan -and $rbThemeMan.IsChecked) { 'man-lions-coach' } elseif ($rbThemeScania -and $rbThemeScania.IsChecked) { 'scania-touring' } elseif ($rbThemeTorpedo -and $rbThemeTorpedo.IsChecked) { 'torpedo-pro' } else { 'classic' }
         if (-not (Test-Path -LiteralPath $cfgPath)) {
-            $cfgContent = Build-ConfigJsContent -SelectedLang $script:CurrentLang -DriverName $txtDriver.Text -TwitchName $txtTwitch.Text -DonationAlertsToken $daTokenValue
+            $cfgContent = Build-ConfigJsContent -SelectedLang $script:CurrentLang -DriverName $txtDriver.Text -TwitchName $txtTwitch.Text -DonationAlertsToken $daTokenValue -WebcamAspect $selectedAspect -CockpitTheme $selectedTheme
             [System.IO.File]::WriteAllText($cfgPath, $cfgContent, [System.Text.Encoding]::UTF8)
+        } else {
+            Update-ExistingConfigJsWebcamAspect -ConfigPath $cfgPath -WebcamAspect $selectedAspect
+            Update-ExistingConfigJsCockpitTheme -ConfigPath $cfgPath -CockpitTheme $selectedTheme
         }
 
         $ets2StatusText = Get-Text 'StatusOk'
@@ -1258,6 +2089,10 @@ $btnInstall.Add_Click({
             $sc.TargetPath = Join-Path $instDir 'start-telemetry.bat'
             $sc.WorkingDirectory = $instDir
             $sc.Description = Get-Text 'ShortcutDesc'
+            $bridgeIconPath = Join-Path $instDir 'assets\icons\cockpit-bridge.ico'
+            if (Test-Path -LiteralPath $bridgeIconPath) {
+                $sc.IconLocation = "$bridgeIconPath,0"
+            }
             $sc.Save()
         }
 
@@ -1268,8 +2103,29 @@ $btnInstall.Add_Click({
             $upSc.TargetPath = Join-Path $instDir 'Update-Overlay.bat'
             $upSc.WorkingDirectory = $instDir
             $upSc.Description = Get-Text 'UpdateShortcutDesc'
+            $updaterIconPath = Join-Path $instDir 'assets\icons\cockpit-updater.ico'
+            if (Test-Path -LiteralPath $updaterIconPath) {
+                $upSc.IconLocation = "$updaterIconPath,0"
+            }
             $upSc.Save()
         }
+
+        # Ярлык графического конфигуратора
+        $cfgScPath = Join-Path $desktopDir "ETS2-ATS Overlay Configurator.lnk"
+        $cfgSc = $wsh.CreateShortcut($cfgScPath)
+        $cfgSc.TargetPath = Join-Path $instDir 'Configure-Overlay.bat'
+        $cfgSc.WorkingDirectory = $instDir
+        $cfgSc.Description = if ($script:CurrentLang -eq 'ru') { 'Настройка оверлея ETS2 / ATS' } else { 'ETS2 / ATS Overlay Configuration' }
+        $configuratorIconPath = Join-Path $instDir 'assets\icons\configurator.ico'
+        if (Test-Path -LiteralPath $configuratorIconPath) {
+            $cfgSc.IconLocation = "$configuratorIconPath,0"
+        }
+        $cfgSc.Save()
+
+        # Мгновенное обновление кэша иконок на Рабочем столе Windows
+        try {
+            [ShellNotify]::SHChangeNotify(0x08000000, 0x0000, [IntPtr]::Zero, [IntPtr]::Zero)
+        } catch { }
 
         # Открытие целевой папки
         if ($chkOpenFolder.IsChecked) {
@@ -1277,6 +2133,7 @@ $btnInstall.Add_Click({
         }
 
         # Отчёт об успешной установке
+        $obsBodyText = if ($selectedAspect -eq '16:9') { Get-Text 'DoneObsBody16x9' } else { Get-Text 'DoneObsBody4x3' }
         $resMsg = @"
 $([string](Get-Text 'DoneHeader'))
 $([string](Get-Text 'DoneSub'))
@@ -1286,11 +2143,16 @@ $([string](Get-Text 'DoneSub'))
 • $([string](Get-Text 'DoneAtsLine')) $atsStatusText
 • $([string](Get-Text 'DoneShortcutLine')) $(if ($chkShortcut.IsChecked) { '[OK]' } else { '-' })
 • $([string](Get-Text 'DoneUpdateScLine')) $(if ($chkUpdateShortcut.IsChecked) { '[OK]' } else { '-' })
+• $(if ($script:CurrentLang -eq 'ru') { 'Ярлык конфигуратора на Рабочем столе' } else { 'Configurator Desktop Shortcut' }) [OK]
 • $([string](Get-Text 'DoneDaLine')) $(if ([string]::IsNullOrWhiteSpace($daTokenValue)) { Get-Text 'StatusDaSkipped' } else { Get-Text 'StatusDaOk' })
 
 ----------------------------------------------------------------------
 $([string](Get-Text 'DoneObsHeader'))
-$([string](Get-Text 'DoneObsBody'))
+$([string]$obsBodyText)
+
+----------------------------------------------------------------------
+© 2026 FooZzee · Proprietary Freeware License (All Rights Reserved)
+https://github.com/FooZzee/ETS2-ATS-Cockpit-Stream-Overlay
 "@
         [System.Windows.MessageBox]::Show($resMsg, (Get-Text 'DoneHeader'), [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information)
         $win.Close()

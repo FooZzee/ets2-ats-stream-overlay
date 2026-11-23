@@ -2,6 +2,7 @@
 .SYNOPSIS
   Pip-Boy 3000 Autonomous CRT Update Terminal for ETS2 / ATS Cockpit Stream Overlay.
   Автономный терминал обновлений Pip-Boy 3000 для оверлея ETS2 / ATS.
+  ETS2 / ATS Cockpit Stream Overlay — Copyright (c) 2026 FooZzee. All Rights Reserved.
 #>
 [CmdletBinding()]
 param()
@@ -10,9 +11,12 @@ $ErrorActionPreference = 'Stop'
 
 # 1. Проверка режима STA (Single-Threaded Apartment) для корректной работы WPF
 if ([System.Threading.Thread]::CurrentThread.GetApartmentState() -ne [System.Threading.ApartmentState]::STA) {
-    $scriptPath = $MyInvocation.MyCommand.Definition
-    if (-not $scriptPath) {
-        $scriptPath = Join-Path $PSScriptRoot 'updater.ps1'
+    $scriptPath = if ($MyInvocation.MyCommand.Path -and (Test-Path -LiteralPath $MyInvocation.MyCommand.Path)) {
+        $MyInvocation.MyCommand.Path
+    } elseif ($PSScriptRoot) {
+        Join-Path $PSScriptRoot 'updater.ps1'
+    } else {
+        Join-Path (Get-Location).Path 'scripts\updater.ps1'
     }
     Start-Process -FilePath 'powershell.exe' -ArgumentList "-NoProfile -ExecutionPolicy Bypass -STA -WindowStyle Hidden -File `"$scriptPath`""
     exit
@@ -29,8 +33,8 @@ Add-Type -AssemblyName WindowsBase
 # 4. Надёжный расчёт путей к файлам проекта
 $ScriptDir = if ($PSScriptRoot) {
     $PSScriptRoot
-} elseif ($MyInvocation.MyCommand.Definition) {
-    Split-Path -Parent $MyInvocation.MyCommand.Definition
+} elseif ($MyInvocation.MyCommand.Path -and (Test-Path -LiteralPath $MyInvocation.MyCommand.Path)) {
+    Split-Path -Parent $MyInvocation.MyCommand.Path
 } else {
     (Get-Location).Path
 }
@@ -43,9 +47,9 @@ if (-not (Test-Path (Join-Path $ProjectRoot 'ets2-desktop.html'))) {
 }
 
 # 5. Константы проекта и репозитория
-$CurrentVersion = 'v1.2.2'
+$CurrentVersion = 'v0.0.3'
 $RepoOwner = 'FooZzee'
-$RepoName = 'ets2-ats-stream-overlay'
+$RepoName = 'ETS2-ATS-Cockpit-Stream-Overlay'
 $ApiUrl = "https://api.github.com/repos/$RepoOwner/$RepoName/releases/latest"
 $WebReleasesUrl = "https://github.com/$RepoOwner/$RepoName/releases/latest"
 $WebAllReleasesUrl = "https://github.com/$RepoOwner/$RepoName/releases"
