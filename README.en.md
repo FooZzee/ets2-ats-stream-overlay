@@ -17,10 +17,21 @@
 
 ---
 
+## 📸 Live HUD Preview
+
+![Cockpit HUD — Amber Theme (Default)](./docs/screenshots/hud-amber.png)
+
+| ❄️ Ice Blue Theme (`?theme=ice&lang=en`) | 📟 In-Game Event Toasts & Pip-Boy 3000 CRT Terminal |
+| :---: | :---: |
+| [![Cockpit HUD Ice Theme](./docs/screenshots/hud-ice.png)](./docs/screenshots/hud-ice.png) | [![Pip-Boy 3000 CRT Updater](./docs/screenshots/hud-events-pipboy.png)](./docs/screenshots/hud-events-pipboy.png) |
+
+---
+
+
 ## 📌 Table of Contents
 
 1. [Overview & Key Features](#-overview--key-features)
-2. [What's New in v1.2.0](#-whats-new-in-v120)
+2. [What's New in v1.2.3](#-whats-new-in-v123)
 3. [Architecture & Components](#-architecture--components)
 4. [HUD Layout & Elements](#-hud-layout--elements)
 5. [System Requirements](#-system-requirements)
@@ -132,7 +143,7 @@ flowchart LR
 
 ## ⚡ 1-Click GUI Installation
 
-1. Download the latest release archive **`ETS2-ATS-Stream-Overlay-v1.2.1.zip`** from [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
+1. Download the latest release archive **`ets2-ats-stream-overlay-v1.2.3.zip`** from [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
 2. Extract the archive into any permanent folder (e.g., `C:\ETS2-ATS-Stream-Overlay`).
 3. Run **`Install-Overlay.bat`**:
    * Choose **`English (EN)`** or **`Русский (RU)`** in the top-right corner.
@@ -219,16 +230,19 @@ window.OVERLAY_CONFIG = {
 
 ---
 
-## 👤 Author & Community
+## 👤 Project Author — FooZzee (Streamer & Developer)
 
-* **Creator:** FooZzee
-* **Official Website:** [foozzee.ru](https://foozzee.ru/)
-* **Twitch:** [twitch.tv/foozzee](https://www.twitch.tv/foozzee)
-* **YouTube:** [@foozzee](https://www.youtube.com/@foozzee)
-* **Telegram:** [@foozzeestream](https://t.me/foozzeestream)
-* **VK:** [vk.ru/gtfun](https://vk.ru/gtfun)
+* 🌐 **Official Website:** [foozzee.ru](https://foozzee.ru)
+* 📺 **Twitch:** [twitch.tv/foozzee](https://twitch.tv/foozzee)
+* 🎥 **YouTube:** [youtube.com/@foozzee](https://youtube.com/@foozzee)
+* 📢 **Telegram:** [t.me/foozzeestream](https://t.me/foozzeestream)
+* 👥 **VK:** [vk.ru/gtfun](https://vk.ru/gtfun)
+* 📹 **VK Video Live:** *(in development / в разработке)*
+* 💖 **DonationAlerts:** [donationalerts.com/r/foozzee](https://www.donationalerts.com/r/foozzee)
 
-Licensed under the [Proprietary Freeware License (All Rights Reserved)](./LICENSE). Free for streamers, content creators, and modders.
+[![Support Project](https://img.shields.io/badge/Support_Project-FF5E5B?style=for-the-badge&logo=heart&logoColor=white)](https://www.donationalerts.com/r/foozzee)
+
+Licensed under [Proprietary Freeware License (All Rights Reserved)](./LICENSE) — free personal usage for streaming broadcasts and video recordings; commercial resale, redistribution, and unauthorized modified builds are prohibited.
 
 ---
 

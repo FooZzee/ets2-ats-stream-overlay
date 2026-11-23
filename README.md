@@ -26,12 +26,28 @@
 
 ---
 
+## 📸 Live HUD Preview / Витрина интерфейса
+
+![Cockpit HUD — Amber Theme (Default)](./docs/screenshots/hud-amber.png)
+
+| ❄️ Ice Blue Theme (`?theme=ice&lang=en`) | 📟 In-Game Event Toasts & Pip-Boy 3000 (`?test_update=1`) |
+| :---: | :---: |
+| [![Cockpit HUD Ice Theme](./docs/screenshots/hud-ice.png)](./docs/screenshots/hud-ice.png) | [![Pip-Boy 3000 CRT Updater](./docs/screenshots/hud-events-pipboy.png)](./docs/screenshots/hud-events-pipboy.png) |
+
+---
+
+
 <a id="-english-documentation"></a>
 ## 🇬🇧 English Documentation
 
 **ETS2 / ATS Cockpit Telemetry Stream Overlay** is an ultra-low latency, broadcast-grade telemetry HUD designed specifically for live streamers on Twitch, YouTube, and TikTok. Built around realistic amber/ice cockpit ergonomics, it provides comprehensive driving, vehicle, and trip telemetry while keeping the driver's windshield, mirrors, and in-game GPS completely unobstructed.
 
-### ✨ Key Highlights & v1.2.0 Features
+### ✨ Key Highlights & v1.2.3 Features
+* 🛡️ **Proprietary Freeware License (All Rights Reserved — v1.2.3):** Full proprietary freeware model for streaming and broadcasts with zero open-source references.
+* 🔒 **Credential Security Audit (v1.2.3):** Default DonationAlerts socket tokens cleaned in `assets/js/ets2-config.js` to prevent streaming key exposure.
+* ⚙️ **PowerShell Script Quality Standard (v1.2.3):** All scripts standardized to UTF-8 with BOM and verified with `AST_ERRORS = 0`.
+* 🖥️ **Full HD Single Desktop Cockpit HUD (`1920×1080` — `ets2-desktop.html` — v1.2.2):** Unified desktop scene layout with opaque gauge base, live chat, and audio alerts.
+* 📟 **Pip-Boy 3000 Autonomous CRT Update Terminal (v1.2.2):** Retro green phosphor updater with CRT scanlines and typewriter audio.
 * 🚨 **Native SCS Gameplay Event Toasts & Sound Engine:** Real-time HUD toast alerts anchored in the upper windshield view (`top: 14%`) for traffic fines, tollgates, ferry voyages, train shuttles, and contract deliveries, powered by a zero-dependency procedural Web Audio synthesizer.
 * 💬 **Twitch IRC Chat & Interactive Viewer Commands:** Built-in direct WebSocket IRC connection with audience commands (`!job`, `!truck`, `!stats`, `!driver`, `!cb <text>`, `!honk`, `!bet`). Documented in full in [commands.en.md](./commands.en.md) and [commands.ru.md](./commands.ru.md).
 * 🗺️ **Primary HUD Route & Trip Integration:** Active cargo name and tonnage or passenger coach route now render directly inside the primary dashboard module (`#route-value` and `#lt-cargo`), with live passenger comfort rating (**`SATISFACTION: XX%`**).
@@ -57,7 +73,7 @@ flowchart LR
 ```
 
 ### ⚡ Quick Start
-1. Download **`ETS2-ATS-Stream-Overlay-v1.2.1.zip`** from [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
+1. Download **`ets2-ats-stream-overlay-v1.2.3.zip`** from [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
 2. Extract the archive into any folder (e.g. `C:\ETS2-ATS-Stream-Overlay`).
 3. Run **`Install-Overlay.bat`**, enter your Twitch username and DonationAlerts token, and click **Install**.
 4. Double-click the **`ETS2-ATS Overlay Bridge`** Desktop shortcut before streaming.
@@ -78,7 +94,12 @@ flowchart LR
 
 **Cockpit Telemetry Stream Overlay** — это высокопроизводительный приборный комплекс для стримеров Euro Truck Simulator 2 и American Truck Simulator. Оверлей разработан с акцентом на реалистичность, отсутствие визуального мусора в лобовом стекле и нулевую задержку передачи телеметрии.
 
-### ✨ Ключевые возможности и релиз v1.2.0
+### ✨ Ключевые возможности и релиз v1.2.3
+* 🛡️ **Защитная лицензия Proprietary Freeware License (v1.2.3):** Бесплатное личное использование на стримах, запрет коммерческой перепродажи и модифицированных сборок.
+* 🔒 **Аудит безопасности учетных данных (v1.2.3):** Очищен токен DonationAlerts в `assets/js/ets2-config.js`, исключающий утечку ключей стримера.
+* ⚙️ **Инженерный стандарт PowerShell (v1.2.3):** Кодировка UTF-8 with BOM и валидация `AST_ERRORS = 0` во всех системных сценариях.
+* 🖥️ **Единая десктопная сцена Cockpit HUD (`1920×1080` — `ets2-desktop.html` — v1.2.2):** Полноэкранный приборный комплекс с непрозрачной подложкой.
+* 📟 **Автономный терминал обновлений Pip-Boy 3000 (v1.2.2):** ЭЛТ-анимация сканлайнов, звуки пишущей машинки и автопроверка на GitHub.
 * 🚨 **Всплывающие игровые уведомления HUD и процедурный звук:** Анимированные уведомления в верхней зоне лобового стекла (`top: 14%`) о штрафах, пунктах оплаты, паромах, поездах и сдаче рейса с процедурным звуковым движком Web Audio API без внешних аудиофайлов.
 * 💬 **Интерактивные команды Twitch-чата:** Прямое подключение по WebSocket к Twitch IRC и поддержка команд взаимодействия (`!рейс`, `!тягач`, `!стата`, `!водитель`, `!рация <текст>`, `!гудок`, `!ставка`). Полный справочник приведён в [commands.ru.md](./commands.ru.md) и [commands.en.md](./commands.en.md).
 * 🗺️ **Интеграция рейса в основной блок HUD:** Реальный перевозимый груз и тоннаж либо маршрут автобуса отображаются напрямую в центральном модуле кабины (`#route-value` и `#lt-cargo`), включая комфорт пассажиров (**`КОМФОРТ: XX%`**).
@@ -94,7 +115,7 @@ flowchart LR
 * ⚡ **1-клик графический установщик (`Install-Overlay.bat`):** Автоматический поиск игр в Steam, установка плагина, очистка устаревших файлов, защищённое поле токена DonationAlerts и ярлык на Рабочем столе.
 
 ### ⚡ Быстрый старт
-1. Скачайте архив **`ETS2-ATS-Stream-Overlay-v1.2.1.zip`** из раздела [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
+1. Скачайте архив **`ets2-ats-stream-overlay-v1.2.3.zip`** из раздела [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
 2. Распакуйте архив в удобную папку (например, `C:\ETS2-ATS-Stream-Overlay`).
 3. Запустите **`Install-Overlay.bat`**, введите никнейм Twitch и токен DonationAlerts, затем нажмите **Установить**.
 4. Перед началом стрима запустите ярлык на Рабочем столе: **`ETS2-ATS Overlay Bridge`**.
@@ -110,14 +131,19 @@ flowchart LR
 
 ---
 
-### 👤 Автор и контакты / Author & Credits — FooZzee
-* **Website:** [foozzee.ru](https://foozzee.ru/)
-* **Twitch:** [twitch.tv/foozzee](https://www.twitch.tv/foozzee)
-* **YouTube:** [@foozzee](https://www.youtube.com/@foozzee)
-* **Telegram:** [@foozzeestream](https://t.me/foozzeestream)
-* **VK:** [vk.ru/gtfun](https://vk.ru/gtfun)
+### 👤 Автор и контакты / Author & Credits — FooZzee (стример и разработчик)
 
-Лицензия: [Proprietary Freeware License (All Rights Reserved)](./LICENSE). Полная история версий доступна в [CHANGELOG.md](./CHANGELOG.md).
+* 🌐 **Официальный сайт / Website:** [foozzee.ru](https://foozzee.ru)
+* 📺 **Twitch:** [twitch.tv/foozzee](https://twitch.tv/foozzee)
+* 🎥 **YouTube:** [youtube.com/@foozzee](https://youtube.com/@foozzee)
+* 📢 **Telegram:** [t.me/foozzeestream](https://t.me/foozzeestream)
+* 👥 **VK:** [vk.ru/gtfun](https://vk.ru/gtfun)
+* 📹 **VK Video Live:** *(в разработке / in development)*
+* 💖 **DonationAlerts:** [donationalerts.com/r/foozzee](https://www.donationalerts.com/r/foozzee)
+
+[![Поддержать проект](https://img.shields.io/badge/Поддержать_проект-FF5E5B?style=for-the-badge&logo=heart&logoColor=white)](https://www.donationalerts.com/r/foozzee)
+
+Лицензия: [Proprietary Freeware License (All Rights Reserved)](./LICENSE) — бесплатное личное использование на стримах и в видеороликах; коммерческая перепродажа и публикация модифицированных сборок запрещены.
 
 ---
 

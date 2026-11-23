@@ -40,7 +40,7 @@
 ### [1.2.3] - 2026-11-23
 
 #### 🛡️ Security & Licensing
-* **Proprietary Freeware License (All Rights Reserved):** Complete transition to a proprietary freeware license for streaming and personal broadcasts, prohibiting commercial resale and unauthorized modified redistributions. Completely removed all references to open-source licenses (open-source).
+* **Proprietary Freeware License (All Rights Reserved):** Complete transition to a proprietary freeware license for streaming and personal broadcasts, prohibiting commercial resale and unauthorized modified redistributions. Completely removed all references to permissive open-source licenses.
 * **Credential Security Audit (`assets/js/ets2-config.js`):** Cleaned default DonationAlerts socket token placeholder (`donationAlerts.socketToken = ''`), preventing accidental exposure of private streaming keys.
 * **Clean Source Tree:** Removed intermediate CMake/MSVC build artifacts from `native-plugin/build/`, delivering the production-ready native plugin via `redist/overlayobs_foozzee_telemetry.dll`.
 
@@ -55,7 +55,7 @@
 ### [1.2.2] - 2026-11-17
 
 > [!IMPORTANT]
-> **Release v1.2.2** delivers a complete transition to a unified desktop Cockpit HUD layout, resolves bus and truck job completion/cancellation state handling, revamps the in-game telemetry toast card design and kinematics, introduces an in-OBS auto-update notification with CRT animations and Web Audio sound effects, and completely redesigns the GUI Setup Wizard and standalone Pip-Boy 3000 update terminal with native WPF architecture and native WPF architecture.
+> **Release v1.2.2** delivers a complete transition to a unified desktop Cockpit HUD layout, resolves bus and truck job completion/cancellation state handling, revamps the in-game telemetry toast card design and kinematics, introduces an in-OBS auto-update notification with CRT animations and Web Audio sound effects, and completely redesigns the GUI Setup Wizard and standalone Pip-Boy 3000 update terminal with native WPF architecture.
 
 #### 🚀 Added
 * **🔔 In-OBS Auto-Update Notification (`assets/js/ets2-telemetry.js`, `assets/css/ets2-base.css`):**
@@ -281,7 +281,7 @@
 ### [1.2.3] - 2026-11-23
 
 #### 🛡️ Безопасность и лицензирование (Security & Licensing)
-* **Proprietary Freeware License (All Rights Reserved):** Полный переход на проприетарную лицензию бесплатного использования на стримах с запретом коммерческой перепродажи и несанкционированных сборок без разрешения автора. Полное исключение любых ссылок на open-source лицензии (open-source).
+* **Proprietary Freeware License (All Rights Reserved):** Полный переход на проприетарную лицензию бесплатного использования на стримах с запретом коммерческой перепродажи и несанкционированных сборок без разрешения автора. Полное исключение любых ссылок на открытые лицензии (open-source).
 * **Защита конфиденциальных данных (`assets/js/ets2-config.js`):** Очищен токен подключения DonationAlerts (`donationAlerts.socketToken = ''`), исключающий случайную утечку приватных ключей при клонировании репозитория.
 * **Очистка репозитория от временных файлов сборки:** Из публичного дерева удалены промежуточные артефакты компиляции CMake/MSVC из `native-plugin/build/`, рабочий нативный плагин поставляется через `redist/overlayobs_foozzee_telemetry.dll`.
 
@@ -296,7 +296,7 @@
 ### [1.2.2] - 2026-11-17
 
 > [!IMPORTANT]
-> **Релиз v1.2.2** обеспечивает полный переход на единую десктопную архитектуру Cockpit HUD, устраняет сбои завершения и отмены рейсов на автобусах и грузовиках, обновляет кинематику и дизайн карточек уведомлений, добавляет автоуведомление об обновлениях в предпросмотре OBS с ЭЛТ-анимацией и Web Audio эффектами, а также полностью перерабатывает графический установщик и терминал Pip-Boy 3000 на нативный WPF на нативный WPF.
+> **Релиз v1.2.2** обеспечивает полный переход на единую десктопную архитектуру Cockpit HUD, устраняет сбои завершения и отмены рейсов на автобусах и грузовиках, обновляет кинематику и дизайн карточек уведомлений, добавляет автоуведомление об обновлениях в предпросмотре OBS с ЭЛТ-анимацией и Web Audio эффектами, а также полностью перерабатывает графический установщик и терминал Pip-Boy 3000 на нативный WPF.
 
 #### 🚀 Добавлено
 * **🔔 Автоуведомление об обновлении в предпросмотре OBS (`assets/js/ets2-telemetry.js`, `assets/css/ets2-base.css`):**
@@ -510,6 +510,8 @@
 * **Telegram:** [@foozzeestream](https://t.me/foozzeestream)
 * **VK:** [vk.ru/gtfun](https://vk.ru/gtfun)
 
+[1.2.3]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.2.2...v1.2.3
+[1.2.2]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.3...v1.2.0
 [1.1.3]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.2...v1.1.3
@@ -519,4 +521,7 @@
 
 ---
 
+Автор проекта / Project Author — FooZzee (стример и разработчик / Streamer & Developer)
+
 Copyright (c) 2026 FooZzee. All Rights Reserved.
+

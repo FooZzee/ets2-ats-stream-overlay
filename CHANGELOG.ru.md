@@ -27,6 +27,21 @@
 
 ---
 
+<a id="123---2026-11-23"></a>
+## [1.2.3] - 2026-11-23
+
+### 🛡️ Безопасность и лицензирование (Security & Licensing)
+* **Proprietary Freeware License (All Rights Reserved):** Полный переход на проприетарную лицензию бесплатного личного использования на стримах с запретом коммерческой перепродажи и несанкционированных сборок без разрешения автора. Полное исключение любых ссылок на открытые лицензии (open-source).
+* **Защита конфиденциальных данных (`assets/js/ets2-config.js`):** Очищен токен подключения DonationAlerts (`donationAlerts.socketToken = ''`), исключающий случайную утечку приватных ключей при клонировании репозитория.
+* **Очистка репозитория от временных файлов сборки:** Из публичного дерева удалены промежуточные артефакты компиляции CMake/MSVC из `native-plugin/build/`, рабочий нативный плагин поставляется через `redist/overlayobs_foozzee_telemetry.dll`.
+
+### 🔧 Скрипты и системная интеграция (Scripts & Automation)
+* **Кодировка скриптов PowerShell (`UTF-8 with BOM`):** Все скрипты автоматизации (`installer.ps1`, `updater.ps1`, `configurator.ps1`, `udp-bridge.ps1`, `build-plugin.ps1`) приведены к строгому стандарту кодировки UTF-8 с сигнатурой BOM и верифицированы с `AST_ERRORS = 0`.
+* **Надёжная адресация репозитория:** Во всех скриптах обновления (`scripts/updater.ps1`, `assets/js/ets2-updater.js`, `scripts/installer.ps1`) зафиксирован репозиторий `FooZzee/ets2-ats-stream-overlay`.
+* **Эталонные ссылки автора:** Во всех файлах документации и интерфейсах GUI-утилит синхронизированы ссылки на официальные ресурсы FooZzee (Сайт, Twitch, YouTube, Telegram, VK, DonationAlerts).
+
+---
+
 ## [1.2.2] - 2026-11-17
 
 > [!IMPORTANT]
@@ -291,6 +306,8 @@
 * **Telegram:** [@foozzeestream](https://t.me/foozzeestream)
 * **VK:** [vk.ru/gtfun](https://vk.ru/gtfun)
 
+[1.2.3]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.2.2...v1.2.3
+[1.2.2]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.3...v1.2.0
 [1.1.3]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.2...v1.1.3
@@ -300,4 +317,7 @@
 
 ---
 
+Автор проекта — FooZzee (стример и разработчик)
+
 Copyright (c) 2026 FooZzee. All Rights Reserved.
+

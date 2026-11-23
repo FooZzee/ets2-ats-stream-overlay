@@ -17,10 +17,21 @@
 
 ---
 
+## 📸 Витрина интерфейса (Live HUD Preview)
+
+![Cockpit HUD — Янтарная тема приборной панели (по умолчанию)](./docs/screenshots/hud-amber.png)
+
+| ❄️ Ледяная синяя тема (`?theme=ice&lang=en`) | 📟 Терминал автообновления Pip-Boy 3000 и уведомления |
+| :---: | :---: |
+| [![Cockpit HUD Ice Theme](./docs/screenshots/hud-ice.png)](./docs/screenshots/hud-ice.png) | [![Pip-Boy 3000 CRT Updater](./docs/screenshots/hud-events-pipboy.png)](./docs/screenshots/hud-events-pipboy.png) |
+
+---
+
+
 ## 📌 Оглавление
 
 1. [Обзор и преимущества](#-обзор-и-преимущества)
-2. [Нововведения версии 1.2.0](#-нововведения-версии-120)
+2. [Нововведения версии 1.2.3](#-нововведения-версии-123)
 3. [Архитектура и компоненты](#-архитектура-и-компоненты)
 4. [Интерфейс сцен и расположение](#-интерфейс-сцен-и-расположение)
 5. [Системные требования](#-системные-требования)
@@ -45,10 +56,18 @@
 
 ---
 
-## 🚀 Нововведения версии 1.2.0
+## 🚀 Нововведения версии 1.2.3
 
 > [!IMPORTANT]
-> **Релиз v1.2.0** добавляет всплывающие игровые уведомления о событиях телеметрии в верхней зоне лобового стекла (`top: 14%`), 100% локализацию бейджей карточек без англицизмов, полный словарь редких штрафов SCS SDK, процедурный синтезатор звуков Web Audio API, сквозную статистику сессии стрима и интерактивные команды Twitch-чата (`!гудок`, `!рация`, `!рейс`, `!стата`, `!тягач`, `!водитель`, `!ставка`).
+> **Релиз v1.2.3** переводит проект на строгую проприетарную лицензию **Proprietary Freeware License (All Rights Reserved)**, проводит глубокий аудит конфиденциальности (очистка токенов DonationAlerts), стандартизирует все PowerShell-скрипты по стандарту UTF-8 with BOM (`AST_ERRORS = 0`) и синхронизирует единый репозиторий обновлений `FooZzee/ets2-ats-stream-overlay`.
+
+### 🌟 Главные улучшения версий 1.2.1 – 1.2.3
+* 🛡️ **Безопасность и лицензирование (v1.2.3):** Проприетарная лицензия бесплатного личного использования на стримах, удаление упоминаний сторонних лицензий, защита от утечек приватных токенов в `ets2-config.js` и очистка временных артефактов компиляции CMake/MSVC.
+* 🖥️ **Единая десктопная сцена и Pip-Boy 3000 (v1.2.2):** Полноэкранный HUD `1920×1080` в `ets2-desktop.html`, автономный терминал проверки обновлений с ретро-сканлайнами CRT и Web Audio звуками пишущей машинки, нативный WPF-мастер установки и фоновое CRT-уведомление в OBS Studio.
+* 🎵 **Полифонический аудиодвижок Web Audio API:** 8-битная музыка завершения рейса, процедурный синтез звуков кликов, переключения передач, сигналов, рации и штрафов.
+* 📖 **Встроенные просмотрщики документации (v1.2.1):** Просмотр `CHANGELOG.md` и справочника команд в нативном окне WPF FlowDocument прямо из установщика `Install-Overlay.bat`.
+
+### 🔔 Базовые возможности оверлея v1.2.0
 
 * 🔔 **Всплывающие уведомления в верхней части экрана (`.telemetry-event-toast`):**
   * Позиционирование в верхней зоне лобового стекла (`top: 14%; left: 50%`) с плотным непрозрачным фоном (`#0e131b`), акцентными рамками, показом 4.5 с и последовательной FIFO-очередью.
@@ -132,7 +151,7 @@ flowchart LR
 
 ## ⚡ Быстрая установка (1-клик установщик)
 
-1. Скачайте архив релиза **`ETS2-ATS-Stream-Overlay-v1.2.1.zip`** из раздела [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
+1. Скачайте архив релиза **`ets2-ats-stream-overlay-v1.2.3.zip`** из раздела [Releases](https://github.com/FooZzee/ets2-ats-stream-overlay/releases).
 2. Распакуйте архив в постоянную папку (например, `C:\ETS2-ATS-Stream-Overlay`).
 3. Запустите файл **`Install-Overlay.bat`**:
    * В правом верхнем углу выберите язык: **`Русский (RU)`** или **`English (EN)`**.
@@ -219,16 +238,19 @@ window.OVERLAY_CONFIG = {
 
 ---
 
-## 👤 Автор и сообщество
+## 👤 Автор проекта — FooZzee (стример и разработчик)
 
-* **Автор проекта:** FooZzee
-* **Официальный сайт:** [foozzee.ru](https://foozzee.ru/)
-* **Twitch:** [twitch.tv/foozzee](https://www.twitch.tv/foozzee)
-* **YouTube:** [@foozzee](https://www.youtube.com/@foozzee)
-* **Telegram:** [@foozzeestream](https://t.me/foozzeestream)
-* **VK:** [vk.ru/gtfun](https://vk.ru/gtfun)
+* 🌐 **Официальный сайт:** [foozzee.ru](https://foozzee.ru)
+* 📺 **Twitch:** [twitch.tv/foozzee](https://twitch.tv/foozzee)
+* 🎥 **YouTube:** [youtube.com/@foozzee](https://youtube.com/@foozzee)
+* 📢 **Telegram:** [t.me/foozzeestream](https://t.me/foozzeestream)
+* 👥 **VK:** [vk.ru/gtfun](https://vk.ru/gtfun)
+* 📹 **VK Video Live:** *(в разработке / in development)*
+* 💖 **DonationAlerts:** [donationalerts.com/r/foozzee](https://www.donationalerts.com/r/foozzee)
 
-Лицензия: [Proprietary Freeware License (All Rights Reserved)](./LICENSE). Полная свобода использования для стримеров и создателей контента.
+[![Поддержать проект](https://img.shields.io/badge/Поддержать_проект-FF5E5B?style=for-the-badge&logo=heart&logoColor=white)](https://www.donationalerts.com/r/foozzee)
+
+Лицензия: [Proprietary Freeware License (All Rights Reserved)](./LICENSE) — бесплатное личное использование на стримах и в видеороликах; коммерческая перепродажа и публикация модифицированных сборок запрещены.
 
 ---
 

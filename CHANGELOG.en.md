@@ -27,6 +27,21 @@
 
 ---
 
+<a id="123---2026-11-23"></a>
+## [1.2.3] - 2026-11-23
+
+### 🛡️ Security & Licensing
+* **Proprietary Freeware License (All Rights Reserved):** Complete transition to a proprietary freeware license for streaming and personal broadcasts, prohibiting commercial resale and unauthorized modified redistributions. Completely removed all references to permissive open-source licenses.
+* **Credential Security Audit (`assets/js/ets2-config.js`):** Cleaned default DonationAlerts socket token placeholder (`donationAlerts.socketToken = ''`), preventing accidental exposure of private streaming keys.
+* **Clean Source Tree:** Removed intermediate CMake/MSVC build artifacts from `native-plugin/build/`, delivering the production-ready native plugin via `redist/overlayobs_foozzee_telemetry.dll`.
+
+### 🔧 Scripts & System Automation
+* **PowerShell Script Encoding (`UTF-8 with BOM`):** Standardized all PowerShell automation scripts (`installer.ps1`, `updater.ps1`, `configurator.ps1`, `udp-bridge.ps1`, `build-plugin.ps1`) to UTF-8 with BOM signature, fully verified with `AST_ERRORS = 0`.
+* **Repository Target Verification:** Synchronized GitHub updater endpoints and repo references across `scripts/updater.ps1`, `assets/js/ets2-updater.js`, and `scripts/installer.ps1` to `FooZzee/ets2-ats-stream-overlay`.
+* **Official Author Links:** Updated all documentation files and GUI tools with official author links (Website, Twitch, YouTube, Telegram, VK, DonationAlerts).
+
+---
+
 ## [1.2.2] - 2026-11-17
 
 > [!IMPORTANT]
@@ -299,6 +314,8 @@ Integrated 4 new native telemetry channels into the C++ plugin (`overlayobs_fooz
 * **Telegram:** [@foozzeestream](https://t.me/foozzeestream)
 * **VK:** [vk.ru/gtfun](https://vk.ru/gtfun)
 
+[1.2.3]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.2.2...v1.2.3
+[1.2.2]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.3...v1.2.0
 [1.1.3]: https://github.com/FooZzee/ets2-ats-stream-overlay/compare/v1.1.2...v1.1.3
@@ -308,4 +325,7 @@ Integrated 4 new native telemetry channels into the C++ plugin (`overlayobs_fooz
 
 ---
 
+Project Author — FooZzee (Streamer & Developer)
+
 Copyright (c) 2026 FooZzee. All Rights Reserved.
+
